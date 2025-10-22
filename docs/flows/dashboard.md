@@ -1,0 +1,136 @@
+# Dashboard Flow
+
+## Overview
+
+Provides protected user interface for authenticated users with role-based access control. Includes main dashboard, billing management, settings, and admin panel with different features based on user roles.
+
+**Main libraries/services:**
+
+- Next.js App Router for page routing
+- Role-based access control (USER/ADMIN)
+- Server-side session validation
+- Protected route middleware
+
+## File Map
+
+```
+📁 app/(protected)/layout.tsx - Protected route wrapper
+📁 app/(protected)/dashboard/page.tsx - Main dashboard
+📁 app/(protected)/dashboard/billing/page.tsx - Billing management
+📁 app/(protected)/dashboard/settings/page.tsx - User settings
+📁 app/(protected)/dashboard/charts/page.tsx - Chart examples
+📁 app/(protected)/admin/page.tsx - Admin panel
+📁 app/(protected)/admin/orders/page.tsx - Order management
+📁 components/dashboard/ - Dashboard-specific components
+📁 lib/session.ts - Session management utilities
+```
+
+## Step-by-Step Flow
+
+### Dashboard Access
+
+1. User navigates to protected route
+2. `(protected)/layout.tsx` checks authentication
+3. `getCurrentUser()` validates session
+4. If unauthenticated, redirect to `/login`
+5. If authenticated, render dashboard content
+6. User role determines available features
+
+### Main Dashboard
+
+1. Dashboard page loads with user data
+2. User role displayed in header
+3. Empty placeholder shown (no content created yet)
+4. "Add Content" button for future functionality
+5. Role-based navigation menu available
+
+### Billing Dashboard
+
+1. User subscription plan fetched via `getUserSubscriptionPlan`
+2. Billing information displayed with current plan
+3. Upgrade/downgrade options based on current tier
+4. Stripe test environment warning shown
+5. Billing portal access for existing customers
+
+### Settings Management
+
+1. User profile information displayed
+2. Name and role update forms available
+3. Account deletion option (with confirmation)
+4. Settings persisted via server actions
+
+### Admin Panel (ADMIN role only)
+
+1. Role validation ensures ADMIN access only
+2. Admin-specific dashboard with metrics
+3. User management capabilities
+4. Transaction and order management
+5. System-wide analytics and controls
+
+### Charts Dashboard
+
+1. Demo charts using shadcn-ui components
+2. Various chart types (area, bar, line, radial)
+3. Interactive data visualization examples
+4. Responsive grid layout for different screen sizes
+
+## Data Flow Diagram
+
+```
+[Protected Route] → [Session Validation] → [Role Check] → [Dashboard Render]
+     ↓
+[User Actions] → [Server Actions] → [Database Updates] → [UI Refresh]
+     ↓
+[Admin Actions] → [Admin Panel] → [System Management] → [User Updates]
+```
+
+## Role-Based Features
+
+### USER Role
+
+- Main dashboard access
+- Billing management
+- Personal settings
+- Chart examples
+- Content creation (placeholder)
+
+### ADMIN Role
+
+- All USER features
+- Admin panel access
+- User management
+- System analytics
+- Order management
+- Transaction oversight
+
+## Protected Route Structure
+
+```
+(protected)/
+├── layout.tsx (authentication wrapper)
+├── dashboard/
+│   ├── page.tsx (main dashboard)
+│   ├── billing/page.tsx (subscription management)
+│   ├── settings/page.tsx (user preferences)
+│   └── charts/page.tsx (demo charts)
+└── admin/
+    ├── layout.tsx (admin role check)
+    ├── page.tsx (admin dashboard)
+    └── orders/page.tsx (order management)
+```
+
+## Notes and TODOs
+
+- ✅ Role-based access control implemented
+- ✅ Protected route middleware working
+- ✅ Billing integration with subscription data
+- ✅ Admin panel with restricted access
+- ✅ Responsive dashboard layout
+- ✅ Chart examples for data visualization
+- ⚠️ Main dashboard shows empty placeholder
+- 🔄 Implement actual content creation features
+- 🔄 Add user activity tracking
+- 🔄 Implement admin user management
+- 🔄 Add dashboard analytics and metrics
+- 🔄 Create user onboarding flow
+- 🔄 Add notification system

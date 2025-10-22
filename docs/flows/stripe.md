@@ -1,0 +1,100 @@
+# Stripe Integration Flow
+
+## Overview
+
+Handles subscription management, payment processing, and billing operations using Stripe. Supports multiple subscription tiers with monthly/yearly billing cycles and webhook-based subscription lifecycle management.
+
+**Main libraries/services:**
+
+- `stripe` - Payment processing and subscription management
+- `@stripe/stripe-js` - Client-side Stripe integration
+- Webhook endpoints for real-time subscription updates
+- Prisma for subscription data persistence
+
+## File Map
+
+```
+📁 lib/stripe.ts - Stripe client configuration
+📁 config/subscriptions.ts - Pricing plans and tier definitions
+📁 lib/subscription.ts - Subscription logic and plan detection
+📁 actions/generate-user-stripe.ts - Checkout session creation
+📁 actions/open-customer-portal.ts - Billing portal access
+📁 app/api/webhooks/stripe/route.ts - Webhook event handling
+📁 components/forms/billing-form-button.tsx - Billing UI components
+📁 components/pricing/ - Pricing page components
+📁 app/(protected)/dashboard/billing/page.tsx - Billing dashboard
+📁 app/(marketing)/pricing/page.tsx - Public pricing page
+```
+
+## Step-by-Step Flow
+
+### New Subscription Creation
+
+1. User clicks "Upgrade" button on pricing page
+2. `generateUserStripe` action is triggered with priceId
+3. User authentication is verified via `auth()`
+4. Current subscription status is checked via `getUserSubscriptionPlan`
+5. If user is on free plan:
+   - Stripe checkout session is created with user email
+   - User metadata (userId) is attached to session
+   - User is redirected to Stripe checkout
+6. User completes payment on Stripe
+7. Stripe webhook `checkout.session.completed` is triggered
+8. User subscription data is updated in database
+
+### Subscription Management (Existing Customers)
+
+1. User clicks "Manage Billing" button
+2. `generateUserStripe` checks if user has active subscription
+3. If user is on paid plan:
+   - Stripe billing portal session is created
+   - User is redirected to Stripe customer portal
+4. User can update payment methods, cancel, or change plans
+5. Changes trigger webhook events for real-time updates
+
+### Webhook Event Processing
+
+1. Stripe sends webhook to `/api/webhooks/stripe`
+2. Webhook signature is verified using `STRIPE_WEBHOOK_SECRET`
+3. Event type determines processing logic:
+   - `checkout.session.completed`: New subscription created
+   - `invoice.payment_succeeded`: Subscription renewed/updated
+4. Database is updated with latest subscription data
+5. Response sent back to Stripe
+
+### Subscription Plan Detection
+
+1. `getUserSubscriptionPlan` fetches user's Stripe data
+2. Plan validity is checked against current period end
+3. Pricing data is matched against user's `stripePriceId`
+4. Plan details (tier, interval, cancellation status) are returned
+5. UI components use this data for conditional rendering
+
+## Data Flow Diagram
+
+```
+[Pricing Page] → [Checkout Session] → [Stripe Payment] → [Webhook] → [Database Update]
+     ↓
+[User Dashboard] ← [Subscription Status] ← [Plan Detection] ← [Database Query]
+     ↓
+[Billing Portal] → [Stripe Portal] → [Plan Changes] → [Webhook] → [Database Update]
+```
+
+## Subscription Tiers
+
+- **Starter**: Free tier (no Stripe integration)
+- **Pro**: $15/month or $144/year
+- **Business**: $30/month or $300/year
+
+## Notes and TODOs
+
+- ✅ Checkout session creation for new subscriptions
+- ✅ Billing portal integration for existing customers
+- ✅ Webhook handling for subscription lifecycle events
+- ✅ Multi-tier pricing with monthly/yearly options
+- ✅ Subscription status detection and plan matching
+- ⚠️ Webhook error handling could be improved
+- 🔄 Add support for proration when changing plans
+- 🔄 Implement subscription cancellation grace periods
+- 🔄 Add usage-based billing for higher tiers
+- 🔄 Consider adding trial periods for new users

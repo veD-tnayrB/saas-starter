@@ -1,0 +1,160 @@
+# Database Flow
+
+## Overview
+
+Manages data persistence using PostgreSQL with Prisma ORM. Handles user authentication, session management, and subscription data with proper relationships and constraints.
+
+**Main libraries/services:**
+
+- `@prisma/client` - Database ORM and query builder
+- `@auth/prisma-adapter` - NextAuth database adapter
+- PostgreSQL - Primary database (Neon hosting)
+- Prisma migrations for schema management
+
+## File Map
+
+```
+📁 prisma/schema.prisma - Database schema definition
+📁 prisma/migrations/ - Database migration files
+📁 lib/db.ts - Prisma client configuration
+📁 lib/user.ts - User-related database operations
+📁 lib/subscription.ts - Subscription data queries
+📁 actions/ - Server actions for database operations
+```
+
+## Database Schema
+
+### Core Models
+
+#### User Model
+
+```prisma
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  role          UserRole  @default(USER)
+
+  // Stripe integration fields
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+
+  // Relations
+  accounts Account[]
+  sessions Session[]
+}
+```
+
+#### Account Model (OAuth)
+
+```prisma
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  // ... other OAuth fields
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+```
+
+#### Session Model
+
+```prisma
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+```
+
+## Step-by-Step Flow
+
+### User Creation (OAuth)
+
+1. User authenticates via OAuth provider
+2. NextAuth PrismaAdapter handles user creation
+3. User record created with OAuth account linked
+4. Stripe customer ID generated (if needed)
+5. User role set to default "USER"
+
+### User Lookup Operations
+
+1. `getUserById(id)` - Fetches user by ID
+2. `getUserByEmail(email)` - Fetches user by email
+3. `getCurrentUser()` - Gets current session user
+4. All operations include proper error handling
+
+### Subscription Data Management
+
+1. `getUserSubscriptionPlan(userId)` - Fetches subscription data
+2. Stripe webhooks update subscription fields
+3. Plan validation against current period end
+4. Pricing data matching against Stripe price IDs
+
+### Database Connection Management
+
+1. Prisma client configured with connection pooling
+2. Development: Cached global instance
+3. Production: New instance per request
+4. Automatic connection management
+
+## Data Flow Diagram
+
+```
+[NextAuth] → [PrismaAdapter] → [User Creation/Update] → [Database]
+     ↓
+[Webhooks] → [Subscription Updates] → [Database]
+     ↓
+[Queries] → [Prisma Client] → [Database] → [Application Logic]
+```
+
+## Database Operations
+
+### User CRUD
+
+- **Create**: Via NextAuth OAuth flow
+- **Read**: `getUserById`, `getUserByEmail`, `getCurrentUser`
+- **Update**: Via webhooks and user actions
+- **Delete**: Cascade delete with accounts/sessions
+
+### Subscription CRUD
+
+- **Create**: Via Stripe webhooks
+- **Read**: `getUserSubscriptionPlan`
+- **Update**: Via Stripe webhooks (renewals, changes)
+- **Delete**: Via Stripe cancellation webhooks
+
+## Environment Configuration
+
+- **DATABASE_URL**: PostgreSQL connection string
+- **Neon**: Hosted PostgreSQL service
+- **Migrations**: Managed via Prisma CLI
+
+## Notes and TODOs
+
+- ✅ User authentication with OAuth integration
+- ✅ Session management with JWT strategy
+- ✅ Stripe subscription data persistence
+- ✅ Proper foreign key relationships
+- ✅ Cascade delete for data integrity
+- ⚠️ No soft delete implementation
+- 🔄 Add user profile management
+- 🔄 Implement audit logging
+- 🔄 Add database backup strategies
+- 🔄 Consider adding user preferences table
+- 🔄 Add indexes for performance optimization
