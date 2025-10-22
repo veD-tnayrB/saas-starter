@@ -66,5 +66,38 @@ export const docsConfig: DocsConfig = {
         },
       ],
     },
+    {
+      title: "Flows",
+      items: [
+        {
+          title: "Authentication",
+          href: "/docs/flows/auth",
+        },
+        {
+          title: "Stripe Integration",
+          href: "/docs/flows/stripe",
+        },
+        {
+          title: "Email Handling",
+          href: "/docs/flows/emails",
+        },
+        {
+          title: "Database",
+          href: "/docs/flows/database",
+        },
+        {
+          title: "Dashboard",
+          href: "/docs/flows/dashboard",
+        },
+        {
+          title: "Documentation System",
+          href: "/docs/flows/documentation",
+        },
+        {
+          title: "Blog System",
+          href: "/docs/flows/blog",
+        },
+      ],
+    },
   ],
 };
