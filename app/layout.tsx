@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 
 import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
+import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 
@@ -16,7 +17,8 @@ interface RootLayoutProps {
 
 export const metadata = constructMetadata();
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const session = await auth();
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -29,7 +31,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontGeist.variable,
         )}
       >
-        <SessionProvider>
+        <SessionProvider
+          session={session}
+          refetchInterval={0}
+          refetchOnWindowFocus={false}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

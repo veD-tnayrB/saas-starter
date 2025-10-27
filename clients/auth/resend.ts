@@ -46,10 +46,6 @@ export class ResendEmailClient extends BaseEmailClient {
       if (result.error) {
         throw new Error(`Resend error: ${result.error.message}`);
       }
-
-      console.log(
-        `Verification email sent to ${user.email} with ID: ${result.data?.id}`,
-      );
     } catch (error) {
       console.error("Error sending verification email:", error);
       throw new Error("Failed to send verification email");
@@ -82,10 +78,6 @@ export class ResendEmailClient extends BaseEmailClient {
       if (result.error) {
         throw new Error(`Resend error: ${result.error.message}`);
       }
-
-      console.log(
-        `Password reset email sent to ${user.email} with ID: ${result.data?.id}`,
-      );
     } catch (error) {
       console.error("Error sending password reset email:", error);
       throw new Error("Failed to send password reset email");
@@ -114,10 +106,6 @@ export class ResendEmailClient extends BaseEmailClient {
       if (result.error) {
         throw new Error(`Resend error: ${result.error.message}`);
       }
-
-      console.log(
-        `Welcome email sent to ${user.email} with ID: ${result.data?.id}`,
-      );
     } catch (error) {
       console.error("Error sending welcome email:", error);
       throw new Error("Failed to send welcome email");
@@ -147,10 +135,6 @@ export class ResendEmailClient extends BaseEmailClient {
       if (result.error) {
         throw new Error(`Resend error: ${result.error.message}`);
       }
-
-      console.log(
-        `Account deletion email sent to ${user.email} with ID: ${result.data?.id}`,
-      );
     } catch (error) {
       console.error("Error sending account deletion email:", error);
       throw new Error("Failed to send account deletion email");

@@ -41,14 +41,14 @@ export default function ProjectSwitcher({
   const { data: session, status } = useSession();
   const [openPopover, setOpenPopover] = useState(false);
 
-  if (!projects || status === "loading") {
+  if (status === "loading") {
     return <ProjectSwitcherPlaceholder />;
   }
 
   return (
     <div>
       <Popover open={openPopover} onOpenChange={setOpenPopover}>
-        <PopoverTrigger>
+        <PopoverTrigger asChild>
           <Button
             className="h-8 px-2"
             variant={openPopover ? "secondary" : "ghost"}
@@ -56,10 +56,7 @@ export default function ProjectSwitcher({
           >
             <div className="flex items-center space-x-3 pr-2">
               <div
-                className={cn(
-                  "size-3 shrink-0 rounded-full",
-                  selected.color,
-                )}
+                className={cn("size-3 shrink-0 rounded-full", selected.color)}
               />
               <div className="flex items-center space-x-3">
                 <span

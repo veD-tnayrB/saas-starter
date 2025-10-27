@@ -43,8 +43,6 @@ export const sendVerificationRequest: EmailConfig["sendVerificationRequest"] =
       if (error || !data) {
         throw new Error(error?.message);
       }
-
-      // console.log(data)
     } catch (error) {
       throw new Error("Failed to send verification email.");
     }

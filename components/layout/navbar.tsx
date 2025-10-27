@@ -100,7 +100,9 @@ export function NavBar({ scroll = false }: NavBarProps) {
             </div>
           ) : null}
 
-          {session ? (
+          {status === "loading" ? (
+            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
+          ) : session ? (
             <Link
               href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
               className="hidden md:block"
@@ -114,7 +116,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 <span>Dashboard</span>
               </Button>
             </Link>
-          ) : status === "unauthenticated" ? (
+          ) : (
             <Button
               className="hidden gap-2 px-5 md:flex"
               variant="default"
@@ -125,8 +127,6 @@ export function NavBar({ scroll = false }: NavBarProps) {
               <span>Sign In</span>
               <Icons.arrowRight className="size-4" />
             </Button>
-          ) : (
-            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           )}
         </div>
       </MaxWidthWrapper>

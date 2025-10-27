@@ -6,6 +6,7 @@ import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Drawer } from "vaul";
 
+import { AuthUser } from "@/types/auth/user";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   DropdownMenu,
@@ -17,8 +18,11 @@ import {
 import { UserAvatar } from "@/components/shared/user-avatar";
 
 export function UserAccountNav() {
-  const { data: session } = useSession();
-  const user = session?.user;
+  const { status, data: session } = useSession();
+  const user = session?.user as AuthUser;
+  console.log("session user account nav 1:", status);
+  console.log("session session account nav 2: ", session);
+  console.log("session status account nav 3: ", user);
 
   const [open, setOpen] = useState(false);
   const closeDrawer = () => {
@@ -27,19 +31,29 @@ export function UserAccountNav() {
 
   const { isMobile } = useMediaQuery();
 
-  if (!user)
+  // Show loading state while session is loading
+  if (status === "loading") {
     return (
       <div className="size-8 animate-pulse rounded-full border bg-muted" />
     );
+  }
 
+  // Show loading state if no user (but session is loaded)
+  if (!user) {
+    return (
+      <div className="size-8 animate-pulse rounded-full border bg-muted" />
+    );
+  }
   if (isMobile) {
     return (
       <Drawer.Root open={open} onClose={closeDrawer}>
-        <Drawer.Trigger onClick={() => setOpen(true)}>
-          <UserAvatar
-            user={{ name: user.name || null, image: user.image || null }}
-            className="size-9 border"
-          />
+        <Drawer.Trigger asChild>
+          <button onClick={() => setOpen(true)} className="rounded-full">
+            <UserAvatar
+              user={{ name: user.name || null, image: user.image || null }}
+              className="size-9 border"
+            />
+          </button>
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay
@@ -122,11 +136,13 @@ export function UserAccountNav() {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger>
-        <UserAvatar
-          user={{ name: user.name || null, image: user.image || null }}
-          className="size-8 border"
-        />
+      <DropdownMenuTrigger asChild>
+        <button className="rounded-full">
+          <UserAvatar
+            user={{ name: user.name || null, image: user.image || null }}
+            className="size-8 border"
+          />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <div className="flex items-center justify-start gap-2 p-2">

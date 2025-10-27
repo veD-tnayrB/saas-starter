@@ -19,9 +19,9 @@ export {
 
 // Resend client exports
 export {
-  ResendEmailClient,
   createResendClient,
   getDefaultResendConfig,
+  ResendEmailClient,
 } from "./resend";
 
 // OAuth client exports

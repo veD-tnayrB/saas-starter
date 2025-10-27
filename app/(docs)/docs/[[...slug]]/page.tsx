@@ -53,7 +53,6 @@ export async function generateStaticParams(): Promise<
 
 export default async function DocPage({ params }: DocPageProps) {
   const doc = await getDocFromParams(params);
-  console.log("params: ", params, doc);
 
   if (!doc) {
     notFound();
