@@ -20,9 +20,6 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 export function UserAccountNav() {
   const { status, data: session } = useSession();
   const user = session?.user as AuthUser;
-  console.log("session user account nav 1:", status);
-  console.log("session session account nav 2: ", session);
-  console.log("session status account nav 3: ", user);
 
   const [open, setOpen] = useState(false);
   const closeDrawer = () => {

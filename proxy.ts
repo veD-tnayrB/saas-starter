@@ -13,11 +13,10 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/settings") ||
     request.nextUrl.pathname.startsWith("/admin");
 
-  // Check if the route is an auth route
+  // Check if the route is an auth route (excluding API routes)
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/register") ||
-    request.nextUrl.pathname.startsWith("/api/auth");
+    request.nextUrl.pathname.startsWith("/register");
 
   // If it's a protected route and user is not authenticated, redirect to login
   if (isProtectedRoute && !session) {
@@ -59,10 +58,10 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - api/auth (NextAuth API routes)
      * - api/webhooks (webhook routes)
      * - public folder assets
-     * **NOTE: /api/auth IS NOT excluded here, but handled inside the function.**
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

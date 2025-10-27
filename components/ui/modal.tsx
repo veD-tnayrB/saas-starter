@@ -4,9 +4,21 @@ import { Dispatch, SetStateAction } from "react";
 // import { useRouter } from "next/router";
 import { Drawer } from "vaul";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
+const VisuallyHidden = ({
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span
+    className="clip-[rect(0,0,0,0)] absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0"
+    {...props}
+  >
+    {children}
+  </span>
+);
 
 interface ModalProps {
   children: React.ReactNode;
@@ -92,6 +104,9 @@ export function Modal({
           className,
         )}
       >
+        <VisuallyHidden>
+          <DialogTitle>Modal</DialogTitle>
+        </VisuallyHidden>
         {children}
       </DialogContent>
     </Dialog>

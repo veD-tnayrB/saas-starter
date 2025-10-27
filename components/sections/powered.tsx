@@ -4,7 +4,7 @@ import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 const logos = [
   {
-    title: "Next.js 14",
+    title: "Next.js 16",
     href: "https://nextjs.org/",
     icon: (
       <svg

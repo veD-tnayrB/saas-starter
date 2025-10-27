@@ -32,7 +32,7 @@ export default async function HeroLanding() {
           className="max-w-2xl text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8"
           style={{ animationDelay: "0.35s", animationFillMode: "forwards" }}
         >
-          Build your next project using Next.js 14, Prisma, Neon, Auth.js v5,
+          Build your next project using Next.js 16, Prisma, Neon, Auth.js v5,
           Resend, React Email, Shadcn/ui, Stripe.
         </p>
 
