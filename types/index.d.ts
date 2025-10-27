@@ -1,5 +1,4 @@
-import { User } from "@prisma/client";
-import type { Icon } from "lucide-react";
+import { User, UserRole } from "@prisma/client";
 
 import { Icons } from "@/components/shared/icons";
 

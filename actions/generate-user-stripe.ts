@@ -7,7 +7,6 @@ import {
   createCheckoutSession,
 } from "@/clients/stripe";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
-import { sessionManagementService } from "@/services/auth";
 
 import { absoluteUrl } from "@/lib/utils";
 
@@ -30,12 +29,6 @@ export async function generateUserStripe(
 
     if (!user || !user.email || !user.id) {
       throw new Error("Unauthorized");
-    }
-
-    // Use the new session management service to get current user
-    const currentUser = await sessionManagementService.getCurrentUser(user.id);
-    if (!currentUser) {
-      throw new Error("User not found");
     }
 
     const subscriptionPlan = await getUserSubscriptionPlan(user.id);
@@ -63,7 +56,10 @@ export async function generateUserStripe(
       redirectUrl = stripeSession.url as string;
     }
   } catch (error) {
-    throw new Error("Failed to generate user stripe session");
+    console.error("Error in generateUserStripe:", error);
+    throw new Error(
+      `Failed to generate user stripe session: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 
   // no revalidatePath because redirect

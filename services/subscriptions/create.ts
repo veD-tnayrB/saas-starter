@@ -14,10 +14,11 @@ import { findPlanByPriceId, validatePriceId } from "./helpers";
 export async function createSubscription(
   userId: string,
   priceId: string,
+  userEmail: string,
 ): Promise<SubscriptionServiceResponse<{ url: string }>> {
   try {
     // Validate inputs
-    if (!userId || !priceId) {
+    if (!userId || !priceId || !userEmail) {
       return {
         success: false,
         error: "Missing required parameters",
@@ -62,7 +63,7 @@ export async function createSubscription(
     // Create checkout session data
     const checkoutData: CheckoutSessionData = {
       priceId,
-      customerEmail: user.userId, // This should be the actual email, but we'll use userId for now
+      customerEmail: userEmail,
       successUrl: `${process.env.NEXTAUTH_URL}/pricing`,
       cancelUrl: `${process.env.NEXTAUTH_URL}/pricing`,
       metadata: {
