@@ -39,7 +39,7 @@ const nextAuthConfig = {
     },
   },
   ...authConfig,
-  // debug: process.env.NODE_ENV !== "production"
+  debug: process.env.NODE_ENV !== "production",
 };
 
 export const { handlers, auth } = NextAuth(nextAuthConfig);

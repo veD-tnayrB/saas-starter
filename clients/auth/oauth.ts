@@ -225,7 +225,8 @@ export class BaseOAuthClient implements OAuthClient {
    * Get redirect URI for provider
    */
   protected getRedirectUri(provider: string): string {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    console.log("base url: ", baseUrl);
     return `${baseUrl}/api/auth/callback/${provider}`;
   }
 

@@ -43,6 +43,7 @@ const sendVerificationRequest = async (params: {
 };
 
 export const authConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET,
   providers: [
     Google({
       clientId: env.GOOGLE_CLIENT_ID,

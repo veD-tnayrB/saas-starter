@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 export async function proxy(request: NextRequest) {
+  // Explicitly skip NextAuth routes - do not process them at all
+  // if (request.nextUrl.pathname.startsWith("/api/auth")) {
+  //   return NextResponse.next();
+  // }
+
   // Get the session using NextAuth
   const session = await auth();
 
@@ -53,15 +58,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - api/auth (NextAuth API routes)
-     * - api/webhooks (webhook routes)
-     * - public folder assets
-     */
     "/((?!_next/static|_next/image|favicon.ico|api/auth|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

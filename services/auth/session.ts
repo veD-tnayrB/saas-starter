@@ -300,7 +300,7 @@ export class SessionManagementService {
       return token;
     } catch (error) {
       console.error("Error in JWT callback:", error);
-      return null;
+      return token; // Return the existing token instead of null
     }
   }
 
