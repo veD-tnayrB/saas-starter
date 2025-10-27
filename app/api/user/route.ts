@@ -3,7 +3,7 @@ import { userAuthService } from "@/services/auth";
 
 export async function DELETE(req: Request, context: { params: Promise<{}> }) {
   const session = await auth();
-  
+
   if (!session) {
     return new Response("Not authenticated", { status: 401 });
   }

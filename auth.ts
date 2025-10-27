@@ -31,7 +31,10 @@ const nextAuthConfig = {
     },
 
     async jwt({ token, user, account, profile, trigger, isNewUser, session }) {
-      const result = await sessionManagementService.handleJWTCallback(token, user);
+      const result = await sessionManagementService.handleJWTCallback(
+        token,
+        user,
+      );
       return result || token;
     },
   },

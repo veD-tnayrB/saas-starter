@@ -163,7 +163,11 @@ export class JWTService {
   }> {
     try {
       // Check if token is expired
-      if (token.exp && typeof token.exp === 'number' && token.exp < Math.floor(Date.now() / 1000)) {
+      if (
+        token.exp &&
+        typeof token.exp === "number" &&
+        token.exp < Math.floor(Date.now() / 1000)
+      ) {
         return {
           isValid: false,
           error: "Token expired",
@@ -251,7 +255,10 @@ export class SessionManagementService {
           image: token.picture,
           role: token.role || "USER",
         },
-         expires: token.exp && typeof token.exp === 'number' ? new Date(token.exp * 1000) : session.expires,
+        expires:
+          token.exp && typeof token.exp === "number"
+            ? new Date(token.exp * 1000)
+            : session.expires,
       };
     } catch (error) {
       console.error("Error in session callback:", error);
