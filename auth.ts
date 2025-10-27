@@ -15,12 +15,9 @@ declare module "next-auth" {
   }
 }
 
-export const {
-  handlers: { GET, POST },
-  auth,
-} = NextAuth({
+const nextAuthConfig = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt" as const },
   pages: {
     signIn: "/login",
     // error: "/auth/error",
@@ -33,10 +30,14 @@ export const {
       );
     },
 
-    async jwt({ token, user }) {
-      return await sessionManagementService.handleJWTCallback(token, user);
+    async jwt({ token, user, account, profile, trigger, isNewUser, session }) {
+      const result = await sessionManagementService.handleJWTCallback(token, user);
+      return result || token;
     },
   },
   ...authConfig,
   // debug: process.env.NODE_ENV !== "production"
-});
+};
+
+export const { handlers, auth } = NextAuth(nextAuthConfig);
+export const { GET, POST } = handlers;

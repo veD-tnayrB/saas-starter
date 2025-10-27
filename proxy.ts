@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Get the session using NextAuth
   const session = await auth();
 

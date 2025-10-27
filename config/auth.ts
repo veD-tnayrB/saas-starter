@@ -13,7 +13,7 @@ const sendVerificationRequest = async (params: {
   identifier: string;
   url: string;
   expires: Date;
-  provider: { server?: string; from: string };
+  provider: { server?: string; from?: string };
   token: string;
   theme: { brandColor?: string; logo?: string };
   request: Request;
