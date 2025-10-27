@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
-
-import { prisma } from "@/lib/db";
+import { userAuthService } from "@/services/auth";
 
 export const DELETE = auth(async (req) => {
   if (!req.auth) {
@@ -13,11 +12,11 @@ export const DELETE = auth(async (req) => {
   }
 
   try {
-    await prisma.user.delete({
-      where: {
-        id: currentUser.id,
-      },
-    });
+    // Use the new service layer to delete user
+    if (!currentUser.id) {
+      return new Response("Invalid user ID", { status: 400 });
+    }
+    await userAuthService.deleteUser(currentUser.id);
   } catch (error) {
     return new Response("Internal server error", { status: 500 });
   }

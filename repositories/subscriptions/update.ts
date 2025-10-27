@@ -12,7 +12,7 @@ export async function updateUserSubscription(
   data: UpdateSubscriptionData,
 ): Promise<UserSubscriptionRecord> {
   try {
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (data.priceId) {
       updateData.stripePriceId = data.priceId;

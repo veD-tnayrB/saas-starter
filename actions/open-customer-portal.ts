@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { sessionManagementService } from "@/services/auth";
 
 import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
@@ -23,6 +24,12 @@ export async function openCustomerPortal(
 
     if (!session?.user || !session?.user.email) {
       throw new Error("Unauthorized");
+    }
+
+    // Use the new session management service to validate user
+    const currentUser = await sessionManagementService.getCurrentUser(session.user.id);
+    if (!currentUser) {
+      throw new Error("User not found");
     }
 
     if (userStripeId) {

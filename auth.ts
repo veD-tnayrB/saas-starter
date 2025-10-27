@@ -1,10 +1,10 @@
-import authConfig from "@/auth.config";
+import { sessionManagementService } from "@/services/auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
 
+import authConfig from "@/config/auth";
 import { prisma } from "@/lib/db";
-import { getUserById } from "@/lib/user";
 
 // More info: https://authjs.dev/getting-started/typescript#module-augmentation
 declare module "next-auth" {
@@ -27,39 +27,14 @@ export const {
   },
   callbacks: {
     async session({ token, session }) {
-      if (session.user) {
-        if (token.sub) {
-          session.user.id = token.sub;
-        }
-
-        if (token.email) {
-          session.user.email = token.email;
-        }
-
-        if (token.role) {
-          session.user.role = token.role;
-        }
-
-        session.user.name = token.name;
-        session.user.image = token.picture;
-      }
-
-      return session;
+      return await sessionManagementService.handleSessionCallback(
+        token,
+        session,
+      );
     },
 
-    async jwt({ token }) {
-      if (!token.sub) return token;
-
-      const dbUser = await getUserById(token.sub);
-
-      if (!dbUser) return token;
-
-      token.name = dbUser.name;
-      token.email = dbUser.email;
-      token.picture = dbUser.image;
-      token.role = dbUser.role;
-
-      return token;
+    async jwt({ token, user }) {
+      return await sessionManagementService.handleJWTCallback(token, user);
     },
   },
   ...authConfig,

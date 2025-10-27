@@ -1,9 +1,9 @@
 "use server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import { userNameSchema } from "@/lib/validations/user";
 import { revalidatePath } from "next/cache";
+import { userAuthService } from "@/services/auth";
 
 export type FormData = {
   name: string;
@@ -19,15 +19,8 @@ export async function updateUserName(userId: string, data: FormData) {
 
     const { name } = userNameSchema.parse(data);
 
-    // Update the user name.
-    await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        name: name,
-      },
-    })
+    // Update the user name using the new service layer
+    await userAuthService.updateUserProfile(userId, { name });
 
     revalidatePath('/dashboard/settings');
     return { status: "success" };

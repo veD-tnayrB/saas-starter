@@ -38,7 +38,7 @@ export interface BillingPortalData {
 // Webhook types
 export interface WebhookEventData {
   type: string;
-  data: any;
+  data: Record<string, unknown>;
   processed: boolean;
 }
 
@@ -62,7 +62,7 @@ export interface SubscriptionServiceResponse<T = any> {
 export interface SubscriptionError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 // Plan types (extending existing types)
