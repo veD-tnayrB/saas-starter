@@ -1,0 +1,3 @@
+import NextAuth from "@/auth";
+
+export const proxy = NextAuth;

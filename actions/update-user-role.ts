@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import NextAuth from "@/auth";
+import { userAuthService } from "@/services/auth";
 import { UserRole } from "@prisma/client";
+import { getServerSession } from "next-auth";
 
 import { userRoleSchema } from "@/lib/validations/user";
-import { userAuthService } from "@/services/auth";
 
 export type FormData = {
   role: UserRole;
@@ -13,7 +14,7 @@ export type FormData = {
 
 export async function updateUserRole(userId: string, data: FormData) {
   try {
-    const session = await auth();
+    const session = await getServerSession(NextAuth);
 
     if (!session?.user || session?.user.id !== userId) {
       throw new Error("Unauthorized");

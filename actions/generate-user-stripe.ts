@@ -1,12 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import NextAuth from "@/auth";
 import {
   createBillingPortalSession,
   createCheckoutSession,
 } from "@/clients/stripe";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
+import { getServerSession } from "next-auth";
 
 import { absoluteUrl } from "@/lib/utils";
 
@@ -24,7 +25,7 @@ export async function generateUserStripe(
   let redirectUrl: string = "";
 
   try {
-    const session = await auth();
+    const session = await getServerSession(NextAuth);
     const user = session?.user;
 
     if (!user || !user.email || !user.id) {

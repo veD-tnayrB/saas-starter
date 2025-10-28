@@ -1,14 +1,17 @@
-import "@/styles/globals.css";
-
 import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
-import { auth } from "@/auth";
-import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "next-themes";
+import NextAuth from "@/auth";
+import { getServerSession } from "next-auth";
 
 import { cn, constructMetadata } from "@/lib/utils";
+
+import "@/styles/globals.css";
+
+import { ThemeProvider } from "next-themes";
+
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@/components/analytics";
 import ModalProvider from "@/components/modals/providers";
+import Providers from "@/components/providers";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 
 interface RootLayoutProps {
@@ -18,7 +21,7 @@ interface RootLayoutProps {
 export const metadata = constructMetadata();
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  const session = await auth();
+  const session = await getServerSession(NextAuth);
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -31,11 +34,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           fontGeist.variable,
         )}
       >
-        <SessionProvider
-          session={session}
-          refetchInterval={0}
-          refetchOnWindowFocus={false}
-        >
+        <Providers session={session}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -47,7 +46,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <Toaster richColors closeButton />
             <TailwindIndicator />
           </ThemeProvider>
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

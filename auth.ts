@@ -1,12 +1,12 @@
 import { sessionManagementService } from "@/services/auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
 
 import authConfig from "@/config/auth";
 import { prisma } from "@/lib/db";
 
-// More info: https://authjs.dev/getting-started/typescript#module-augmentation
+// More info: https://next-auth.js.org/getting-started/typescript#module-augmentation
 declare module "next-auth" {
   interface Session {
     user: {
@@ -20,7 +20,6 @@ const nextAuthConfig = {
   session: { strategy: "jwt" as const },
   pages: {
     signIn: "/login",
-    // error: "/auth/error",
   },
   callbacks: {
     async session({ token, session }) {
@@ -42,5 +41,7 @@ const nextAuthConfig = {
   debug: process.env.NODE_ENV !== "production",
 };
 
-export const { handlers, auth } = NextAuth(nextAuthConfig);
-export const { GET, POST } = handlers;
+const handler = NextAuth(nextAuthConfig);
+
+export { handler as GET, handler as POST };
+export default nextAuthConfig;

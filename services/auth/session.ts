@@ -271,32 +271,21 @@ export class SessionManagementService {
    */
   async handleJWTCallback(token: JWT, user?: User): Promise<JWT | null> {
     try {
-      // If user is provided (during sign in), create new token
+      // If user is provided (during sign in), update token with user info
       if (user) {
-        // Convert NextAuth User to AuthUser format
-        const authUser: AuthUser = {
-          id: user.id || "",
-          name: user.name || null,
-          email: user.email || null,
-          emailVerified: (user as any).emailVerified
-            ? new Date((user as any).emailVerified)
-            : null,
-          image: user.image || null,
+        return {
+          ...token,
+          sub: user.id,
+          name: user.name,
+          email: user.email,
+          picture: user.image,
           role:
             (user as { role?: import("@prisma/client").UserRole }).role ||
             "USER",
-          createdAt: new Date(),
-          updatedAt: new Date(),
         };
-        return this.jwtService.createJWTToken(authUser);
       }
 
-      // If token exists, return it as-is to avoid database calls in Edge Runtime
-      // The session callback will handle user validation when needed
-      if (token.sub) {
-        return token;
-      }
-
+      // If token exists, return it as-is
       return token;
     } catch (error) {
       console.error("Error in JWT callback:", error);
