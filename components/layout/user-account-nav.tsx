@@ -6,7 +6,7 @@ import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Drawer } from "vaul";
 
-import { AuthUser } from "@/types/auth/user";
+import { IAuthUser } from "@/types/auth/user";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 
 export function UserAccountNav() {
   const { status, data: session } = useSession();
-  const user = session?.user as AuthUser;
+  const user = session?.user as IAuthUser;
 
   const [open, setOpen] = useState(false);
   const closeDrawer = () => {

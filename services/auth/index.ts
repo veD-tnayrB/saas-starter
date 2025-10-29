@@ -8,17 +8,23 @@
  */
 
 import type {
-  AuthUser,
-  UserRegistrationData,
-  UserUpdateData,
+  IAuthUser,
+  IUserRegistrationData,
+  IUserUpdateData,
 } from "@/types/auth";
 
+// Import service classes for direct instantiation
+import { ProviderManagementService } from "./providers";
 // Import service classes for type annotations
-import type { ProviderManagementService } from "./providers";
-import type { RegistrationService } from "./registration";
-import type { SessionManagementService } from "./session";
-import type { UserAuthService } from "./user";
-import type { VerificationService } from "./verification";
+import type { ProviderManagementService as ProviderManagementServiceType } from "./providers";
+import type { RegistrationService as RegistrationServiceType } from "./registration";
+import { RegistrationService } from "./registration";
+import type { SessionManagementService as SessionManagementServiceType } from "./session";
+import { SessionManagementService } from "./session";
+import type { UserAuthService as UserAuthServiceType } from "./user";
+import { UserAuthService } from "./user";
+import type { VerificationService as VerificationServiceType } from "./verification";
+import { VerificationService } from "./verification";
 
 // Session service exports
 export {
@@ -61,36 +67,37 @@ export {
 
 // Re-export types for convenience
 export type {
-  AuthSession,
-  AuthUser,
-  ProviderAccount,
-  ProviderAuthResult,
-  ProviderLinkData,
-  ProviderUnlinkData,
-  SessionValidationResult,
-  UserAuthResult,
-  UserCreateData,
-  UserDeletionResult,
-  UserRegistrationData,
-  UserUpdateData,
+  IAuthSession,
+  IAuthUser,
+  IProviderAccount,
+  IProviderAuthResult,
+  IProviderLinkData,
+  IProviderUnlinkData,
+  ISessionValidationResult,
+  IUserAuthResult,
+  IUserCreateData,
+  IUserDeletionResult,
+  IUserRegistrationData,
+  IUserUpdateData,
 } from "@/types/auth";
 
 /**
  * Main authentication service that orchestrates all auth operations
  */
 export class AuthService {
-  private sessionManagement: SessionManagementService;
-  private userAuth: UserAuthService;
-  private registration: RegistrationService;
-  private verification: VerificationService;
-  private providers: ProviderManagementService;
+  private sessionManagement: SessionManagementServiceType;
+  private userAuth: UserAuthServiceType;
+  private registration: RegistrationServiceType;
+  private verification: VerificationServiceType;
+  private providers: ProviderManagementServiceType;
 
   constructor() {
-    this.sessionManagement = require("./session").sessionManagementService;
-    this.userAuth = require("./user").userAuthService;
-    this.registration = require("./registration").registrationService;
-    this.verification = require("./verification").verificationService;
-    this.providers = require("./providers").providerService;
+    // Direct instantiation using ES6 imports for SaaS starter kit simplicity
+    this.sessionManagement = new SessionManagementService();
+    this.userAuth = new UserAuthService();
+    this.registration = new RegistrationService();
+    this.verification = new VerificationService();
+    this.providers = new ProviderManagementService();
   }
 
   /**
@@ -98,7 +105,7 @@ export class AuthService {
    */
   async signInWithEmail(email: string): Promise<{
     success: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     requiresVerification?: boolean;
     error?: string;
   }> {
@@ -129,9 +136,9 @@ export class AuthService {
   /**
    * Sign up user with email
    */
-  async signUpWithEmail(data: UserRegistrationData): Promise<{
+  async signUpWithEmail(data: IUserRegistrationData): Promise<{
     success: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     requiresVerification?: boolean;
     error?: string;
   }> {
@@ -161,7 +168,7 @@ export class AuthService {
     state?: string,
   ): Promise<{
     success: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     isNewUser?: boolean;
     error?: string;
   }> {
@@ -175,7 +182,7 @@ export class AuthService {
             state?: string,
           ) => Promise<{
             success: boolean;
-            user?: AuthUser;
+            user?: IAuthUser;
             isNewUser?: boolean;
             error?: string;
           }>;
@@ -280,7 +287,7 @@ export class AuthService {
   /**
    * Send verification email
    */
-  async sendVerificationEmail(user: AuthUser): Promise<{
+  async sendVerificationEmail(user: IAuthUser): Promise<{
     success: boolean;
     error?: string;
   }> {
@@ -301,7 +308,7 @@ export class AuthService {
    */
   async verifyEmailToken(token: string): Promise<{
     success: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     error?: string;
   }> {
     try {
@@ -373,10 +380,10 @@ export class AuthService {
    */
   async updateUserProfile(
     userId: string,
-    data: UserUpdateData,
+    data: IUserUpdateData,
   ): Promise<{
     success: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     error?: string;
   }> {
     try {

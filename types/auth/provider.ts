@@ -1,10 +1,10 @@
 // Import types to avoid duplications
-import type { AuthUser } from "./user";
+import type { IAuthUser } from "./user";
 
 /**
  * OAuth provider configuration
  */
-export interface OAuthProviderConfig {
+export interface IOAuthProviderConfig {
   id: string;
   name: string;
   type: "oauth";
@@ -33,7 +33,7 @@ export interface OAuthProviderConfig {
 /**
  * Email provider configuration
  */
-export interface EmailProviderConfig {
+export interface IEmailProviderConfig {
   id: string;
   name: string;
   type: "email";
@@ -46,16 +46,16 @@ export interface EmailProviderConfig {
     };
   };
   from: string;
-  sendVerificationRequest: (params: EmailVerificationParams) => Promise<void>;
+  sendVerificationRequest: (params: IEmailVerificationParams) => Promise<void>;
 }
 
 /**
  * Email verification request parameters
  */
-export interface EmailVerificationParams {
+export interface IEmailVerificationParams {
   identifier: string;
   url: string;
-  provider: EmailProviderConfig;
+  provider: IEmailProviderConfig;
   theme?: {
     colorScheme?: "auto" | "dark" | "light";
     logo?: string;
@@ -67,7 +67,7 @@ export interface EmailVerificationParams {
 /**
  * Provider account data
  */
-export interface ProviderAccount {
+export interface IProviderAccount {
   id: string;
   userId: string;
   type: string;
@@ -87,7 +87,7 @@ export interface ProviderAccount {
 /**
  * Provider linking data
  */
-export interface ProviderLinkData {
+export interface IProviderLinkData {
   userId: string;
   provider: string;
   providerAccountId: string;
@@ -99,7 +99,7 @@ export interface ProviderLinkData {
 /**
  * Provider unlinking data
  */
-export interface ProviderUnlinkData {
+export interface IProviderUnlinkData {
   userId: string;
   provider: string;
 }
@@ -107,10 +107,10 @@ export interface ProviderUnlinkData {
 /**
  * Provider authentication result
  */
-export interface ProviderAuthResult {
+export interface IProviderAuthResult {
   success: boolean;
-  user?: AuthUser;
-  account?: ProviderAccount;
+  user?: IAuthUser;
+  account?: IProviderAccount;
   error?: string;
   isNewUser?: boolean;
 }
@@ -118,7 +118,7 @@ export interface ProviderAuthResult {
 /**
  * Google OAuth provider specific configuration
  */
-export interface GoogleProviderConfig extends OAuthProviderConfig {
+export interface IGoogleProviderConfig extends IOAuthProviderConfig {
   id: "google";
   name: "Google";
   clientId: string;
@@ -128,7 +128,7 @@ export interface GoogleProviderConfig extends OAuthProviderConfig {
 /**
  * Resend email provider specific configuration
  */
-export interface ResendProviderConfig extends EmailProviderConfig {
+export interface IResendProviderConfig extends IEmailProviderConfig {
   id: "resend";
   name: "Resend";
   apiKey: string;
@@ -138,15 +138,15 @@ export interface ResendProviderConfig extends EmailProviderConfig {
 /**
  * Provider configuration map
  */
-export interface ProviderConfigMap {
-  google: GoogleProviderConfig;
-  resend: ResendProviderConfig;
+export interface IProviderConfigMap {
+  google: IGoogleProviderConfig;
+  resend: IResendProviderConfig;
 }
 
 /**
  * Provider selection criteria
  */
-export interface ProviderSelectionCriteria {
+export interface IProviderSelectionCriteria {
   type?: "oauth" | "email";
   supportedFeatures?: string[];
   userPreference?: string;
@@ -155,7 +155,7 @@ export interface ProviderSelectionCriteria {
 /**
  * Provider capabilities
  */
-export interface ProviderCapabilities {
+export interface IProviderCapabilities {
   supportsOAuth: boolean;
   supportsEmail: boolean;
   supportsPasswordReset: boolean;

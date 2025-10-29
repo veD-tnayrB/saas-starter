@@ -1,7 +1,7 @@
 /**
  * Base authentication error interface
  */
-export interface AuthError {
+export interface IAuthError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
@@ -13,7 +13,7 @@ export interface AuthError {
 /**
  * Validation error for input validation failures
  */
-export interface ValidationError extends AuthError {
+export interface IValidationError extends IAuthError {
   code: "VALIDATION_ERROR";
   field?: string;
   value?: unknown;
@@ -23,7 +23,7 @@ export interface ValidationError extends AuthError {
 /**
  * Authentication error for login/credential failures
  */
-export interface AuthenticationError extends AuthError {
+export interface IAuthenticationError extends IAuthError {
   code: "AUTHENTICATION_ERROR";
   reason:
     | "INVALID_CREDENTIALS"
@@ -37,7 +37,7 @@ export interface AuthenticationError extends AuthError {
 /**
  * Authorization error for permission failures
  */
-export interface AuthorizationError extends AuthError {
+export interface IAuthorizationError extends IAuthError {
   code: "AUTHORIZATION_ERROR";
   requiredRole?: string;
   requiredPermission?: string;
@@ -48,7 +48,7 @@ export interface AuthorizationError extends AuthError {
 /**
  * Provider error for external service failures
  */
-export interface ProviderError extends AuthError {
+export interface IProviderError extends IAuthError {
   code: "PROVIDER_ERROR";
   provider: string;
   providerError?: Record<string, unknown>;
@@ -59,7 +59,7 @@ export interface ProviderError extends AuthError {
 /**
  * Database error for data access failures
  */
-export interface DatabaseError extends AuthError {
+export interface IDatabaseError extends IAuthError {
   code: "DATABASE_ERROR";
   operation: "CREATE" | "READ" | "UPDATE" | "DELETE";
   table?: string;
@@ -70,7 +70,7 @@ export interface DatabaseError extends AuthError {
 /**
  * Session error for session management failures
  */
-export interface SessionError extends AuthError {
+export interface ISessionError extends IAuthError {
   code: "SESSION_ERROR";
   reason:
     | "INVALID_SESSION"
@@ -84,7 +84,7 @@ export interface SessionError extends AuthError {
 /**
  * Email error for email service failures
  */
-export interface EmailError extends AuthError {
+export interface IEmailError extends IAuthError {
   code: "EMAIL_ERROR";
   emailAddress?: string;
   template?: string;
@@ -95,7 +95,7 @@ export interface EmailError extends AuthError {
 /**
  * Rate limiting error for too many requests
  */
-export interface RateLimitError extends AuthError {
+export interface IRateLimitError extends IAuthError {
   code: "RATE_LIMIT_ERROR";
   limit: number;
   remaining: number;
@@ -106,7 +106,7 @@ export interface RateLimitError extends AuthError {
 /**
  * Configuration error for setup/configuration issues
  */
-export interface ConfigurationError extends AuthError {
+export interface IConfigurationError extends IAuthError {
   code: "CONFIGURATION_ERROR";
   setting?: string;
   expectedType?: string;
@@ -116,7 +116,7 @@ export interface ConfigurationError extends AuthError {
 /**
  * Network error for connectivity issues
  */
-export interface NetworkError extends AuthError {
+export interface INetworkError extends IAuthError {
   code: "NETWORK_ERROR";
   url?: string;
   method?: string;
@@ -148,8 +148,8 @@ export type ErrorCategory =
 /**
  * Error response structure
  */
-export interface ErrorResponse {
-  error: AuthError;
+export interface IErrorResponse {
+  error: IAuthError;
   severity: ErrorSeverity;
   category: ErrorCategory;
   retryable: boolean;
@@ -160,7 +160,7 @@ export interface ErrorResponse {
 /**
  * Error logging context
  */
-export interface ErrorLogContext {
+export interface IErrorLogContext {
   userId?: string;
   sessionId?: string;
   requestId?: string;
@@ -174,9 +174,9 @@ export interface ErrorLogContext {
 /**
  * Error handling result
  */
-export interface ErrorHandlingResult {
+export interface IErrorHandlingResult {
   handled: boolean;
-  error?: AuthError;
+  error?: IAuthError;
   fallback?: Record<string, unknown>;
   shouldRetry: boolean;
   retryAfter?: Date;
@@ -185,7 +185,7 @@ export interface ErrorHandlingResult {
 /**
  * Error recovery action
  */
-export interface ErrorRecoveryAction {
+export interface IErrorRecoveryAction {
   action: "RETRY" | "FALLBACK" | "ABORT" | "ESCALATE";
   delay?: number;
   maxRetries?: number;
@@ -196,7 +196,7 @@ export interface ErrorRecoveryAction {
 /**
  * Error metrics
  */
-export interface ErrorMetrics {
+export interface IErrorMetrics {
   totalErrors: number;
   errorsByCategory: Record<ErrorCategory, number>;
   errorsBySeverity: Record<ErrorSeverity, number>;
@@ -212,7 +212,7 @@ export interface ErrorMetrics {
 /**
  * Session-specific error
  */
-export interface SessionError extends AuthError {
+export interface ISessionError extends IAuthError {
   code: "SESSION_ERROR";
   sessionId?: string;
   token?: string;
@@ -222,7 +222,7 @@ export interface SessionError extends AuthError {
 /**
  * User-specific error
  */
-export interface UserError extends AuthError {
+export interface IUserError extends IAuthError {
   code: "USER_ERROR";
   userId?: string;
   email?: string;
@@ -232,17 +232,17 @@ export interface UserError extends AuthError {
 /**
  * Standardized service response type
  */
-export interface AuthServiceResponse<T = unknown> {
+export interface IAuthServiceResponse<T = unknown> {
   success: boolean;
   data?: T;
-  error?: AuthError;
+  error?: IAuthError;
   timestamp: Date;
 }
 
 /**
  * Operation result type
  */
-export interface AuthOperationResult<T = unknown> {
+export interface IAuthOperationResult<T = unknown> {
   success: boolean;
   result?: T;
   error?: {

@@ -8,10 +8,10 @@ import {
 } from "@/repositories/auth";
 
 import type {
-  ProviderAccount,
-  ProviderAuthResult,
-  ProviderLinkData,
-  ProviderUnlinkData,
+  IProviderAccount,
+  IProviderAuthResult,
+  IProviderLinkData,
+  IProviderUnlinkData,
 } from "@/types/auth";
 
 import { registrationService } from "./registration";
@@ -29,7 +29,7 @@ export class ProviderService {
     provider: string,
     code: string,
     state?: string,
-  ): Promise<ProviderAuthResult> {
+  ): Promise<IProviderAuthResult> {
     try {
       // Exchange code for tokens
       const tokens = await this.oauthClient.exchangeCodeForTokens(
@@ -119,7 +119,7 @@ export class ProviderService {
   /**
    * Link provider account to user
    */
-  async linkProvider(data: ProviderLinkData): Promise<ProviderAuthResult> {
+  async linkProvider(data: IProviderLinkData): Promise<IProviderAuthResult> {
     try {
       // Check if account already exists
       const existingAccount = await findAccountByProvider(
@@ -152,7 +152,7 @@ export class ProviderService {
   /**
    * Unlink provider account from user
    */
-  async unlinkProvider(data: ProviderUnlinkData): Promise<{
+  async unlinkProvider(data: IProviderUnlinkData): Promise<{
     success: boolean;
     error?: string;
   }> {
@@ -171,7 +171,7 @@ export class ProviderService {
   /**
    * Get user's linked providers
    */
-  async getUserProviders(userId: string): Promise<ProviderAccount[]> {
+  async getUserProviders(userId: string): Promise<IProviderAccount[]> {
     try {
       return await findAccountsByUserId(userId);
     } catch (error) {
@@ -361,7 +361,7 @@ export class ProviderManagementService {
    * Get user's authentication methods
    */
   async getUserAuthMethods(userId: string): Promise<{
-    providers: ProviderAccount[];
+    providers: IProviderAccount[];
     hasPassword: boolean;
     hasEmail: boolean;
   }> {

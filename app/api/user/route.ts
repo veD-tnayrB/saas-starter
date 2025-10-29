@@ -1,9 +1,10 @@
 import NextAuth from "@/auth";
 import { userAuthService } from "@/services/auth";
+import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
 
 export async function DELETE(req: Request, context: { params: Promise<{}> }) {
-  const session = await getServerSession(NextAuth);
+  const session: Session | null = await getServerSession(NextAuth);
 
   if (!session) {
     return new Response("Not authenticated", { status: 401 });

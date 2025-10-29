@@ -11,15 +11,15 @@ import {
 } from "@/repositories/auth";
 
 import type {
-  AuthUser,
-  UserActivity,
-  UserAuthResult,
-  UserCreateData,
-  UserDeletionResult,
-  UserProfile,
-  UserSearchCriteria,
-  UserStats,
-  UserUpdateData,
+  IAuthUser,
+  IUserActivity,
+  IUserAuthResult,
+  IUserCreateData,
+  IUserDeletionResult,
+  IUserProfile,
+  IUserSearchCriteria,
+  IUserStats,
+  IUserUpdateData,
 } from "@/types/auth";
 
 /**
@@ -29,7 +29,7 @@ export class UserService {
   /**
    * Get user by ID
    */
-  async getUserById(id: string): Promise<AuthUser | null> {
+  async getUserById(id: string): Promise<IAuthUser | null> {
     try {
       return await findUserById(id);
     } catch (error) {
@@ -41,7 +41,7 @@ export class UserService {
   /**
    * Get user by email
    */
-  async getUserByEmail(email: string): Promise<AuthUser | null> {
+  async getUserByEmail(email: string): Promise<IAuthUser | null> {
     try {
       return await findUserByEmail(email);
     } catch (error) {
@@ -53,7 +53,7 @@ export class UserService {
   /**
    * Create a new user
    */
-  async createUser(data: UserCreateData): Promise<AuthUser> {
+  async createUser(data: IUserCreateData): Promise<IAuthUser> {
     try {
       // Validate email is unique
       const existingUser = await findUserByEmail(data.email);
@@ -71,7 +71,7 @@ export class UserService {
   /**
    * Update user data
    */
-  async updateUser(id: string, data: UserUpdateData): Promise<AuthUser> {
+  async updateUser(id: string, data: IUserUpdateData): Promise<IAuthUser> {
     try {
       // Verify user exists
       const existingUser = await findUserById(id);
@@ -97,7 +97,7 @@ export class UserService {
   /**
    * Delete user
    */
-  async deleteUser(id: string): Promise<UserDeletionResult> {
+  async deleteUser(id: string): Promise<IUserDeletionResult> {
     try {
       // Verify user exists
       const existingUser = await findUserById(id);
@@ -127,7 +127,7 @@ export class UserService {
   /**
    * Get user profile
    */
-  async getUserProfile(id: string): Promise<UserProfile | null> {
+  async getUserProfile(id: string): Promise<IUserProfile | null> {
     try {
       return await getUserProfile(id);
     } catch (error) {
@@ -139,7 +139,7 @@ export class UserService {
   /**
    * Search users
    */
-  async searchUsers(criteria: UserSearchCriteria): Promise<AuthUser[]> {
+  async searchUsers(criteria: IUserSearchCriteria): Promise<IAuthUser[]> {
     try {
       return await searchUsers(criteria);
     } catch (error) {
@@ -151,7 +151,7 @@ export class UserService {
   /**
    * Get user statistics
    */
-  async getUserStats(): Promise<UserStats> {
+  async getUserStats(): Promise<IUserStats> {
     try {
       return await getUserStats();
     } catch (error) {
@@ -163,7 +163,7 @@ export class UserService {
   /**
    * Get user activity
    */
-  async getUserActivity(id: string): Promise<UserActivity | null> {
+  async getUserActivity(id: string): Promise<IUserActivity | null> {
     try {
       return await getUserActivity(id);
     } catch (error) {
@@ -175,7 +175,7 @@ export class UserService {
   /**
    * Validate user data
    */
-  validateUserData(data: UserCreateData | UserUpdateData): {
+  validateUserData(data: IUserCreateData | IUserUpdateData): {
     isValid: boolean;
     errors: string[];
   } {
@@ -245,7 +245,7 @@ export class UserAuthService {
   /**
    * Authenticate user by email
    */
-  async authenticateUser(email: string): Promise<UserAuthResult | null> {
+  async authenticateUser(email: string): Promise<IUserAuthResult | null> {
     try {
       const user = await this.userService.getUserByEmail(email);
 
@@ -267,7 +267,7 @@ export class UserAuthService {
   /**
    * Register new user
    */
-  async registerUser(data: UserCreateData): Promise<UserAuthResult> {
+  async registerUser(data: IUserCreateData): Promise<IUserAuthResult> {
     try {
       // Validate user data
       const validation = this.userService.validateUserData(data);
@@ -302,8 +302,8 @@ export class UserAuthService {
    */
   async updateUserProfile(
     userId: string,
-    data: UserUpdateData,
-  ): Promise<AuthUser> {
+    data: IUserUpdateData,
+  ): Promise<IAuthUser> {
     try {
       return await this.userService.updateUser(userId, data);
     } catch (error) {
@@ -315,7 +315,7 @@ export class UserAuthService {
   /**
    * Delete user account
    */
-  async deleteUserAccount(userId: string): Promise<UserDeletionResult> {
+  async deleteUserAccount(userId: string): Promise<IUserDeletionResult> {
     try {
       return await this.userService.deleteUser(userId);
     } catch (error) {
@@ -327,21 +327,21 @@ export class UserAuthService {
   /**
    * Get user by ID
    */
-  async getUserById(id: string): Promise<AuthUser | null> {
+  async getUserById(id: string): Promise<IAuthUser | null> {
     return this.userService.getUserById(id);
   }
 
   /**
    * Get user by email
    */
-  async getUserByEmail(email: string): Promise<AuthUser | null> {
+  async getUserByEmail(email: string): Promise<IAuthUser | null> {
     return this.userService.getUserByEmail(email);
   }
 
   /**
    * Delete user (public method for other services)
    */
-  async deleteUser(id: string): Promise<UserDeletionResult> {
+  async deleteUser(id: string): Promise<IUserDeletionResult> {
     return this.userService.deleteUser(id);
   }
 }

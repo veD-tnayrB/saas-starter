@@ -19,9 +19,9 @@ export {
 
 // Resend client exports
 export {
+  ResendEmailClient,
   createResendClient,
   getDefaultResendConfig,
-  ResendEmailClient,
 } from "./resend";
 
 // OAuth client exports
@@ -38,10 +38,10 @@ export {
 
 // Re-export types for convenience
 export type {
-  AuthUser,
-  EmailVerificationParams,
-  ProviderAccount,
-  ProviderAuthResult,
+  IAuthUser,
+  IEmailVerificationParams,
+  IProviderAccount,
+  IProviderAuthResult,
 } from "@/types/auth";
 
 /**

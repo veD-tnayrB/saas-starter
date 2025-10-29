@@ -1,8 +1,14 @@
+import "server-only";
+
+import { cache } from "react";
+import NextAuth from "@/auth";
+import { getServerSession } from "next-auth";
+
 import type {
-  SessionCreateData,
-  SessionUpdateData,
-  SessionValidationResult,
-  SessionWithUserData,
+  ISessionCreateData,
+  ISessionUpdateData,
+  ISessionValidationResult,
+  ISessionWithUserData,
 } from "@/types/auth";
 import { prisma } from "@/lib/db";
 
@@ -13,7 +19,7 @@ import { prisma } from "@/lib/db";
  */
 export async function findSessionById(
   id: string,
-): Promise<SessionWithUserData | null> {
+): Promise<ISessionWithUserData | null> {
   try {
     const session = await prisma.session.findUnique({
       where: { id },
@@ -47,7 +53,7 @@ export async function findSessionById(
  */
 export async function findSessionByToken(
   sessionToken: string,
-): Promise<SessionWithUserData | null> {
+): Promise<ISessionWithUserData | null> {
   try {
     const session = await prisma.session.findUnique({
       where: { sessionToken },
@@ -81,7 +87,7 @@ export async function findSessionByToken(
  */
 export async function findSessionsByUserId(
   userId: string,
-): Promise<SessionWithUserData[]> {
+): Promise<ISessionWithUserData[]> {
   try {
     const sessions = await prisma.session.findMany({
       where: { userId },
@@ -115,8 +121,8 @@ export async function findSessionsByUserId(
  * @returns Created session data
  */
 export async function createSession(
-  data: SessionCreateData,
-): Promise<SessionWithUserData> {
+  data: ISessionCreateData,
+): Promise<ISessionWithUserData> {
   try {
     const session = await prisma.session.create({
       data: {
@@ -155,8 +161,8 @@ export async function createSession(
  */
 export async function updateSession(
   id: string,
-  data: SessionUpdateData,
-): Promise<SessionWithUserData> {
+  data: ISessionUpdateData,
+): Promise<ISessionWithUserData> {
   try {
     const session = await prisma.session.update({
       where: { id },
@@ -250,7 +256,7 @@ export async function deleteUserSessions(userId: string): Promise<number> {
  */
 export async function validateSession(
   sessionToken: string,
-): Promise<SessionValidationResult> {
+): Promise<ISessionValidationResult> {
   try {
     const session = await findSessionByToken(sessionToken);
 
@@ -366,3 +372,18 @@ function generateSessionToken(): string {
     "",
   );
 }
+
+/**
+ * Get current user from session (legacy function for compatibility)
+ * @returns Current user data or undefined if not authenticated
+ */
+export const getCurrentUser = cache(async () => {
+  const session = await getServerSession(NextAuth);
+  if (!session?.user) {
+    return undefined;
+  }
+
+  // Return session user directly to avoid database calls in Edge Runtime
+  // The session already contains the necessary user information
+  return session.user;
+});

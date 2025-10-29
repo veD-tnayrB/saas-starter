@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 declare module "next-auth" {
   interface Session {
     user: {
+      id: string;
       role: UserRole;
     } & DefaultSession["user"];
   }

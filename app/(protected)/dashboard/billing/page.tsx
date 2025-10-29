@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/repositories/auth/session";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
 
-import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DashboardHeader } from "@/components/dashboard/header";

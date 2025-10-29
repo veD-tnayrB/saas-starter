@@ -1,9 +1,9 @@
 import { createDefaultEmailClient } from "@/clients/auth";
 
 import type {
-  AuthUser,
-  UserAuthResult,
-  UserRegistrationData,
+  IAuthUser,
+  IUserAuthResult,
+  IUserRegistrationData,
 } from "@/types/auth";
 
 import { userAuthService } from "./user";
@@ -18,8 +18,8 @@ export class RegistrationService {
    * Initiate user registration
    */
   async initiateRegistration(
-    data: UserRegistrationData,
-  ): Promise<UserAuthResult> {
+    data: IUserRegistrationData,
+  ): Promise<IUserAuthResult> {
     try {
       // Validate registration data
       const validation = this.validateRegistrationData(data);
@@ -54,7 +54,7 @@ export class RegistrationService {
   async completeRegistration(
     userId: string,
     verificationToken?: string,
-  ): Promise<AuthUser> {
+  ): Promise<IAuthUser> {
     try {
       // Get user
       const user = await userAuthService.userService.getUserById(userId);
@@ -85,7 +85,7 @@ export class RegistrationService {
   /**
    * Validate registration data
    */
-  validateRegistrationData(data: UserRegistrationData): {
+  validateRegistrationData(data: IUserRegistrationData): {
     isValid: boolean;
     errors: string[];
   } {
@@ -134,7 +134,7 @@ export class RegistrationService {
   /**
    * Send welcome email
    */
-  async sendWelcomeEmail(user: AuthUser): Promise<void> {
+  async sendWelcomeEmail(user: IAuthUser): Promise<void> {
     try {
       await this.emailClient.sendWelcomeEmail(user);
     } catch (error) {
@@ -154,7 +154,7 @@ export class RegistrationService {
       email?: string;
       image?: string;
     },
-  ): Promise<UserAuthResult> {
+  ): Promise<IUserAuthResult> {
     try {
       // Check if user already exists
       const existingUser = await userAuthService.authenticateUser(

@@ -1,11 +1,11 @@
 // Import error types for type guards
 import type {
-  AuthenticationError,
-  AuthError,
-  DatabaseError,
-  ProviderError,
-  SessionError,
-  ValidationError,
+  IAuthenticationError,
+  IAuthError,
+  IDatabaseError,
+  IProviderError,
+  ISessionError,
+  IValidationError,
 } from "./errors";
 
 /**
@@ -19,78 +19,78 @@ import type {
 
 // Session-related types
 export type {
-  AuthSession,
-  JWTCallbackParams,
-  JWTToken,
-  Session,
-  SessionCallbackParams,
-  SessionConfig,
-  SessionCreateData,
-  SessionUpdateData,
-  SessionValidationResult,
-  SessionWithUser,
-  SessionWithUserData,
+  IAuthSession,
+  IJWTCallbackParams,
+  IJWTToken,
+  ISession,
+  ISessionCallbackParams,
+  ISessionConfig,
+  ISessionCreateData,
+  ISessionUpdateData,
+  ISessionValidationResult,
+  ISessionWithUser,
+  ISessionWithUserData,
 } from "./session";
 
 // User-related types
 export type {
-  AuthUser,
-  UserActivity,
-  UserAuthResult,
-  UserCreateData,
-  UserDeletionResult,
-  UserPreferences,
-  UserProfile,
-  UserRegistrationData,
-  UserSearchCriteria,
-  UserStats,
-  UserUpdateData,
-  UserVerificationStatus,
+  IAuthUser,
+  IUserActivity,
+  IUserAuthResult,
+  IUserCreateData,
+  IUserDeletionResult,
+  IUserPreferences,
+  IUserProfile,
+  IUserRegistrationData,
+  IUserSearchCriteria,
+  IUserStats,
+  IUserUpdateData,
+  IUserVerificationStatus,
 } from "./user";
 
 // Provider-related types
 export type {
-  EmailProviderConfig,
-  EmailVerificationParams,
-  GoogleProviderConfig,
-  OAuthProviderConfig,
-  ProviderAccount,
-  ProviderAuthResult,
-  ProviderCapabilities,
-  ProviderConfigMap,
-  ProviderLinkData,
-  ProviderSelectionCriteria,
-  ProviderUnlinkData,
-  ResendProviderConfig,
+  IEmailProviderConfig,
+  IEmailVerificationParams,
+  IGoogleProviderConfig,
+  IOAuthProviderConfig,
+  IProviderAccount,
+  IProviderAuthResult,
+  IProviderCapabilities,
+  IProviderConfigMap,
+  IProviderLinkData,
+  IProviderSelectionCriteria,
+  IProviderUnlinkData,
+  IResendProviderConfig,
 } from "./provider";
 
 // Error-related types
 export type {
-  AuthenticationError,
-  AuthError,
-  AuthorizationError,
-  ConfigurationError,
-  DatabaseError,
-  EmailError,
   ErrorCategory,
-  ErrorHandlingResult,
-  ErrorLogContext,
-  ErrorMetrics,
-  ErrorRecoveryAction,
-  ErrorResponse,
   ErrorSeverity,
-  NetworkError,
-  ProviderError,
-  RateLimitError,
-  SessionError,
-  ValidationError,
+  IAuthenticationError,
+  IAuthError,
+  IAuthorizationError,
+  IConfigurationError,
+  IDatabaseError,
+  IEmailError,
+  IErrorHandlingResult,
+  IErrorLogContext,
+  IErrorMetrics,
+  IErrorRecoveryAction,
+  IErrorResponse,
+  INetworkError,
+  IProviderError,
+  IRateLimitError,
+  ISessionError,
+  IValidationError,
 } from "./errors";
 
 // Re-export Prisma types for convenience
 export type { UserRole } from "@prisma/client";
 
 // Utility types for auth module
-export type AuthModuleConfig = {
+export type IAuthModuleConfig = {
   session: {
     strategy: "jwt" | "database";
     maxAge: number;
@@ -117,7 +117,7 @@ export type AuthModuleConfig = {
 };
 
 // Common response types
-export type AuthResponse<T = any> = {
+export type IAuthResponse<T = any> = {
   success: boolean;
   data?: T;
   error?: {
@@ -131,7 +131,7 @@ export type AuthResponse<T = any> = {
   timestamp: Date;
 };
 
-export type AuthServiceResponse<T = any> = {
+export type IAuthServiceResponse<T = any> = {
   success: boolean;
   data?: T;
   error?: string;
@@ -143,7 +143,7 @@ export type AuthServiceResponse<T = any> = {
 };
 
 // Type guards for runtime type checking
-export const isAuthError = (error: unknown): error is AuthError => {
+export const isAuthError = (error: unknown): error is IAuthError => {
   return (
     error !== null &&
     typeof error === "object" &&
@@ -152,25 +152,27 @@ export const isAuthError = (error: unknown): error is AuthError => {
   );
 };
 
-export const isValidationError = (error: unknown): error is ValidationError => {
+export const isValidationError = (
+  error: unknown,
+): error is IValidationError => {
   return isAuthError(error) && error.code === "VALIDATION_ERROR";
 };
 
 export const isAuthenticationError = (
   error: unknown,
-): error is AuthenticationError => {
+): error is IAuthenticationError => {
   return isAuthError(error) && error.code === "AUTHENTICATION_ERROR";
 };
 
-export const isProviderError = (error: unknown): error is ProviderError => {
+export const isProviderError = (error: unknown): error is IProviderError => {
   return isAuthError(error) && error.code === "PROVIDER_ERROR";
 };
 
-export const isDatabaseError = (error: unknown): error is DatabaseError => {
+export const isDatabaseError = (error: unknown): error is IDatabaseError => {
   return isAuthError(error) && error.code === "DATABASE_ERROR";
 };
 
-export const isSessionError = (error: unknown): error is SessionError => {
+export const isSessionError = (error: unknown): error is ISessionError => {
   return isAuthError(error) && error.code === "SESSION_ERROR";
 };
 

@@ -2,14 +2,14 @@ import { UserRole } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
 
 // Import types to avoid duplications
-import type { AuthError } from "./errors";
-import type { AuthUser } from "./user";
+import type { IAuthError } from "./errors";
+import type { IAuthUser } from "./user";
 
 /**
  * Extended session interface for NextAuth
  * Extends the default session with user role information
  */
-export interface AuthSession extends DefaultSession {
+export interface IAuthSession extends DefaultSession {
   user: {
     id: string;
     name?: string | null;
@@ -23,7 +23,7 @@ export interface AuthSession extends DefaultSession {
 /**
  * JWT token structure used in NextAuth callbacks
  */
-export interface JWTToken {
+export interface IJWTToken {
   sub?: string;
   name?: string | null;
   email?: string | null;
@@ -36,16 +36,16 @@ export interface JWTToken {
 /**
  * Session callback parameters from NextAuth
  */
-export interface SessionCallbackParams {
-  token: JWTToken;
-  session: AuthSession;
+export interface ISessionCallbackParams {
+  token: IJWTToken;
+  session: IAuthSession;
 }
 
 /**
  * JWT callback parameters from NextAuth
  */
-export interface JWTCallbackParams {
-  token: JWTToken;
+export interface IJWTCallbackParams {
+  token: IJWTToken;
   user?: {
     id: string;
     name?: string | null;
@@ -66,17 +66,17 @@ export interface JWTCallbackParams {
 /**
  * Session validation result
  */
-export interface SessionValidationResult {
+export interface ISessionValidationResult {
   isValid: boolean;
-  user?: AuthUser;
-  error?: AuthError;
+  user?: IAuthUser;
+  error?: IAuthError;
   expiresAt?: Date;
 }
 
 /**
  * Session configuration options
  */
-export interface SessionConfig {
+export interface ISessionConfig {
   strategy: "jwt" | "database";
   maxAge: number;
   updateAge: number;
@@ -86,7 +86,7 @@ export interface SessionConfig {
 /**
  * Session creation data
  */
-export interface SessionCreateData {
+export interface ISessionCreateData {
   userId: string;
   expiresAt: Date;
   sessionToken?: string;
@@ -95,12 +95,12 @@ export interface SessionCreateData {
 /**
  * Session update data
  */
-export interface SessionUpdateData {
+export interface ISessionUpdateData {
   expiresAt?: Date;
   sessionToken?: string;
 }
 
-export interface Session {
+export interface ISession {
   id: string;
   sessionToken: string;
   userId: string;
@@ -109,14 +109,14 @@ export interface Session {
   updatedAt: Date;
 }
 
-export interface SessionWithUser extends Session {
-  user: AuthUser;
+export interface ISessionWithUser extends ISession {
+  user: IAuthUser;
 }
 
-export interface SessionWithUserData {
+export interface ISessionWithUserData {
   id: string;
   sessionToken: string;
   userId: string;
   expires: Date;
-  user: AuthUser;
+  user: IAuthUser;
 }

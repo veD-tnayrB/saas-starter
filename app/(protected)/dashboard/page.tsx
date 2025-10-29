@@ -1,4 +1,5 @@
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUser } from "@/repositories/auth/session";
+
 import { constructMetadata } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "@/components/dashboard/header";

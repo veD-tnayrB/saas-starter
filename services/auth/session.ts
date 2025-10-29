@@ -9,10 +9,10 @@ import type { User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
 import type {
-  AuthSession,
-  AuthUser,
-  SessionCreateData,
-  SessionValidationResult,
+  IAuthSession,
+  IAuthUser,
+  ISessionCreateData,
+  ISessionValidationResult,
 } from "@/types/auth";
 
 /**
@@ -22,7 +22,7 @@ export class SessionService {
   /**
    * Create a new session for a user
    */
-  async createUserSession(userId: string): Promise<AuthSession> {
+  async createUserSession(userId: string): Promise<IAuthSession> {
     try {
       // Verify user exists
       const user = await findUserById(userId);
@@ -31,7 +31,7 @@ export class SessionService {
       }
 
       // Create session data
-      const sessionData: SessionCreateData = {
+      const sessionData: ISessionCreateData = {
         userId,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       };
@@ -61,7 +61,7 @@ export class SessionService {
    */
   async validateUserSession(
     sessionToken: string,
-  ): Promise<SessionValidationResult> {
+  ): Promise<ISessionValidationResult> {
     try {
       return await validateSession(sessionToken);
     } catch (error) {
@@ -80,7 +80,7 @@ export class SessionService {
   /**
    * Refresh a session
    */
-  async refreshUserSession(sessionToken: string): Promise<AuthSession | null> {
+  async refreshUserSession(sessionToken: string): Promise<IAuthSession | null> {
     try {
       const validation = await this.validateUserSession(sessionToken);
 
@@ -123,7 +123,7 @@ export class SessionService {
   /**
    * Get user from session token
    */
-  async getUserFromSession(sessionToken: string): Promise<AuthUser | null> {
+  async getUserFromSession(sessionToken: string): Promise<IAuthUser | null> {
     try {
       const validation = await this.validateUserSession(sessionToken);
       return validation.isValid ? validation.user || null : null;
@@ -141,7 +141,7 @@ export class JWTService {
   /**
    * Create JWT token from user data
    */
-  createJWTToken(user: AuthUser): JWT {
+  createJWTToken(user: IAuthUser): JWT {
     return {
       sub: user.id,
       name: user.name,
@@ -158,7 +158,7 @@ export class JWTService {
    */
   async validateJWTToken(token: JWT): Promise<{
     isValid: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     error?: string;
   }> {
     try {
@@ -296,7 +296,7 @@ export class SessionManagementService {
   /**
    * Get current user from session
    */
-  async getCurrentUser(sessionToken?: string): Promise<AuthUser | null> {
+  async getCurrentUser(sessionToken?: string): Promise<IAuthUser | null> {
     try {
       if (!sessionToken) {
         return null;

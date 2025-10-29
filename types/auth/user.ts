@@ -3,7 +3,7 @@ import { UserRole } from "@prisma/client";
 /**
  * Core user data structure
  */
-export interface AuthUser {
+export interface IAuthUser {
   id: string;
   name?: string | null;
   email?: string | null;
@@ -17,7 +17,7 @@ export interface AuthUser {
 /**
  * User data for creation
  */
-export interface UserCreateData {
+export interface IUserCreateData {
   name?: string;
   email: string;
   emailVerified?: Date;
@@ -28,7 +28,7 @@ export interface UserCreateData {
 /**
  * User data for updates
  */
-export interface UserUpdateData {
+export interface IUserUpdateData {
   name?: string;
   email?: string;
   emailVerified?: Date;
@@ -39,7 +39,7 @@ export interface UserUpdateData {
 /**
  * User profile information
  */
-export interface UserProfile {
+export interface IUserProfile {
   id: string;
   name?: string | null;
   email?: string | null;
@@ -53,7 +53,7 @@ export interface UserProfile {
 /**
  * User verification status
  */
-export interface UserVerificationStatus {
+export interface IUserVerificationStatus {
   isEmailVerified: boolean;
   emailVerifiedAt?: Date | null;
   verificationToken?: string;
@@ -63,7 +63,7 @@ export interface UserVerificationStatus {
 /**
  * User search criteria
  */
-export interface UserSearchCriteria {
+export interface IUserSearchCriteria {
   id?: string;
   email?: string;
   role?: UserRole;
@@ -73,7 +73,7 @@ export interface UserSearchCriteria {
 /**
  * User registration data
  */
-export interface UserRegistrationData {
+export interface IUserRegistrationData {
   name?: string;
   email: string;
   image?: string;
@@ -84,8 +84,8 @@ export interface UserRegistrationData {
 /**
  * User authentication result
  */
-export interface UserAuthResult {
-  user: AuthUser;
+export interface IUserAuthResult {
+  user: IAuthUser;
   isNewUser: boolean;
   requiresVerification: boolean;
 }
@@ -93,7 +93,7 @@ export interface UserAuthResult {
 /**
  * User deletion result
  */
-export interface UserDeletionResult {
+export interface IUserDeletionResult {
   success: boolean;
   deletedUserId: string;
   error?: string;
@@ -102,7 +102,7 @@ export interface UserDeletionResult {
 /**
  * User statistics
  */
-export interface UserStats {
+export interface IUserStats {
   totalUsers: number;
   verifiedUsers: number;
   adminUsers: number;
@@ -112,7 +112,7 @@ export interface UserStats {
 /**
  * User activity data
  */
-export interface UserActivity {
+export interface IUserActivity {
   userId: string;
   lastLoginAt?: Date;
   loginCount: number;
@@ -122,7 +122,7 @@ export interface UserActivity {
 /**
  * User preferences
  */
-export interface UserPreferences {
+export interface IUserPreferences {
   userId: string;
   theme?: "light" | "dark" | "system";
   language?: string;

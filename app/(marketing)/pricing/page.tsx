@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getCurrentUser } from "@/repositories/auth/session";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
 
-import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { ComparePlans } from "@/components/pricing/compare-plans";
 import { PricingCards } from "@/components/pricing/pricing-cards";

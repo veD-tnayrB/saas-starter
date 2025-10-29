@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "@/components/dashboard/header";

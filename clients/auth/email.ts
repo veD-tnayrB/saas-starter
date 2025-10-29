@@ -1,13 +1,20 @@
-import type { AuthUser } from "@/types/auth";
+import { MagicLinkEmail } from "@/emails/magic-link-email";
+import { getUserBasicInfoByEmail } from "@/repositories/auth/user";
+import { EmailConfig as NextAuthEmailConfig } from "next-auth/providers/email";
+import { Resend } from "resend";
+
+import { env } from "@/env.mjs";
+import type { IAuthUser } from "@/types/auth";
+import { siteConfig } from "@/config/site";
 
 /**
  * Email client interface for authentication-related emails
  */
 export interface EmailClient {
-  sendVerificationEmail(user: AuthUser, token: string): Promise<void>;
-  sendPasswordResetEmail(user: AuthUser, token: string): Promise<void>;
-  sendWelcomeEmail(user: AuthUser): Promise<void>;
-  sendAccountDeletionEmail(user: AuthUser): Promise<void>;
+  sendVerificationEmail(user: IAuthUser, token: string): Promise<void>;
+  sendPasswordResetEmail(user: IAuthUser, token: string): Promise<void>;
+  sendWelcomeEmail(user: IAuthUser): Promise<void>;
+  sendAccountDeletionEmail(user: IAuthUser): Promise<void>;
 }
 
 /**
@@ -50,19 +57,19 @@ export class BaseEmailClient implements EmailClient {
     this.config = config;
   }
 
-  async sendVerificationEmail(user: AuthUser, token: string): Promise<void> {
+  async sendVerificationEmail(user: IAuthUser, token: string): Promise<void> {
     throw new Error("sendVerificationEmail not implemented");
   }
 
-  async sendPasswordResetEmail(user: AuthUser, token: string): Promise<void> {
+  async sendPasswordResetEmail(user: IAuthUser, token: string): Promise<void> {
     throw new Error("sendPasswordResetEmail not implemented");
   }
 
-  async sendWelcomeEmail(user: AuthUser): Promise<void> {
+  async sendWelcomeEmail(user: IAuthUser): Promise<void> {
     throw new Error("sendWelcomeEmail not implemented");
   }
 
-  async sendAccountDeletionEmail(user: AuthUser): Promise<void> {
+  async sendAccountDeletionEmail(user: IAuthUser): Promise<void> {
     throw new Error("sendAccountDeletionEmail not implemented");
   }
 
@@ -109,7 +116,7 @@ export class EmailTemplateGenerator {
    * Generate verification email template
    */
   static generateVerificationTemplate(
-    user: AuthUser,
+    user: IAuthUser,
     verificationUrl: string,
   ): EmailTemplate {
     const subject = "Verify your email address";
@@ -163,7 +170,7 @@ export class EmailTemplateGenerator {
    * Generate password reset email template
    */
   static generatePasswordResetTemplate(
-    user: AuthUser,
+    user: IAuthUser,
     resetUrl: string,
   ): EmailTemplate {
     const subject = "Reset your password";
@@ -216,7 +223,7 @@ export class EmailTemplateGenerator {
   /**
    * Generate welcome email template
    */
-  static generateWelcomeTemplate(user: AuthUser): EmailTemplate {
+  static generateWelcomeTemplate(user: IAuthUser): EmailTemplate {
     const subject = "Welcome to our platform!";
     const html = `
       <!DOCTYPE html>
@@ -276,7 +283,7 @@ export class EmailTemplateGenerator {
   /**
    * Generate account deletion email template
    */
-  static generateAccountDeletionTemplate(user: AuthUser): EmailTemplate {
+  static generateAccountDeletionTemplate(user: IAuthUser): EmailTemplate {
     const subject = "Your account has been deleted";
     const html = `
       <!DOCTYPE html>
@@ -317,3 +324,182 @@ export class EmailTemplateGenerator {
     return { subject, html, text };
   }
 }
+
+/**
+ * Resend email client implementation
+ */
+export class ResendEmailClient extends BaseEmailClient {
+  private resend: Resend;
+
+  constructor(config: EmailConfig) {
+    super(config);
+    this.resend = new Resend(env.RESEND_API_KEY);
+  }
+
+  /**
+   * Send verification email using Resend
+   */
+  async sendVerificationEmail(user: IAuthUser, token: string): Promise<void> {
+    const verificationUrl = this.generateVerificationUrl(token);
+    const template = EmailTemplateGenerator.generateVerificationTemplate(
+      user,
+      verificationUrl,
+    );
+
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: this.config.from,
+        to: user.email!,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+
+      if (error || !data) {
+        throw new Error(error?.message || "Failed to send verification email");
+      }
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      throw new Error("Failed to send verification email");
+    }
+  }
+
+  /**
+   * Send password reset email using Resend
+   */
+  async sendPasswordResetEmail(user: IAuthUser, token: string): Promise<void> {
+    const resetUrl = this.generatePasswordResetUrl(token);
+    const template = EmailTemplateGenerator.generatePasswordResetTemplate(
+      user,
+      resetUrl,
+    );
+
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: this.config.from,
+        to: user.email!,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+
+      if (error || !data) {
+        throw new Error(
+          error?.message || "Failed to send password reset email",
+        );
+      }
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      throw new Error("Failed to send password reset email");
+    }
+  }
+
+  /**
+   * Send welcome email using Resend
+   */
+  async sendWelcomeEmail(user: IAuthUser): Promise<void> {
+    const template = EmailTemplateGenerator.generateWelcomeTemplate(user);
+
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: this.config.from,
+        to: user.email!,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+
+      if (error || !data) {
+        throw new Error(error?.message || "Failed to send welcome email");
+      }
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+      throw new Error("Failed to send welcome email");
+    }
+  }
+
+  /**
+   * Send account deletion email using Resend
+   */
+  async sendAccountDeletionEmail(user: IAuthUser): Promise<void> {
+    const template =
+      EmailTemplateGenerator.generateAccountDeletionTemplate(user);
+
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: this.config.from,
+        to: user.email!,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+
+      if (error || !data) {
+        throw new Error(
+          error?.message || "Failed to send account deletion email",
+        );
+      }
+    } catch (error) {
+      console.error("Error sending account deletion email:", error);
+      throw new Error("Failed to send account deletion email");
+    }
+  }
+}
+
+/**
+ * NextAuth email verification request handler (legacy function)
+ */
+export const sendVerificationRequest: NextAuthEmailConfig["sendVerificationRequest"] =
+  async ({ identifier, url, provider }) => {
+    const user = await getUserBasicInfoByEmail(identifier);
+    if (!user || !user.name) return;
+
+    const userVerified = user?.emailVerified ? true : false;
+    const authSubject = userVerified
+      ? `Sign-in link for ${siteConfig.name}`
+      : "Activate your account";
+
+    const resend = new Resend(env.RESEND_API_KEY);
+
+    try {
+      const { data, error } = await resend.emails.send({
+        from: provider.from || "onboarding@resend.dev",
+        to:
+          process.env.NODE_ENV === "development"
+            ? "delivered@resend.dev"
+            : identifier,
+        subject: authSubject,
+        react: MagicLinkEmail({
+          firstName: user?.name as string,
+          actionUrl: url,
+          mailType: userVerified ? "login" : "register",
+          siteName: siteConfig.name,
+        }),
+        // Set this to prevent Gmail from threading emails.
+        // More info: https://resend.com/changelog/custom-email-headers
+        headers: {
+          "X-Entity-Ref-ID": new Date().getTime() + "",
+        },
+      });
+
+      if (error || !data) {
+        throw new Error(error?.message);
+      }
+    } catch (error) {
+      throw new Error("Failed to send verification email.");
+    }
+  };
+
+/**
+ * Default Resend client instance
+ * Direct instantiation for SaaS starter kit simplicity
+ */
+export const resend = new Resend(env.RESEND_API_KEY);
+
+/**
+ * Default email client instance
+ * Direct instantiation for SaaS starter kit simplicity
+ */
+export const emailClient = new ResendEmailClient({
+  from: "onboarding@resend.dev",
+});

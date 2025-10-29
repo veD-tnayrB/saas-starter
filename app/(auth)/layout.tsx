@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUser } from "@/repositories/auth/session";
 
 interface AuthLayoutProps {
   children: React.ReactNode;

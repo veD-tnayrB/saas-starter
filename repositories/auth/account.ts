@@ -1,7 +1,7 @@
 import type {
-  ProviderAccount,
-  ProviderLinkData,
-  ProviderUnlinkData,
+  IProviderAccount,
+  IProviderLinkData,
+  IProviderUnlinkData,
 } from "@/types/auth";
 import { prisma } from "@/lib/db";
 
@@ -14,7 +14,7 @@ import { prisma } from "@/lib/db";
 export async function findAccountByProvider(
   provider: string,
   providerAccountId: string,
-): Promise<ProviderAccount | null> {
+): Promise<IProviderAccount | null> {
   try {
     const account = await prisma.account.findFirst({
       where: {
@@ -37,7 +37,7 @@ export async function findAccountByProvider(
  */
 export async function findAccountsByUserId(
   userId: string,
-): Promise<ProviderAccount[]> {
+): Promise<IProviderAccount[]> {
   try {
     const accounts = await prisma.account.findMany({
       where: { userId },
@@ -58,7 +58,7 @@ export async function findAccountsByUserId(
  */
 export async function findAccountById(
   id: string,
-): Promise<ProviderAccount | null> {
+): Promise<IProviderAccount | null> {
   try {
     const account = await prisma.account.findUnique({
       where: { id },
@@ -88,7 +88,7 @@ export async function createAccount(data: {
   scope?: string | null;
   id_token?: string | null;
   session_state?: string | null;
-}): Promise<ProviderAccount> {
+}): Promise<IProviderAccount> {
   try {
     const account = await prisma.account.create({
       data: {
@@ -130,7 +130,7 @@ export async function updateAccount(
     id_token?: string | null;
     session_state?: string | null;
   },
-): Promise<ProviderAccount> {
+): Promise<IProviderAccount> {
   try {
     const account = await prisma.account.update({
       where: { id },
@@ -176,8 +176,8 @@ export async function deleteAccount(id: string): Promise<boolean> {
  * @returns Created account data
  */
 export async function linkProviderAccount(
-  data: ProviderLinkData,
-): Promise<ProviderAccount> {
+  data: IProviderLinkData,
+): Promise<IProviderAccount> {
   try {
     // Check if account already exists
     const existingAccount = await findAccountByProvider(
@@ -214,7 +214,7 @@ export async function linkProviderAccount(
  * @returns Success status
  */
 export async function unlinkProviderAccount(
-  data: ProviderUnlinkData,
+  data: IProviderUnlinkData,
 ): Promise<boolean> {
   try {
     const account = await prisma.account.findFirst({
@@ -313,7 +313,7 @@ export async function cleanupExpiredTokens(): Promise<number> {
  * @returns Array of accounts with expired tokens
  */
 export async function findAccountsWithExpiredTokens(): Promise<
-  ProviderAccount[]
+  IProviderAccount[]
 > {
   try {
     const accounts = await prisma.account.findMany({
@@ -347,7 +347,7 @@ export async function refreshAccountTokens(
     refresh_token?: string;
     expires_at?: number;
   },
-): Promise<ProviderAccount> {
+): Promise<IProviderAccount> {
   try {
     const account = await updateAccount(id, {
       access_token: newTokens.access_token || null,

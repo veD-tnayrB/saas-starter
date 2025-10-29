@@ -1,9 +1,9 @@
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
 
 import { env } from "@/env.mjs";
 
-export const authConfig: NextAuthConfig = {
+export const authConfig: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   providers: [
     Google({

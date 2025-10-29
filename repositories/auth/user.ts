@@ -1,11 +1,11 @@
 import type {
-  AuthUser,
-  UserActivity,
-  UserCreateData,
-  UserProfile,
-  UserSearchCriteria,
-  UserStats,
-  UserUpdateData,
+  IAuthUser,
+  IUserActivity,
+  IUserCreateData,
+  IUserProfile,
+  IUserSearchCriteria,
+  IUserStats,
+  IUserUpdateData,
 } from "@/types/auth";
 import { prisma } from "@/lib/db";
 
@@ -14,7 +14,7 @@ import { prisma } from "@/lib/db";
  * @param id - User ID
  * @returns User data or null if not found
  */
-export async function findUserById(id: string): Promise<AuthUser | null> {
+export async function findUserById(id: string): Promise<IAuthUser | null> {
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -42,7 +42,9 @@ export async function findUserById(id: string): Promise<AuthUser | null> {
  * @param email - User email
  * @returns User data or null if not found
  */
-export async function findUserByEmail(email: string): Promise<AuthUser | null> {
+export async function findUserByEmail(
+  email: string,
+): Promise<IAuthUser | null> {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -70,7 +72,7 @@ export async function findUserByEmail(email: string): Promise<AuthUser | null> {
  * @param data - User creation data
  * @returns Created user data
  */
-export async function createUser(data: UserCreateData): Promise<AuthUser> {
+export async function createUser(data: IUserCreateData): Promise<IAuthUser> {
   try {
     const user = await prisma.user.create({
       data: {
@@ -107,8 +109,8 @@ export async function createUser(data: UserCreateData): Promise<AuthUser> {
  */
 export async function updateUser(
   id: string,
-  data: UserUpdateData,
-): Promise<AuthUser> {
+  data: IUserUpdateData,
+): Promise<IAuthUser> {
   try {
     const user = await prisma.user.update({
       where: { id },
@@ -165,7 +167,7 @@ export async function deleteUser(id: string): Promise<boolean> {
 export async function findUserByProvider(
   provider: string,
   providerAccountId: string,
-): Promise<AuthUser | null> {
+): Promise<IAuthUser | null> {
   try {
     const account = await prisma.account.findFirst({
       where: {
@@ -204,7 +206,7 @@ export async function findUserByProvider(
 export async function updateUserVerification(
   id: string,
   emailVerified: Date,
-): Promise<AuthUser> {
+): Promise<IAuthUser> {
   try {
     const user = await prisma.user.update({
       where: { id },
@@ -233,7 +235,7 @@ export async function updateUserVerification(
  * @param id - User ID
  * @returns User profile data
  */
-export async function getUserProfile(id: string): Promise<UserProfile | null> {
+export async function getUserProfile(id: string): Promise<IUserProfile | null> {
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -267,8 +269,8 @@ export async function getUserProfile(id: string): Promise<UserProfile | null> {
  * @returns Array of matching users
  */
 export async function searchUsers(
-  criteria: UserSearchCriteria,
-): Promise<AuthUser[]> {
+  criteria: IUserSearchCriteria,
+): Promise<IAuthUser[]> {
   try {
     const where: Record<string, unknown> = {};
 
@@ -305,7 +307,7 @@ export async function searchUsers(
  * Get user statistics
  * @returns User statistics
  */
-export async function getUserStats(): Promise<UserStats> {
+export async function getUserStats(): Promise<IUserStats> {
   try {
     const [totalUsers, verifiedUsers, adminUsers, recentSignups] =
       await Promise.all([
@@ -334,13 +336,38 @@ export async function getUserStats(): Promise<UserStats> {
 }
 
 /**
+ * Get user basic info by email (legacy function for email verification)
+ * @param email - User email
+ * @returns Basic user info or null if not found
+ */
+export async function getUserBasicInfoByEmail(email: string): Promise<{
+  name: string | null;
+  emailVerified: Date | null;
+} | null> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        name: true,
+        emailVerified: true,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error("Error getting user basic info by email:", error);
+    return null;
+  }
+}
+
+/**
  * Get user activity data
  * @param id - User ID
  * @returns User activity data
  */
 export async function getUserActivity(
   id: string,
-): Promise<UserActivity | null> {
+): Promise<IUserActivity | null> {
   try {
     const user = await prisma.user.findUnique({
       where: { id },

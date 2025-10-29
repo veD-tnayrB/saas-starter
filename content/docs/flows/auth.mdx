@@ -1,320 +1,547 @@
 ---
-title: Auth Service Flow
-description: End-to-end explanation of the Auth Service flow
+title: Authentication Flow Guide
+description: Complete guide to understanding authentication flows for junior developers
 lastUpdated: 2024-12-19
 ---
 
-## Overview
-
-The Auth Service is the central orchestrator for all authentication operations in the SaaS Starter Kit. It provides a clean, layered architecture that handles user authentication, session management, email verification, OAuth provider integration, and user profile management.
-
-This service follows clean architecture principles with clear separation between business logic (services), data access (repositories), external integrations (clients), and type definitions. It solves the problem of complex authentication flows by providing a unified interface for all auth-related operations.
-
-**Main Libraries/Services:**
-
-- **NextAuth.js** - Core authentication framework
-- **Prisma** - Database ORM for user and session data
-- **Resend** - Email service for verification and notifications
-- **OAuth Providers** - Google, GitHub, etc. for social login
-- **JWT** - Token-based session management
-- **Crypto** - Secure token generation
-
-## File Map
-
-**Core Service Layer:**
-
-- `services/auth/index.ts` – Main AuthService orchestrator class
-- `services/auth/session.ts` – Session management and JWT handling
-- `services/auth/user.ts` – User operations and profile management
-- `services/auth/registration.ts` – User registration flow
-- `services/auth/verification.ts` – Email verification and password reset
-- `services/auth/providers.ts` – OAuth provider integration
-
-**Data Access Layer:**
-
-- `repositories/auth/index.ts` – Repository exports and coordination
-- `repositories/auth/user.ts` – User database operations
-- `repositories/auth/session.ts` – Session database operations
-- `repositories/auth/account.ts` – OAuth account linking
-
-**External Integration Layer:**
-
-- `clients/auth/index.ts` – Client exports and coordination
-- `clients/auth/email.ts` – Email service integration
-- `clients/auth/oauth.ts` – OAuth provider clients
-- `clients/auth/resend.ts` – Resend email service
-
-**Type Definitions:**
-
-- `types/auth/index.ts` – Main type exports
-- `types/auth/user.ts` – User-related types
-- `types/auth/session.ts` – Session-related types
-- `types/auth/provider.ts` – OAuth provider types
-- `types/auth/errors.ts` – Error handling types
-
-**Integration Points:**
-
-- `auth.ts` – NextAuth configuration and callbacks
-- `auth.config.ts` – Provider configuration
-- `middleware.ts` – Route protection and session validation
-
-## Step-by-Step Flow
-
-### 1. User Registration Flow
-
-**Entry Point:** `AuthService.signUpWithEmail()`
-
-1. **Data Validation** (`RegistrationService.initiateRegistration()`)
-
-   - Validate email format and required fields
-   - Check for existing user with same email
-   - Validate password strength (if applicable)
-
-2. **User Creation** (`UserAuthService.registerUser()`)
-
-   - Create user record in database via `UserRepository`
-   - Set default role and verification status
-   - Generate user ID and timestamps
-
-3. **Email Verification** (`VerificationService.sendVerificationEmail()`)
-
-   - Generate secure verification token
-   - Store token with expiration time
-   - Send verification email via `EmailClient`
-
-4. **Response**
-   - Return success status with user data
-   - Include verification requirement flag
-
-### 2. User Authentication Flow
-
-**Entry Point:** `AuthService.signInWithEmail()`
-
-1. **Credential Validation** (`UserAuthService.authenticateUser()`)
-
-   - Look up user by email in database
-   - Validate user exists and is active
-   - Check email verification status
-
-2. **Session Creation** (`SessionManagementService.createUserSession()`)
-
-   - Generate secure session token
-   - Create session record in database
-   - Set session expiration (30 days default)
-
-3. **JWT Token Generation** (`JWTService.createJWTToken()`)
-
-   - Create JWT with user data and expiration
-   - Sign token with secret key
-   - Return token for client storage
-
-4. **Response**
-   - Return success with user data and session info
-   - Include any verification requirements
-
-### 3. OAuth Provider Flow
-
-**Entry Point:** `AuthService.signInWithProvider()`
-
-1. **OAuth Callback Handling** (`ProviderService.handleOAuthCallback()`)
-
-   - Exchange authorization code for access token
-   - Fetch user profile from OAuth provider
-   - Validate provider response
-
-2. **Account Linking** (`AccountRepository.findAccountByProvider()`)
-
-   - Check if OAuth account already linked
-   - Create new account link if needed
-   - Associate with existing user or create new user
-
-3. **User Creation/Update** (`UserAuthService.registerUser()` or `updateUser()`)
-
-   - Create new user if first-time OAuth login
-   - Update existing user profile with OAuth data
-   - Set appropriate role and verification status
-
-4. **Session Management** (`SessionManagementService.createUserSession()`)
-   - Create session for authenticated user
-   - Generate JWT token with user data
-   - Return session information
-
-### 4. Session Management Flow
-
-**Entry Point:** `AuthService.getCurrentUser()` or middleware
-
-1. **Session Validation** (`SessionManagementService.validateSession()`)
-
-   - Extract session token from request
-   - Validate token signature and expiration
-   - Check session exists in database
-
-2. **User Data Retrieval** (`UserRepository.findUserById()`)
-
-   - Fetch current user data from database
-   - Include user profile and preferences
-   - Check user status and permissions
-
-3. **Role Verification** (`SessionManagementService.hasRole()`)
-   - Validate user has required permissions
-   - Check role-based access control
-   - Return authorization status
-
-### 5. Email Verification Flow
-
-**Entry Point:** `AuthService.verifyEmailToken()`
-
-1. **Token Validation** (`VerificationService.verifyEmailToken()`)
-
-   - Validate token format and signature
-   - Check token expiration time
-   - Retrieve associated user ID
-
-2. **User Update** (`UserRepository.updateUserVerification()`)
-
-   - Mark email as verified in database
-   - Update verification timestamp
-   - Remove verification token
-
-3. **Response**
-   - Return success with updated user data
-   - Include verification status
-
-### 6. Password Reset Flow
-
-**Entry Point:** `AuthService.sendPasswordResetEmail()`
-
-1. **User Lookup** (`UserRepository.findUserByEmail()`)
-
-   - Find user by email address
-   - Validate user exists and is active
-
-2. **Reset Token Generation** (`VerificationService.generateResetToken()`)
-
-   - Create secure reset token
-   - Set token expiration (1 hour default)
-   - Store token in database
-
-3. **Email Sending** (`EmailClient.sendPasswordResetEmail()`)
-
-   - Generate reset email template
-   - Include secure reset link
-   - Send via email service
-
-4. **Password Update** (`AuthService.resetPassword()`)
-   - Validate reset token
-   - Hash new password securely
-   - Update user password in database
-   - Invalidate reset token
-
-## Data Flow Diagram
-
-```mermaid
-flowchart TD
-    A[User Request] --> B[AuthService]
-    B --> C{Operation Type}
-
-    C -->|Registration| D[RegistrationService]
-    C -->|Authentication| E[UserAuthService]
-    C -->|OAuth| F[ProviderService]
-    C -->|Session| G[SessionManagementService]
-    C -->|Verification| H[VerificationService]
-
-    D --> I[UserRepository]
-    E --> I
-    F --> J[AccountRepository]
-    G --> K[SessionRepository]
-    H --> I
-
-    I --> L[(Database)]
-    J --> L
-    K --> L
-
-    D --> M[EmailClient]
-    H --> M
-    F --> N[OAuthClient]
-
-    M --> O[Resend API]
-    N --> P[OAuth Providers]
-
-    B --> Q[Response to User]
-
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style L fill:#fff3e0
-    style Q fill:#e8f5e8
+## 🎯 What This Guide Covers
+
+This guide explains **exactly** how authentication works in our SaaS app. By the end, you'll understand:
+
+- How OAuth flows work (Google, GitHub, etc.)
+- What NextAuth.js does behind the scenes
+- How sessions are created and managed
+- How to debug authentication issues
+- The actual HTTP requests and responses
+
+## 🏗️ Arquitectura Simplificada para SaaS Starter Kit
+
+Nuestra arquitectura de autenticación está diseñada para ser **rápida de desarrollar** y **fácil de entender**. Usamos instanciación directa con ES6 imports para mantener la simplicidad y consistencia.
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   NextAuth.js   │    │   OAuth Provider │
+│   (React)       │◄──►│   (Server)      │◄──►│   (Google, etc.) │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Session       │    │   Database      │    │   User Profile  │
+│   (JWT/Cookie)  │    │   (Prisma)      │    │   (Provider)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## Dependencies & Contracts
+### 📁 Estructura Simplificada
 
-**Core Types:**
+**Servicios (Lógica de Negocio):**
 
-- `AuthUser` - Represents a logged-in user with profile data
-- `AuthSession` - Session data with user information and expiration
-- `UserRegistrationData` - Input data for user registration
-- `UserUpdateData` - Data for updating user profiles
-- `SessionValidationResult` - Result of session validation with user data
-- `ProviderAuthResult` - OAuth provider authentication result
+- `services/auth/` - Autenticación y gestión de usuarios
+- `services/billing/` - Facturación y suscripciones
+- `services/notifications/` - Emails y notificaciones
 
-**Service Interfaces:**
+**Repositorios (Base de Datos):**
 
-- `SessionManagementService` - Handles session creation, validation, and cleanup
-- `UserAuthService` - Manages user authentication and profile operations
-- `RegistrationService` - Orchestrates user registration flow
-- `VerificationService` - Handles email verification and password reset
-- `ProviderManagementService` - Manages OAuth provider integration
+- `repositories/auth/` - Operaciones de base de datos
 
-**Repository Contracts:**
+**Clientes (APIs Externas):**
 
-- `UserRepository` - Database operations for user data
-- `SessionRepository` - Database operations for session data
-- `AccountRepository` - Database operations for OAuth account linking
+- `clients/auth/` - Integraciones con servicios externos
 
-**Client Interfaces:**
+**Acciones (Server Actions):**
 
-- `EmailClient` - Email service integration for notifications
-- `OAuthClient` - OAuth provider integration for social login
+- `actions/` - Funciones del servidor que usan servicios
 
-## Known Limitations
+## 📁 Key Files Explained
 
-1. **Session Storage** - Sessions are stored in database, which may impact performance at scale
-2. **Email Verification** - Verification tokens are stored in memory (should be persisted)
-3. **OAuth Implementation** - Some OAuth provider methods are marked as TODO
-4. **Password Reset** - Reset tokens have 1-hour expiration (configurable)
-5. **Rate Limiting** - No built-in rate limiting for auth operations
-6. **Multi-Factor Authentication** - Not currently implemented
-7. **Session Cleanup** - Expired sessions cleanup is manual (should be automated)
+**Configuration Files:**
 
-## Notes & TODOs
+- `auth.ts` - Main NextAuth configuration (providers, callbacks, session strategy)
+- `config/auth.ts` - OAuth provider settings (Google, GitHub, etc.)
+- `app/api/auth/[...nextauth]/route.ts` - API route that handles all auth requests
 
-**High Priority:**
+**Service Files:**
 
-- [ ] Implement persistent verification token storage
-- [ ] Add rate limiting for authentication endpoints
-- [ ] Complete OAuth provider callback implementations
-- [ ] Add automated session cleanup job
-- [ ] Implement proper error logging and monitoring
+- `services/auth/session.ts` - Custom session management logic
+- `services/auth/user.ts` - User operations (create, update, delete)
+- `repositories/auth/` - Database operations for users and sessions
 
-**Medium Priority:**
+**Type Files:**
 
-- [ ] Add multi-factor authentication support
-- [ ] Implement session refresh mechanism
-- [ ] Add user activity tracking
-- [ ] Create admin user management interface
-- [ ] Add password strength validation
+- `types/auth/` - TypeScript interfaces for users, sessions, and providers
 
-**Low Priority:**
+## 🔐 OAuth Flow Explained (Step by Step)
 
-- [ ] Add social login providers (GitHub, LinkedIn)
-- [ ] Implement account linking UI
-- [ ] Add user preference management
-- [ ] Create user analytics dashboard
-- [ ] Add API key authentication for services
+### What is OAuth?
 
-**Technical Debt:**
+OAuth is like a "valet key" for your account. Instead of giving your password to every app, you give permission for the app to access specific parts of your account.
 
-- [ ] Replace `any` types with proper TypeScript interfaces
-- [ ] Add comprehensive unit tests for all services
-- [ ] Implement proper error handling with custom error types
-- [ ] Add request/response logging for debugging
-- [ ] Create service health check endpoints
+### Google OAuth Flow (Detailed)
+
+Let's trace through **exactly** what happens when a user clicks "Sign in with Google":
+
+#### Step 1: User Clicks "Sign in with Google"
+
+**What happens:**
+
+- User clicks button in your React component
+- Frontend makes a request to `/api/auth/providers`
+- NextAuth returns available providers
+
+**HTTP Request:**
+
+```http
+GET /api/auth/providers
+```
+
+**Response:**
+
+```json
+{
+  "google": {
+    "id": "google",
+    "name": "Google",
+    "type": "oidc",
+    "signinUrl": "http://localhost:3000/api/auth/signin/google",
+    "callbackUrl": "http://localhost:3000/api/auth/callback/google"
+  }
+}
+```
+
+#### Step 2: NextAuth Generates OAuth URL
+
+**What happens:**
+
+- NextAuth creates a secure OAuth URL with:
+  - Your app's client ID
+  - A random state parameter (prevents CSRF attacks)
+  - A code challenge (PKCE security)
+  - Redirect URL back to your app
+
+**Generated URL Example:**
+
+```
+https://accounts.google.com/o/oauth2/v2/auth?
+  response_type=code&
+  client_id=286317980099-59u5kdc0dor232moch9bufgusqp90igl.apps.googleusercontent.com&
+  redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback%2Fgoogle&
+  code_challenge=4mD3JVl4lXZ7Uw0jCNp-cz0lx1exRRE2RtBEX7WSaTA&
+  code_challenge_method=S256&
+  scope=openid+profile+email&
+  state=random-state-string
+```
+
+#### Step 3: User Authorizes on Google
+
+**What happens:**
+
+- User is redirected to Google's login page
+- User enters their Google credentials
+- Google shows permission screen: "App wants to access your profile"
+- User clicks "Allow"
+
+#### Step 4: Google Redirects Back with Code
+
+**What happens:**
+
+- Google redirects back to your app with an authorization code
+- The code is temporary and can only be used once
+
+**Redirect URL:**
+
+```
+http://localhost:3000/api/auth/callback/google?
+  code=4/0AX4XfWh...&
+  state=random-state-string
+```
+
+#### Step 5: NextAuth Exchanges Code for Tokens
+
+**What happens:**
+
+- NextAuth makes a POST request to Google's token endpoint
+- Exchanges the authorization code for access tokens
+
+**HTTP Request to Google:**
+
+```http
+POST https://oauth2.googleapis.com/token
+Content-Type: application/x-www-form-urlencoded
+
+code=4/0AX4XfWh...&
+client_id=your-client-id&
+client_secret=your-client-secret&
+redirect_uri=http://localhost:3000/api/auth/callback/google&
+grant_type=authorization_code&
+code_verifier=code-verifier-string
+```
+
+**Google's Response:**
+
+```json
+{
+  "access_token": "ya29.a0AfH6SMC...",
+  "expires_in": 3599,
+  "refresh_token": "1//04...",
+  "scope": "openid profile email",
+  "token_type": "Bearer",
+  "id_token": "eyJhbGciOiJSUzI1NiIs..."
+}
+```
+
+#### Step 6: NextAuth Fetches User Profile
+
+**What happens:**
+
+- NextAuth uses the access token to fetch user profile from Google
+- Gets user's name, email, profile picture, etc.
+
+**HTTP Request to Google:**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+Authorization: Bearer ya29.a0AfH6SMC...
+```
+
+**Google's Response:**
+
+```json
+{
+  "id": "123456789",
+  "email": "user@gmail.com",
+  "verified_email": true,
+  "name": "John Doe",
+  "given_name": "John",
+  "family_name": "Doe",
+  "picture": "https://lh3.googleusercontent.com/...",
+  "locale": "en"
+}
+```
+
+#### Step 7: Your JWT Callback Runs
+
+**What happens:**
+
+- NextAuth calls your `jwt` callback function
+- You can modify the token before it's stored
+- This is where you add custom user data
+
+**Your JWT Callback Code:**
+
+```typescript
+// In auth.ts
+callbacks: {
+  async jwt({ token, user, account, profile }) {
+    // This runs when user signs in
+    if (user) {
+      token.id = user.id;
+      token.email = user.email;
+      token.name = user.name;
+      token.picture = user.picture;
+      token.role = user.role || 'USER';
+    }
+    return token;
+  }
+}
+```
+
+#### Step 8: Your Session Callback Runs
+
+**What happens:**
+
+- NextAuth calls your `session` callback function
+- You return the final session data that will be available in your app
+
+**Your Session Callback Code:**
+
+```typescript
+// In auth.ts
+callbacks: {
+  async session({ token, session }) {
+    // This runs every time session is accessed
+    session.user.id = token.id;
+    session.user.email = token.email;
+    session.user.name = token.name;
+    session.user.picture = token.picture;
+    session.user.role = token.role;
+    return session;
+  }
+}
+```
+
+#### Step 9: Session is Stored
+
+**What happens:**
+
+- NextAuth stores the session in a secure HTTP-only cookie
+- Cookie contains the JWT token with user data
+- User is now logged in
+
+**Cookie Example:**
+
+```
+next-auth.session-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## 🔄 Session Management Flow
+
+### How Sessions Work
+
+Sessions are how your app knows who is logged in. Here's how they work:
+
+#### 1. Session Creation
+
+- Created when user successfully authenticates
+- Stored as JWT token in HTTP-only cookie
+- Contains user ID, email, role, and expiration time
+
+#### 2. Session Validation
+
+- Every request checks the session cookie
+- Validates JWT signature and expiration
+- Extracts user data from token
+
+#### 3. Session Usage
+
+- Available in server components via `getServerSession()`
+- Available in client components via `useSession()`
+- Used for authorization and user-specific data
+
+### Session Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant N as NextAuth
+    participant G as Google
+    participant D as Database
+
+    U->>F: Click "Sign in with Google"
+    F->>N: GET /api/auth/providers
+    N->>F: Return provider info
+    F->>N: POST /api/auth/signin/google
+    N->>G: Redirect to Google OAuth
+    G->>U: Show login page
+    U->>G: Enter credentials
+    G->>N: Redirect with code
+    N->>G: Exchange code for tokens
+    G->>N: Return access token
+    N->>G: Fetch user profile
+    G->>N: Return user data
+    N->>N: Run JWT callback
+    N->>N: Run session callback
+    N->>F: Set session cookie
+    F->>U: User logged in
+```
+
+## 🐛 Debugging Authentication Issues
+
+### Common Problems and Solutions
+
+#### 1. "Invalid redirect URI" Error
+
+**Problem:** Google rejects the redirect URI
+**Solution:** Check your Google Console settings
+
+- Go to Google Cloud Console
+- Navigate to APIs & Services > Credentials
+- Add `http://localhost:3000/api/auth/callback/google` to authorized redirect URIs
+
+#### 2. "State parameter mismatch" Error
+
+**Problem:** CSRF protection fails
+**Solution:** Check your AUTH_SECRET environment variable
+
+```bash
+# Generate a new secret
+openssl rand -base64 32
+```
+
+#### 3. "User not found" Error
+
+**Problem:** User exists in Google but not in your database
+**Solution:** Check your JWT callback
+
+- Make sure you're creating users in the database
+- Check if Prisma adapter is properly configured
+
+#### 4. Session is null
+
+**Problem:** Session not being created or retrieved
+**Solution:** Check session strategy
+
+```typescript
+// In auth.ts
+session: {
+  strategy: "jwt";
+} // or "database"
+```
+
+### Debug Tools
+
+#### 1. Enable NextAuth Debug Mode
+
+```typescript
+// In auth.ts
+const nextAuthConfig = {
+  // ... other config
+  debug: process.env.NODE_ENV !== "production",
+};
+```
+
+#### 2. Add Logging to Callbacks
+
+```typescript
+// In auth.ts
+callbacks: {
+  async jwt({ token, user, account, profile }) {
+    console.log('🔐 JWT Callback:', { token, user, account, profile });
+    // ... your logic
+  },
+  async session({ token, session }) {
+    console.log('📝 Session Callback:', { token, session });
+    // ... your logic
+  },
+}
+```
+
+#### 3. Check Network Tab
+
+- Open browser DevTools
+- Go to Network tab
+- Look for requests to `/api/auth/*`
+- Check request/response data
+
+## 🔧 Adding New OAuth Providers
+
+### Step 1: Configure Provider
+
+Add provider to `config/auth.ts`:
+
+```typescript
+// For GitHub
+GitHub({
+  clientId: env.GITHUB_CLIENT_ID,
+  clientSecret: env.GITHUB_CLIENT_SECRET,
+});
+
+// For Discord
+Discord({
+  clientId: env.DISCORD_CLIENT_ID,
+  clientSecret: env.DISCORD_CLIENT_SECRET,
+});
+```
+
+### Step 2: Set Up Provider App
+
+1. Go to provider's developer console
+2. Create new OAuth application
+3. Set redirect URI to `http://localhost:3000/api/auth/callback/[provider]`
+4. Copy client ID and secret to environment variables
+
+### Step 3: Test the Flow
+
+1. Start your app: `pnpm dev`
+2. Go to login page
+3. Click the new provider button
+4. Complete OAuth flow
+5. Check if user is created in database
+
+## 📊 Database Schema
+
+### Users Table
+
+```sql
+CREATE TABLE "User" (
+  "id" TEXT NOT NULL,
+  "name" TEXT,
+  "email" TEXT NOT NULL,
+  "emailVerified" TIMESTAMP(3),
+  "image" TEXT,
+  "role" "UserRole" NOT NULL DEFAULT 'USER',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+```
+
+### Accounts Table (OAuth)
+
+```sql
+CREATE TABLE "Account" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "provider" TEXT NOT NULL,
+  "providerAccountId" TEXT NOT NULL,
+  "refresh_token" TEXT,
+  "access_token" TEXT,
+  "expires_at" INTEGER,
+  "token_type" TEXT,
+  "scope" TEXT,
+  "id_token" TEXT,
+  "session_state" TEXT,
+  CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+```
+
+### Sessions Table
+
+```sql
+CREATE TABLE "Session" (
+  "id" TEXT NOT NULL,
+  "sessionToken" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "expires" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+);
+```
+
+## 🚀 Production Considerations
+
+### Security Checklist
+
+- [ ] Use HTTPS in production
+- [ ] Set secure cookie flags
+- [ ] Use strong AUTH_SECRET
+- [ ] Enable CSRF protection
+- [ ] Validate all inputs
+- [ ] Use rate limiting
+- [ ] Monitor failed login attempts
+
+### Performance Tips
+
+- [ ] Use JWT strategy for better performance
+- [ ] Implement session cleanup
+- [ ] Use Redis for session storage (if needed)
+- [ ] Cache user data appropriately
+- [ ] Monitor authentication metrics
+
+## 📚 Additional Resources
+
+- [NextAuth.js Documentation](https://next-auth.js.org/)
+- [OAuth 2.0 Specification](https://tools.ietf.org/html/rfc6749)
+- [JWT.io](https://jwt.io/) - JWT token decoder
+- [Google OAuth 2.0 Guide](https://developers.google.com/identity/protocols/oauth2)
+
+## ❓ FAQ
+
+**Q: Why do we use NextAuth instead of implementing OAuth manually?**
+A: NextAuth handles security, CSRF protection, session management, and provider integration. Implementing this manually would be error-prone and time-consuming.
+
+**Q: Can I customize the OAuth flow?**
+A: Yes! You can customize callbacks, add custom providers, and modify session data.
+
+**Q: How do I handle user roles and permissions?**
+A: Add role data in your JWT callback and check it in your session callback.
+
+**Q: What if I need to store additional user data?**
+A: Extend your User model in Prisma and update your callbacks to include the new data.
+
+**Q: How do I debug authentication issues?**
+A: Enable debug mode, add logging to callbacks, and check the Network tab in DevTools.
+
+---
+
+_This guide should give you a complete understanding of how authentication works in our app. If you have questions, check the debugging section or ask a senior developer!_

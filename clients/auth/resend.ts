@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-import type { AuthUser } from "@/types/auth";
+import type { IAuthUser } from "@/types/auth";
 
 import {
   BaseEmailClient,
@@ -23,7 +23,7 @@ export class ResendEmailClient extends BaseEmailClient {
   /**
    * Send verification email using Resend
    */
-  async sendVerificationEmail(user: AuthUser, token: string): Promise<void> {
+  async sendVerificationEmail(user: IAuthUser, token: string): Promise<void> {
     try {
       if (!this.validateEmail(user.email || "")) {
         throw new Error("Invalid email address");
@@ -55,7 +55,7 @@ export class ResendEmailClient extends BaseEmailClient {
   /**
    * Send password reset email using Resend
    */
-  async sendPasswordResetEmail(user: AuthUser, token: string): Promise<void> {
+  async sendPasswordResetEmail(user: IAuthUser, token: string): Promise<void> {
     try {
       if (!this.validateEmail(user.email || "")) {
         throw new Error("Invalid email address");
@@ -87,7 +87,7 @@ export class ResendEmailClient extends BaseEmailClient {
   /**
    * Send welcome email using Resend
    */
-  async sendWelcomeEmail(user: AuthUser): Promise<void> {
+  async sendWelcomeEmail(user: IAuthUser): Promise<void> {
     try {
       if (!this.validateEmail(user.email || "")) {
         throw new Error("Invalid email address");
@@ -115,7 +115,7 @@ export class ResendEmailClient extends BaseEmailClient {
   /**
    * Send account deletion email using Resend
    */
-  async sendAccountDeletionEmail(user: AuthUser): Promise<void> {
+  async sendAccountDeletionEmail(user: IAuthUser): Promise<void> {
     try {
       if (!this.validateEmail(user.email || "")) {
         throw new Error("Invalid email address");

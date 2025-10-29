@@ -2,9 +2,10 @@
 
 import { redirect } from "next/navigation";
 import NextAuth from "@/auth";
+import { billingService } from "@/services/billing";
+import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
 
-import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
 
 export type responseAction = {
@@ -14,32 +15,44 @@ export type responseAction = {
 
 const billingUrl = absoluteUrl("/dashboard/billing");
 
+/**
+ * Open Stripe customer portal for billing management
+ * @param userStripeId - User's Stripe customer ID
+ * @returns Redirects to Stripe billing portal
+ */
 export async function openCustomerPortal(
   userStripeId: string,
 ): Promise<responseAction> {
-  let redirectUrl: string = "";
-
   try {
-    const session = await getServerSession(NextAuth);
+    const session: Session | null = await getServerSession(NextAuth);
 
     if (!session?.user || !session?.user.email) {
       throw new Error("Unauthorized");
     }
 
-    if (userStripeId) {
-      const stripeSession = await stripe.billingPortal.sessions.create({
-        customer: userStripeId,
-        return_url: billingUrl,
-      });
-
-      redirectUrl = stripeSession.url as string;
+    if (!userStripeId) {
+      throw new Error("User Stripe ID is required");
     }
+
+    // Use billing service to handle the operation
+    const result = await billingService.createBillingPortalSession({
+      userId: session.user.id,
+      userEmail: session.user.email,
+      stripeCustomerId: userStripeId,
+    });
+
+    if (result.status === "error") {
+      throw new Error(
+        result.error || "Failed to create billing portal session",
+      );
+    }
+
+    // Redirect to Stripe billing portal
+    redirect(result.stripeUrl!);
   } catch (error) {
     console.error("Error in openCustomerPortal:", error);
     throw new Error(
-      `Failed to generate user stripe session: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to open customer portal: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
-
-  redirect(redirectUrl);
 }

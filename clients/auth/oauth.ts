@@ -1,4 +1,4 @@
-import type { OAuthProviderConfig } from "@/types/auth";
+import type { IOAuthProviderConfig } from "@/types/auth";
 
 /**
  * OAuth client interface
@@ -36,7 +36,7 @@ export interface OAuthClient {
  * OAuth provider configuration map
  */
 export interface OAuthProviderMap {
-  [key: string]: OAuthProviderConfig;
+  [key: string]: IOAuthProviderConfig;
 }
 
 /**

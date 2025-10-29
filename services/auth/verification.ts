@@ -1,6 +1,6 @@
 import { createDefaultEmailClient } from "@/clients/auth";
 
-import type { AuthUser } from "@/types/auth";
+import type { IAuthUser } from "@/types/auth";
 
 import { userAuthService } from "./user";
 
@@ -13,7 +13,7 @@ export class VerificationService {
   /**
    * Send verification email
    */
-  async sendVerificationEmail(user: AuthUser): Promise<void> {
+  async sendVerificationEmail(user: IAuthUser): Promise<void> {
     try {
       // Generate verification token
       const token = this.generateVerificationToken();
@@ -34,7 +34,7 @@ export class VerificationService {
    */
   async verifyEmailToken(token: string): Promise<{
     success: boolean;
-    user?: AuthUser;
+    user?: IAuthUser;
     error?: string;
   }> {
     try {

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/repositories/auth/session";
 
-import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/header";
 import InfoCard from "@/components/dashboard/info-card";
