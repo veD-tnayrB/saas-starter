@@ -22,22 +22,13 @@ type ProjectType = {
 const projects: ProjectType[] = [
   {
     title: "Project 1",
-    slug: "project-number-one",
-    color: "bg-red-500",
-  },
-  {
-    title: "Project 2",
-    slug: "project-number-two",
-    color: "bg-blue-500",
+    slug: "Project 1",
+    color: "bg-primary",
   },
 ];
-const selected: ProjectType = projects[1];
+const selected: ProjectType = projects[0];
 
-export default function ProjectSwitcher({
-  large = false,
-}: {
-  large?: boolean;
-}) {
+export function ProjectSwitcher({ large = false }: { large?: boolean }) {
   const { data: session, status } = useSession();
   const [openPopover, setOpenPopover] = useState(false);
 

@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NavItem, SidebarNavItem } from "@/types";
+import { SidebarNavItem } from "@/types";
 import { Menu, PanelLeftClose, PanelRightClose } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ProjectSwitcher from "@/components/dashboard/project-switcher";
+import { ProjectSwitcher } from "@/components/dashboard/project-switcher";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Icons } from "@/components/shared/icons";
 
@@ -30,35 +30,41 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ links }: DashboardSidebarProps) {
   const path = usePathname();
 
-  // NOTE: Use this if you want save in local storage -- Credits: Hosna Qasmei
-  //
-  // const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
-  //   if (typeof window !== "undefined") {
-  //     const saved = window.localStorage.getItem("sidebarExpanded");
-  //     return saved !== null ? JSON.parse(saved) : true;
-  //   }
-  //   return true;
-  // });
+  // Initialize with server-safe default (always true to match SSR)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     window.localStorage.setItem(
-  //       "sidebarExpanded",
-  //       JSON.stringify(isSidebarExpanded),
-  //     );
-  //   }
-  // }, [isSidebarExpanded]);
+  // Read from localStorage only after mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("sidebarExpanded");
+      if (saved !== null) {
+        setIsSidebarExpanded(JSON.parse(saved));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mounted && typeof window !== "undefined") {
+      window.localStorage.setItem(
+        "sidebarExpanded",
+        JSON.stringify(isSidebarExpanded),
+      );
+    }
+  }, [isSidebarExpanded, mounted]);
 
   const { isTablet } = useMediaQuery();
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(!isTablet);
 
   const toggleSidebar = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
   };
 
   useEffect(() => {
-    setIsSidebarExpanded(!isTablet);
-  }, [isTablet]);
+    if (mounted) {
+      setIsSidebarExpanded(!isTablet);
+    }
+  }, [isTablet, mounted]);
 
   return (
     <TooltipProvider delayDuration={0}>
