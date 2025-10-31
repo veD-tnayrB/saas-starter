@@ -32,9 +32,12 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata | undefined> {
-  const post = allPosts.find((post) => post.slugAsParams === params.slug);
+  const resolvedParams = await params;
+  const post = allPosts.find(
+    (post) => post.slugAsParams === resolvedParams.slug,
+  );
   if (!post) {
     return;
   }
@@ -42,7 +45,7 @@ export async function generateMetadata({
   const { title, description, image } = post;
 
   return constructMetadata({
-    title: `${title} – SaaS Starter`,
+    title: `${title} – SaaS Starter`,
     description: description,
     image,
   });
@@ -51,11 +54,14 @@ export async function generateMetadata({
 export default async function PostPage({
   params,
 }: {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }) {
-  const post = allPosts.find((post) => post.slugAsParams === params.slug);
+  const resolvedParams = await params;
+  const post = allPosts.find(
+    (post) => post.slugAsParams === resolvedParams.slug,
+  );
 
   if (!post) {
     notFound();

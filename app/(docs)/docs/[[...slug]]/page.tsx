@@ -14,12 +14,12 @@ import { Metadata } from "next";
 import { constructMetadata, getBlurDataURL } from "@/lib/utils";
 
 interface DocPageProps {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 }
 
-async function getDocFromParams(params) {
+async function getDocFromParams(params: { slug: string[] }) {
   const slug = params.slug?.join("/") || "";
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
@@ -31,20 +31,21 @@ async function getDocFromParams(params) {
 export async function generateMetadata({
   params,
 }: DocPageProps): Promise<Metadata> {
-  const doc = await getDocFromParams(params);
+  const resolvedParams = await params;
+  const doc = await getDocFromParams(resolvedParams);
 
   if (!doc) return {};
 
   const { title, description } = doc;
 
   return constructMetadata({
-    title: `${title} – SaaS Starter`,
+    title: `${title} – SaaS Starter`,
     description: description,
   });
 }
 
 export async function generateStaticParams(): Promise<
-  DocPageProps["params"][]
+  Awaited<DocPageProps["params"]>[]
 > {
   return allDocs.map((doc) => ({
     slug: doc.slugAsParams.split("/"),
@@ -52,7 +53,8 @@ export async function generateStaticParams(): Promise<
 }
 
 export default async function DocPage({ params }: DocPageProps) {
-  const doc = await getDocFromParams(params);
+  const resolvedParams = await params;
+  const doc = await getDocFromParams(resolvedParams);
 
   if (!doc) {
     notFound();

@@ -5,7 +5,7 @@ import { footerLinks, siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 
-import { NewsletterForm } from "../forms/newsletter-form";
+// import { NewsletterForm } from "../forms/newsletter-form";
 import { Icons } from "../shared/icons";
 
 export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
@@ -31,9 +31,9 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
             </ul>
           </div>
         ))}
-        <div className="col-span-full flex flex-col items-end sm:col-span-1 md:col-span-2">
+        {/* <div className="col-span-full flex flex-col items-end sm:col-span-1 md:col-span-2">
           <NewsletterForm />
-        </div>
+        </div> */}
       </div>
 
       <div className="border-t py-4">
@@ -44,12 +44,12 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
           <p className="text-left text-sm text-muted-foreground">
             Built by{" "}
             <Link
-              href={siteConfig.links.twitter}
+              href={siteConfig.links.github}
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
             >
-              mickasmt
+              veD-tnayrB
             </Link>
             . Hosted on{" "}
             <Link
@@ -67,7 +67,16 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
             >
-              Popsy
+              Popsy{" "}
+            </Link>
+            with the base of{" "}
+            <Link
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium underline underline-offset-4"
+              href="https://github.com/veD-tnayrB/saas-starter"
+            >
+              mickasmt
             </Link>
           </p>
 

@@ -18,9 +18,12 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata | undefined> {
-  const page = allPages.find((page) => page.slugAsParams === params.slug);
+  const resolvedParams = await params;
+  const page = allPages.find(
+    (page) => page.slugAsParams === resolvedParams.slug,
+  );
   if (!page) {
     return;
   }
@@ -28,7 +31,7 @@ export async function generateMetadata({
   const { title, description } = page;
 
   return constructMetadata({
-    title: `${title} – SaaS Starter`,
+    title: `${title} – SaaS Starter`,
     description: description,
   });
 }
@@ -36,11 +39,14 @@ export async function generateMetadata({
 export default async function PagePage({
   params,
 }: {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }) {
-  const page = allPages.find((page) => page.slugAsParams === params.slug);
+  const resolvedParams = await params;
+  const page = allPages.find(
+    (page) => page.slugAsParams === resolvedParams.slug,
+  );
 
   if (!page) {
     notFound();
