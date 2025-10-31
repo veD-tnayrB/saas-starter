@@ -44,6 +44,13 @@ export async function generateUserStripe(
     // Redirect to Stripe session
     redirect(result.stripeUrl!);
   } catch (error) {
+    // Re-throw redirect errors as-is (Next.js uses these internally)
+    if (error && typeof error === "object" && "digest" in error) {
+      const digest = String(error.digest);
+      if (digest.startsWith("NEXT_REDIRECT")) {
+        throw error;
+      }
+    }
     console.error("Error in generateUserStripe:", error);
     throw new Error(
       `Failed to generate user stripe session: ${error instanceof Error ? error.message : "Unknown error"}`,

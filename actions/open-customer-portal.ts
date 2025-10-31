@@ -50,6 +50,13 @@ export async function openCustomerPortal(
     // Redirect to Stripe billing portal
     redirect(result.stripeUrl!);
   } catch (error) {
+    // Re-throw redirect errors as-is (Next.js uses these internally)
+    if (error && typeof error === "object" && "digest" in error) {
+      const digest = String(error.digest);
+      if (digest.startsWith("NEXT_REDIRECT")) {
+        throw error;
+      }
+    }
     console.error("Error in openCustomerPortal:", error);
     throw new Error(
       `Failed to open customer portal: ${error instanceof Error ? error.message : "Unknown error"}`,
