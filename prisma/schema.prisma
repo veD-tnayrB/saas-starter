@@ -61,6 +61,11 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  
+  // Project relations
+  ownedProjects    Project[]            @relation("ProjectOwner")
+  projectMembers   ProjectMember[]
+  sentInvitations  ProjectInvitation[] @relation("InvitedBy")
 
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
@@ -77,4 +82,61 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map(name: "verification_tokens")
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  name       String
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+  ownerId    String
+  owner      User     @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members    ProjectMember[]
+  invitations ProjectInvitation[]
+
+  @@index([ownerId])
+  @@map(name: "projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map(name: "project_members")
+}
+
+model ProjectInvitation {
+  id          String   @id @default(cuid())
+  projectId   String
+  email       String
+  role        ProjectRole
+  invitedById String
+  token       String   @unique
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  expiresAt   DateTime @map(name: "expires_at")
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  invitedBy User    @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([email])
+  @@index([token])
+  @@map(name: "project_invitations")
 }

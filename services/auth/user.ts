@@ -1,5 +1,4 @@
 import {
-  createUser,
   deleteUser,
   findUserByEmail,
   findUserById,
@@ -61,7 +60,10 @@ export class UserService {
         throw new Error("User with this email already exists");
       }
 
-      return await createUser(data);
+      const { createUser: createUserRepo } = await import(
+        "@/repositories/auth/user"
+      );
+      return await createUserRepo(data);
     } catch (error) {
       console.error("Error creating user:", error);
       throw new Error("Failed to create user");

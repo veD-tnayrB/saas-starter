@@ -1,4 +1,5 @@
 import { createDefaultEmailClient } from "@/clients/auth";
+import { projectService } from "@/services/projects";
 
 import type {
   IAuthUser,
@@ -40,6 +41,19 @@ export class RegistrationService {
         image: data.image,
         role: "USER",
       });
+
+      // Auto-create personal project for new user
+      if (result.user && result.isNewUser) {
+        try {
+          await projectService.createPersonalProject(
+            result.user.id,
+            result.user.name || null,
+          );
+        } catch (error) {
+          console.error("Error creating personal project:", error);
+          // Don't fail registration if project creation fails
+        }
+      }
 
       return result;
     } catch (error) {
