@@ -54,11 +54,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Soft Black & Silver palette
+        // Soft Black & Silver palette - adapts to theme
         surface: {
-          DEFAULT: "#1A1A1A",
-          light: "#242424",
-          dark: "#0D0D0D",
+          DEFAULT: "hsl(var(--surface))",
+          foreground: "hsl(var(--surface-foreground))",
         },
         silver: {
           DEFAULT: "#C0C0C0",
@@ -136,6 +135,15 @@ const config = {
             opacity: "1",
           },
         },
+        // Shimmer animation for skeleton
+        shimmer: {
+          "0%": {
+            transform: "translateX(-100%)",
+          },
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -148,6 +156,9 @@ const config = {
         // Fade in and out
         "fade-in": "fade-in 0.4s",
         "fade-out": "fade-out 0.4s",
+
+        // Shimmer for skeleton
+        shimmer: "shimmer 2s infinite",
       },
     },
   },

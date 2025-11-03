@@ -149,11 +149,15 @@ export default function ComponentsPage() {
 
               <Card className="bg-surface">
                 <CardHeader>
-                  <CardTitle>Surface Background</CardTitle>
-                  <CardDescription>Using surface color</CardDescription>
+                  <CardTitle className="text-surface-foreground">
+                    Surface Background
+                  </CardTitle>
+                  <CardDescription className="text-surface-foreground/70">
+                    Using surface color
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-surface-foreground/80 text-sm">
                     This card uses the surface background color.
                   </p>
                 </CardContent>
@@ -438,37 +442,58 @@ export default function ComponentsPage() {
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border bg-background" />
                     <p className="text-sm font-medium">background</p>
-                    <p className="text-xs text-muted-foreground">#0D0D0D</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#FAFAFA</span>
+                      <span className="hidden dark:inline">#0D0D0D</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-foreground" />
                     <p className="text-sm font-medium">foreground</p>
-                    <p className="text-xs text-muted-foreground">#F5F5F5</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#0D0D0D</span>
+                      <span className="hidden dark:inline">#F5F5F5</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border bg-card" />
                     <p className="text-sm font-medium">card</p>
-                    <p className="text-xs text-muted-foreground">#1A1A1A</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#FFFFFF</span>
+                      <span className="hidden dark:inline">#1A1A1A</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-primary" />
                     <p className="text-sm font-medium">primary</p>
-                    <p className="text-xs text-muted-foreground">#C0C0C0</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#6B6B6B</span>
+                      <span className="hidden dark:inline">#C0C0C0</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border bg-secondary" />
                     <p className="text-sm font-medium">secondary</p>
-                    <p className="text-xs text-muted-foreground">#1A1A1A</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#F5F5F5</span>
+                      <span className="hidden dark:inline">#1A1A1A</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border bg-muted" />
                     <p className="text-sm font-medium">muted</p>
-                    <p className="text-xs text-muted-foreground">#1A1A1A</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#F5F5F5</span>
+                      <span className="hidden dark:inline">#1A1A1A</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border bg-accent" />
                     <p className="text-sm font-medium">accent</p>
-                    <p className="text-xs text-muted-foreground">#E0E0E0</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#E6E6E6</span>
+                      <span className="hidden dark:inline">#E0E0E0</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-destructive" />
@@ -478,24 +503,36 @@ export default function ComponentsPage() {
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border" />
                     <p className="text-sm font-medium">border</p>
-                    <p className="text-xs text-muted-foreground">#2C2C2C</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#E5E5E5</span>
+                      <span className="hidden dark:inline">#2C2C2C</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="bg-surface h-16 rounded-md border border-border" />
                     <p className="text-sm font-medium">surface</p>
-                    <p className="text-xs text-muted-foreground">#1A1A1A</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#FFFFFF</span>
+                      <span className="hidden dark:inline">#1A1A1A</span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="bg-gradient-silver h-16 rounded-md" />
                     <p className="text-sm font-medium">silver gradient</p>
                     <p className="text-xs text-muted-foreground">
-                      #B0B0B0 → #E0E0E0
+                      <span className="dark:hidden">#6B6B6B → #A0A0A0</span>
+                      <span className="hidden dark:inline">
+                        #B0B0B0 → #E0E0E0
+                      </span>
                     </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md border border-border bg-muted-foreground/10" />
                     <p className="text-sm font-medium">muted-foreground</p>
-                    <p className="text-xs text-muted-foreground">#A0A0A0</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="dark:hidden">#737373</span>
+                      <span className="hidden dark:inline">#A0A0A0</span>
+                    </p>
                   </div>
                 </div>
               </CardContent>
