@@ -10,7 +10,7 @@ export default async function HeroLanding() {
       <div className="container flex max-w-5xl flex-col items-center gap-5 text-center lg:py-8">
         <h1 className="text-balance font-urban text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-[66px]">
           Kick off with a bang with{" "}
-          <span className="text-gradient_indigo-purple font-extrabold">
+          <span className="text-gradient_silver font-extrabold">
             SaaS Starter
           </span>
         </h1>

@@ -80,12 +80,15 @@ function DeleteAccountModal({
             error: (err) => err,
           });
         }}
-        className="flex flex-col space-y-6 bg-accent px-4 py-8 text-left sm:px-16"
+        className="flex flex-col space-y-6 bg-card px-4 py-8 text-left sm:px-16"
       >
         <div>
-          <label htmlFor="verification" className="block text-sm">
+          <label
+            htmlFor="verification"
+            className="block text-sm text-foreground"
+          >
             To verify, type{" "}
-            <span className="font-semibold text-black dark:text-white">
+            <span className="font-semibold text-foreground">
               confirm delete account
             </span>{" "}
             below

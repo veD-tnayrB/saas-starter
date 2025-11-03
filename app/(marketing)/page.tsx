@@ -1,23 +1,31 @@
-import { infos } from "@/config/landing";
-import BentoGrid from "@/components/sections/bentogrid";
-import Features from "@/components/sections/features";
-import HeroLanding from "@/components/sections/hero-landing";
-import InfoLanding from "@/components/sections/info-landing";
-import Powered from "@/components/sections/powered";
-import PreviewLanding from "@/components/sections/preview-landing";
-import Testimonials from "@/components/sections/testimonials";
+import {
+  CTASection,
+  FeaturesSection,
+  HeroSection,
+  TestimonialsSection,
+} from "@/components/home";
 
+/**
+ * Premium Landing Page
+ *
+ * A complete redesign with smooth animations, elegant transitions,
+ * and a modern aesthetic inspired by Linear, Vercel, and Superhuman.
+ *
+ * Features:
+ * - Full viewport hero with animated gradient background
+ * - 3D parallax mouse interaction on hero
+ * - Smooth scroll-triggered animations
+ * - Elegant card designs with hover effects
+ * - Premium color gradients (purple/blue theme)
+ * - Fully responsive design
+ */
 export default function IndexPage() {
   return (
     <>
-      <HeroLanding />
-      <PreviewLanding />
-      <Powered />
-      <BentoGrid />
-      <InfoLanding data={infos[0]} reverse={true} />
-      {/* <InfoLanding data={infos[1]} /> */}
-      <Features />
-      <Testimonials />
+      <HeroSection />
+      <FeaturesSection />
+      <TestimonialsSection />
+      <CTASection />
     </>
   );
 }

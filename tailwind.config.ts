@@ -54,6 +54,17 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Soft Black & Silver palette
+        surface: {
+          DEFAULT: "#1A1A1A",
+          light: "#242424",
+          dark: "#0D0D0D",
+        },
+        silver: {
+          DEFAULT: "#C0C0C0",
+          light: "#E0E0E0",
+          dark: "#B0B0B0",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -17,7 +17,10 @@ export function UpgradeCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="md:max-xl:px-4">
-        <Button size="sm" className="w-full">
+        <Button
+          size="sm"
+          className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift w-full text-background"
+        >
           Upgrade
         </Button>
       </CardContent>

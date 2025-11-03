@@ -108,7 +108,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                     className="flex flex-col gap-0.5"
                   >
                     {isSidebarExpanded ? (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs font-medium uppercase tracking-wider text-foreground/60">
                         {section.title}
                       </p>
                     ) : (
@@ -124,15 +124,22 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                 key={`link-${item.title}`}
                                 href={item.disabled ? "#" : item.href}
                                 className={cn(
-                                  "flex items-center gap-3 rounded-md p-2 text-sm font-medium hover:bg-muted",
+                                  "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-muted",
                                   path === item.href
-                                    ? "bg-muted"
-                                    : "text-muted-foreground hover:text-accent-foreground",
+                                    ? "bg-muted text-foreground"
+                                    : "text-foreground/70 hover:text-foreground",
                                   item.disabled &&
-                                    "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
+                                    "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-foreground/50",
                                 )}
                               >
-                                <Icon className="size-5" />
+                                <Icon
+                                  className={cn(
+                                    "size-5",
+                                    path === item.href
+                                      ? "text-foreground"
+                                      : "text-foreground/70",
+                                  )}
+                                />
                                 {item.title}
                                 {item.badge && (
                                   <Badge className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-full">
@@ -147,16 +154,23 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                     key={`link-tooltip-${item.title}`}
                                     href={item.disabled ? "#" : item.href}
                                     className={cn(
-                                      "flex items-center gap-3 rounded-md py-2 text-sm font-medium hover:bg-muted",
+                                      "flex items-center gap-3 rounded-md py-2 text-sm font-medium transition-colors hover:bg-muted",
                                       path === item.href
-                                        ? "bg-muted"
-                                        : "text-muted-foreground hover:text-accent-foreground",
+                                        ? "bg-muted text-foreground"
+                                        : "text-foreground/70 hover:text-foreground",
                                       item.disabled &&
-                                        "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
+                                        "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-foreground/50",
                                     )}
                                   >
                                     <span className="flex size-full items-center justify-center">
-                                      <Icon className="size-5" />
+                                      <Icon
+                                        className={cn(
+                                          "size-5",
+                                          path === item.href
+                                            ? "text-foreground"
+                                            : "text-foreground/70",
+                                        )}
+                                      />
                                     </span>
                                   </Link>
                                 </TooltipTrigger>
@@ -223,7 +237,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                     key={section.title}
                     className="flex flex-col gap-0.5"
                   >
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs font-medium uppercase tracking-wider text-foreground/60">
                       {section.title}
                     </p>
 
@@ -239,15 +253,22 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                               }}
                               href={item.disabled ? "#" : item.href}
                               className={cn(
-                                "flex items-center gap-3 rounded-md p-2 text-sm font-medium hover:bg-muted",
+                                "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-muted",
                                 path === item.href
-                                  ? "bg-muted"
-                                  : "text-muted-foreground hover:text-accent-foreground",
+                                  ? "bg-muted text-foreground"
+                                  : "text-foreground/70 hover:text-foreground",
                                 item.disabled &&
-                                  "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
+                                  "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-foreground/50",
                               )}
                             >
-                              <Icon className="size-5" />
+                              <Icon
+                                className={cn(
+                                  "size-5",
+                                  path === item.href
+                                    ? "text-foreground"
+                                    : "text-foreground/70",
+                                )}
+                              />
                               {item.title}
                               {item.badge && (
                                 <Badge className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-full">

@@ -22,7 +22,7 @@ export default function BentoGrid() {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="text-gradient_indigo-purple mx-auto block w-fit font-heading text-5xl">
+                <span className="text-gradient_silver mx-auto block w-fit font-heading text-5xl">
                   100%
                 </span>
               </div>

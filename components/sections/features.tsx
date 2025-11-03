@@ -28,7 +28,7 @@ export default function Features() {
                 >
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 aspect-video -translate-y-1/2 rounded-full border bg-gradient-to-b from-purple-500/80 to-white opacity-25 blur-2xl duration-300 group-hover:-translate-y-1/4 dark:from-white dark:to-white dark:opacity-5 dark:group-hover:opacity-10"
+                    className="transition-silver absolute inset-0 aspect-video -translate-y-1/2 rounded-full border bg-gradient-to-b from-[#C0C0C0]/60 to-[#E0E0E0]/40 opacity-20 blur-2xl duration-300 group-hover:-translate-y-1/4"
                   />
                   <div className="relative">
                     <div className="relative flex size-12 rounded-2xl border border-border shadow-sm *:relative *:m-auto *:size-6">
