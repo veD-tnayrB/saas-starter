@@ -56,3 +56,9 @@ const handler = NextAuth(nextAuthConfig);
 
 export { handler as GET, handler as POST };
 export default nextAuthConfig;
+
+// Export auth function for use in server components and API routes
+export const auth = async () => {
+  const { getServerSession } = await import("next-auth");
+  return getServerSession(nextAuthConfig);
+};
