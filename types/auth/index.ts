@@ -87,7 +87,7 @@ export type {
 } from "./errors";
 
 // Re-export Prisma types for convenience
-export type { UserRole } from "@prisma/client";
+// Note: UserRole no longer exists - roles are project-specific (ProjectRole)
 
 // Utility types for auth module
 export type IAuthModuleConfig = {

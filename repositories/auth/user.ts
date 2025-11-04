@@ -267,7 +267,6 @@ export async function searchUsers(
 
     if (criteria.id) where.id = criteria.id;
     if (criteria.email) where.email = criteria.email;
-    if (criteria.role) where.role = criteria.role;
     if (criteria.isEmailVerified !== undefined) {
       where.emailVerified = criteria.isEmailVerified ? { not: null } : null;
     }
@@ -303,7 +302,8 @@ export async function getUserStats(): Promise<IUserStats> {
       await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { emailVerified: { not: null } } }),
-        prisma.user.count({ where: { role: "ADMIN" } }),
+        // Admin users are determined by project ownership/admin roles, not a global user role
+        0,
         prisma.user.count({
           where: {
             createdAt: {
