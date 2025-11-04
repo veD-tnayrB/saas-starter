@@ -144,8 +144,8 @@ This project follows a **clean architecture pattern** with clear separation of c
 
 ## Roadmap
 
+- [x] Add resend for success subscriptions
 - [ ] Upgrade eslint to v9
-- [ ] Add resend for success subscriptions
 - [ ] Project templates and presets
 - [ ] Real-time collaboration features
 - [ ] Advanced project analytics
