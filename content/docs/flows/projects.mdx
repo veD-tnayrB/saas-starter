@@ -1,7 +1,7 @@
 ---
 title: Project Management Flow
 description: End-to-end explanation of the project management flow including projects, members, and invitations
-lastUpdated: 2025-01-27
+lastUpdated: 2025-01-21
 ---
 
 ## Overview
@@ -58,6 +58,13 @@ app/api/projects/
 ```
 app/
 └── accept-invitation/page.tsx – Page for accepting project invitations via token
+```
+
+### Email Templates
+
+```
+emails/
+└── project-invitation-email.tsx – React Email template for project invitations
 ```
 
 ### Database Models
@@ -135,8 +142,10 @@ prisma/schema.prisma
    - Sets expiration date (7 days from now)
    - Creates invitation in database
 6. **Email Sending**:
-   - Renders invitation email template using React Email
-   - Sends email via Resend API with accept URL
+   - Renders invitation email template using `@react-email/render`
+   - Template includes project name, inviter name, role, and accept URL
+   - Sends email via Resend API with HTML and plain text versions
+   - Accept URL format: `/accept-invitation?token={token}`
 7. **Response**: Invitation data with expiration time
 
 ### Invitation Acceptance Flow
