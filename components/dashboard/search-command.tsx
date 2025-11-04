@@ -56,7 +56,7 @@ export function SearchCommand({ links }: { links: SidebarNavItem[] }) {
           Search
           <span className="hidden sm:inline-flex">&nbsp;documentation</span>...
         </span>
-        <kbd className="bg-surface pointer-events-none absolute right-[0.3rem] top-[0.45rem] hidden h-5 select-none items-center gap-1 rounded border border-border px-1.5 font-mono text-[10px] font-medium text-foreground/80 opacity-100 sm:flex">
+        <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.45rem] hidden h-5 select-none items-center gap-1 rounded border border-border bg-surface px-1.5 font-mono text-[10px] font-medium text-foreground/80 opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
@@ -76,7 +76,7 @@ export function SearchCommand({ links }: { links: SidebarNavItem[] }) {
           Search
           <span className="hidden sm:inline-flex">&nbsp;documentation</span>...
         </span>
-        <kbd className="bg-surface pointer-events-none absolute right-[0.3rem] top-[0.45rem] hidden h-5 select-none items-center gap-1 rounded border border-border px-1.5 font-mono text-[10px] font-medium text-foreground/80 opacity-100 sm:flex">
+        <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.45rem] hidden h-5 select-none items-center gap-1 rounded border border-border bg-surface px-1.5 font-mono text-[10px] font-medium text-foreground/80 opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>

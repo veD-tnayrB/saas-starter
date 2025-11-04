@@ -54,7 +54,7 @@ export default async function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <Link key={project.id} href={`/dashboard/${project.id}`}>
-              <Card className="transition-silver hover-lift hover:shadow-silver/10 hover:border-primary/50">
+              <Card className="transition-silver hover-lift hover:border-primary/50 hover:shadow-silver/10">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Icons.package className="h-5 w-5 text-primary" />
