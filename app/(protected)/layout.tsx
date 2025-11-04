@@ -3,10 +3,8 @@ import { getCurrentUser } from "@/repositories/auth/session";
 
 import { sidebarLinks } from "@/config/dashboard";
 import { SearchCommand } from "@/components/dashboard/search-command";
-import {
-  DashboardSidebar,
-  MobileSheetSidebar,
-} from "@/components/layout/dashboard-sidebar";
+import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
+import { MobileSheetSidebar } from "@/components/layout/mobile-sheet-sidebar";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 import { UserAccountNav } from "@/components/layout/user-account-nav";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";

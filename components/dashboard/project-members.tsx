@@ -28,10 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MembersList } from "@/components/dashboard/members-list";
 import { Icons } from "@/components/shared/icons";
-import { UserAvatar } from "@/components/shared/user-avatar";
 
-interface ProjectMember {
+interface IProjectMember {
   id: string;
   userId: string;
   role: ProjectRole;
@@ -43,9 +43,9 @@ interface ProjectMember {
   };
 }
 
-interface ProjectMembersProps {
+interface IProjectMembersProps {
   projectId: string;
-  members: ProjectMember[];
+  members: IProjectMember[];
   userRole: ProjectRole;
 }
 
@@ -53,7 +53,7 @@ export function ProjectMembers({
   projectId,
   members,
   userRole,
-}: ProjectMembersProps) {
+}: IProjectMembersProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<ProjectRole>("MEMBER");
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +67,7 @@ export function ProjectMembers({
 
   const canInvite = userRole === "OWNER" || userRole === "ADMIN";
 
-  const handleInvite = async () => {
+  async function handleInvite() {
     if (!email || !email.includes("@")) {
       toast.error("Please enter a valid email address");
       return;
@@ -106,7 +106,7 @@ export function ProjectMembers({
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const roleDisplay: Record<ProjectRole, string> = {
     OWNER: "Owner",
@@ -119,6 +119,9 @@ export function ProjectMembers({
     ADMIN: "bg-primary/15 text-primary/90",
     MEMBER: "bg-muted text-muted-foreground",
   };
+
+  const hasMembers = members.length > 0;
+  const emptyStateMessage = "No members yet. Invite someone to get started!";
 
   return (
     <Card>
@@ -133,7 +136,7 @@ export function ProjectMembers({
           {canInvite && isMounted && (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift text-background">
+                <Button className="bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift text-background shadow-silver">
                   <Icons.add className="mr-2 h-4 w-4" />
                   Invite Member
                 </Button>
@@ -178,7 +181,7 @@ export function ProjectMembers({
                   <Button
                     onClick={handleInvite}
                     disabled={isLoading || !email}
-                    className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift w-full text-background"
+                    className="bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift w-full text-background shadow-silver"
                   >
                     {isLoading ? (
                       <>
@@ -195,7 +198,7 @@ export function ProjectMembers({
           )}
           {canInvite && !isMounted && (
             <Button
-              className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift text-background"
+              className="bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift text-background shadow-silver"
               onClick={() => setIsOpen(true)}
             >
               <Icons.add className="mr-2 h-4 w-4" />
@@ -205,43 +208,15 @@ export function ProjectMembers({
         </div>
       </CardHeader>
       <CardContent>
-        {members.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            No members yet. Invite someone to get started!
-          </div>
+        {hasMembers ? (
+          <MembersList
+            members={members}
+            roleDisplay={roleDisplay}
+            roleColors={roleColors}
+          />
         ) : (
-          <div className="space-y-3">
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
-              >
-                <div className="flex items-center gap-3">
-                  <UserAvatar
-                    user={{
-                      name: member.user?.name || null,
-                      image: member.user?.image || null,
-                    }}
-                    className="h-10 w-10"
-                  />
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {member.user?.name || "Unknown User"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {member.user?.email || "No email"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${roleColors[member.role]}`}
-                  >
-                    {roleDisplay[member.role]}
-                  </span>
-                </div>
-              </div>
-            ))}
+          <div className="py-8 text-center text-muted-foreground">
+            {emptyStateMessage}
           </div>
         )}
       </CardContent>
