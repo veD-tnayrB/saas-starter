@@ -26,17 +26,48 @@ export function MobileNavigationSections({
     matchedId && !knownRoutes.includes(matchedId) ? matchedId : null;
 
   const [isCurrentProjectOwner, setIsCurrentProjectOwner] = useState(false);
+  const [fallbackProjectId, setFallbackProjectId] = useState<string | null>(
+    null,
+  );
+
+  // Get first project as fallback when no currentProjectId
+  useEffect(() => {
+    async function getFirstProject() {
+      if (currentProjectId) {
+        // If we have a currentProjectId, we don't need fallback
+        setFallbackProjectId(null);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/projects");
+        if (response.ok) {
+          const data = await response.json();
+          const firstProject = data.projects?.[0];
+          if (firstProject?.id) {
+            setFallbackProjectId(firstProject.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error getting first project:", error);
+        setFallbackProjectId(null);
+      }
+    }
+
+    getFirstProject();
+  }, [currentProjectId]);
 
   // Check if user is OWNER of current project (only once, shared across all sections)
   useEffect(() => {
     async function checkOwnerRole() {
-      if (!currentProjectId) {
+      const projectIdToCheck = currentProjectId || fallbackProjectId;
+      if (!projectIdToCheck) {
         setIsCurrentProjectOwner(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/projects/${currentProjectId}`);
+        const response = await fetch(`/api/projects/${projectIdToCheck}`);
         if (response.ok) {
           const data = await response.json();
           setIsCurrentProjectOwner(data.project?.userRole === "OWNER");
@@ -48,7 +79,10 @@ export function MobileNavigationSections({
     }
 
     checkOwnerRole();
-  }, [currentProjectId]);
+  }, [currentProjectId, fallbackProjectId]);
+
+  // Use currentProjectId if available, otherwise use fallbackProjectId
+  const effectiveProjectId = currentProjectId || fallbackProjectId;
 
   const sections = links.map((section, index) => {
     const isLastSection = index === links.length - 1;
@@ -59,7 +93,7 @@ export function MobileNavigationSections({
           section={section}
           path={path}
           onItemClick={onItemClick}
-          currentProjectId={currentProjectId}
+          currentProjectId={effectiveProjectId}
           isCurrentProjectOwner={isCurrentProjectOwner}
         />
       </div>

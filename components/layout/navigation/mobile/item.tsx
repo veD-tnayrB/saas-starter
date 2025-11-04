@@ -46,7 +46,7 @@ export function MobileNavigationItem({
         onClick={handleClick}
         href={linkHref}
         className={linkClass}
-        prefetch
+        prefetch={false}
       >
         <Icon className={cn("size-5", iconClass)} />
         {item.title}
