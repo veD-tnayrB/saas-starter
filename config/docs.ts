@@ -97,6 +97,10 @@ export const docsConfig: DocsConfig = {
           title: "Blog System",
           href: "/docs/flows/blog",
         },
+        {
+          title: "Project Management",
+          href: "/docs/flows/projects",
+        },
       ],
     },
   ],
