@@ -1,10 +1,10 @@
-<a href="https://next-saas-stripe-starter.vercel.app">
-  <img alt="SaaS Starter" src="public/_static/og.jpg">
+<a href="https://saas-starter-teal-eight.vercel.app/">
+  <img alt="SaaS Starter" src="public/_static/screenshot.png">
   <h1 align="center">Next SaaS Stripe Starter</h1>
 </a>
 
 <p align="center">
-  Start at full speed with SaaS Starter !
+Start now.
 </p>
 
 <p align="center">
@@ -43,9 +43,9 @@ Clone & create this repo locally with the following command:
 npx create-next-app my-saas-project --example "https://github.com/veD-tnayrB/saas-starter"
 ```
 
-Or, deploy with Vercel:
+<!-- Or, deploy with Vercel:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmickasmt%2Fnext-saas-stripe-starter)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmickasmt%2Fnext-saas-stripe-starter) -->
 
 ### Steps
 
@@ -176,16 +176,6 @@ https://github.com/veD-tnayrB/saas-starter/assets/62285783/828a4e0f-30e3-4cfe-96
 - [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) – Optimize custom fonts and remove external network requests for improved performance
 - [`ImageResponse`](https://nextjs.org/docs/app/api-reference/functions/image-response) – Generate dynamic Open Graph images at the edge
 
-### Hooks and Utilities
-
-- `useIntersectionObserver` – React hook to observe when an element enters or leaves the viewport
-- `useLocalStorage` – Persist data in the browser's local storage
-- `useScroll` – React hook to observe scroll position ([example](https://github.com/mickasmt/precedent/blob/main/components/layout/navbar.tsx#L12))
-- `nFormatter` – Format numbers with suffixes like `1.2k` or `1.2M`
-- `capitalize` – Capitalize the first letter of a string
-- `truncate` – Truncate a string to a specified length
-- [`use-debounce`](https://www.npmjs.com/package/use-debounce) – Debounce a function call / state update
-
 ### Code Quality
 
 - [TypeScript](https://www.typescriptlang.org/) – Static type checker for end-to-end typesafety
@@ -248,7 +238,7 @@ Projects owners and admins can invite members via email:
 
 Original project created by [@miickasmt](https://twitter.com/miickasmt) in 2023, released under the [MIT license](https://github.com/shadcn/taxonomy/blob/main/LICENSE.md).
 
-This fork is maintained by [@veD-tnayrB](https://github.com/veD-tnayrB) with additional features for multi-project support.
+This fork is maintained by [@veD-tnayrB](https://github.com/veD-tnayrB)
 
 ## Credits
 
