@@ -7,8 +7,9 @@ import { SubscriptionPlan } from "@/types/index";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { BillingFormButton } from "@/components/forms/billing-form-button";
-import { BenefitItem } from "@/components/pricing/benefit-item";
-import { LimitationItem } from "@/components/pricing/limitation-item";
+
+import { BenefitItem } from "./benefit-item";
+import { LimitationItem } from "./limitation-item";
 
 interface IPricingCardProps {
   offer: SubscriptionPlan;

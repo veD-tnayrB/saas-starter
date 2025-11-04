@@ -17,6 +17,9 @@ Code Style and Structure
 - **NO MORE THAN ONE COMPONENT PER FILE.** Extract additional UI into separate files; keep
   files focused and cohesive. Each component must be in its own file.
 - **Keep components small and focused.** Components should not exceed 80 lines. If a component is larger than 80 lines, it's a red flag that indicates at least one subcomponent should be extracted. Break down complex components into smaller, reusable pieces.
+- **Organize related components in folders.** If multiple files share a common prefix (e.g., `project-switcher-button.tsx`, `project-switcher-empty.tsx`, `project-switcher.tsx`), they should be organized in a folder with that prefix. The main component should be `index.tsx` (or the folder name), and subcomponents should be named after their suffix (e.g., `project-switcher/button.tsx`, `project-switcher/empty.tsx`, `project-switcher/index.tsx`). This improves maintainability and makes the component structure clearer.
+- **Nest related folders when parent folder exists.** If a folder like `project/` exists and there's a related folder like `project-switcher/`, nest the related folder inside the parent as `project/switcher/` instead of keeping them as siblings. For example, if you have both `project/` and `project-switcher/` folders, move `project-switcher/` to `project/switcher/`. This creates a clearer hierarchy and groups related functionality together.
+- **Remove redundant prefixes when nesting.** When a component folder is nested inside a parent folder, remove the parent's prefix from the nested folder name. For example, if you have `pricing/pricing-card/`, rename it to `pricing/card/` since the `pricing-` prefix is redundant when already inside the `pricing/` folder. Similarly, `project/project-switcher/` should be `project/switcher/`.
 
 Naming Conventions
 

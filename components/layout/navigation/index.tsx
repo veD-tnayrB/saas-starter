@@ -2,7 +2,7 @@
 
 import { SidebarNavItem } from "@/types";
 
-import { NavigationSection } from "@/components/layout/navigation-section";
+import { NavigationSection } from "./section";
 
 interface INavigationSectionsProps {
   links: SidebarNavItem[];

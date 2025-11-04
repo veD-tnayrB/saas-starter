@@ -2,7 +2,7 @@
 
 import { SidebarNavItem } from "@/types";
 
-import { MobileNavigationItem } from "@/components/layout/mobile-navigation-item";
+import { MobileNavigationItem } from "./item";
 
 interface IMobileNavigationSectionProps {
   section: SidebarNavItem;

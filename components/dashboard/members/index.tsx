@@ -28,8 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MembersList } from "@/components/dashboard/members-list";
 import { Icons } from "@/components/shared/icons";
+
+import { MembersList } from "./list";
 
 interface IProjectMember {
   id: string;

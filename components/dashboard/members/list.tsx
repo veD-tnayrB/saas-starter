@@ -1,6 +1,6 @@
 import type { ProjectRole } from "@prisma/client";
 
-import { MemberItem } from "@/components/dashboard/member-item";
+import { MemberItem } from "./item";
 
 interface IProjectMember {
   id: string;

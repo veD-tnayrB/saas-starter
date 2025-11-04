@@ -4,7 +4,7 @@ import { memberService, projectService } from "@/services/projects";
 
 import { constructMetadata } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { ProjectMembers } from "@/components/dashboard/project-members";
+import { ProjectMembers } from "@/components/dashboard/members";
 
 interface ProjectDashboardPageProps {
   params: Promise<{ projectId: string }>;

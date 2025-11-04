@@ -11,9 +11,9 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ProjectSwitcher } from "@/components/dashboard/project-switcher";
+import { ProjectSwitcher } from "@/components/dashboard/project/switcher";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
-import { MobileNavigationSections } from "@/components/layout/mobile-navigation-sections";
+import { MobileNavigationSections } from "@/components/layout/navigation/mobile";
 import { Icons } from "@/components/shared/icons";
 
 interface IMobileSheetSidebarProps {

@@ -2,7 +2,7 @@
 
 import { SidebarNavItem } from "@/types";
 
-import { NavigationItem } from "@/components/layout/navigation-item";
+import { NavigationItem } from "./item";
 
 interface INavigationSectionProps {
   section: SidebarNavItem;

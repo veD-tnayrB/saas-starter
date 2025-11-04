@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ProjectItem } from "@/components/dashboard/project-item";
+
+import { ProjectItem } from "./item";
 
 interface IProject {
   id: string;

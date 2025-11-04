@@ -6,7 +6,7 @@ import { UserSubscriptionPlan } from "@/types";
 import { pricingData } from "@/config/subscriptions";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ModalContext } from "@/components/modals/providers";
-import { PricingCard } from "@/components/pricing/pricing-card";
+import { PricingCard } from "@/components/pricing/card";
 import { HeaderSection } from "@/components/shared/header-section";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 

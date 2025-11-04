@@ -10,9 +10,9 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ProjectSwitcher } from "@/components/dashboard/project-switcher";
+import { ProjectSwitcher } from "@/components/dashboard/project/switcher";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
-import { NavigationSections } from "@/components/layout/navigation-sections";
+import { NavigationSections } from "@/components/layout/navigation";
 
 interface IDashboardSidebarProps {
   links: SidebarNavItem[];

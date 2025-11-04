@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { CreateProjectDialog } from "@/components/dashboard/create-project-dialog";
+import { CreateProjectDialog } from "@/components/dashboard/project/create-dialog";
 
 interface IProjectSwitcherEmptyProps {
   openDialog: boolean;

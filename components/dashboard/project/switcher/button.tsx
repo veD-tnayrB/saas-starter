@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -15,11 +16,10 @@ interface IProjectSwitcherButtonProps {
   large: boolean;
 }
 
-export function ProjectSwitcherButton({
-  selectedProject,
-  openPopover,
-  large,
-}: IProjectSwitcherButtonProps) {
+export const ProjectSwitcherButton = forwardRef<
+  HTMLButtonElement,
+  IProjectSwitcherButtonProps
+>(({ selectedProject, openPopover, large }, ref) => {
   const buttonVariant = openPopover ? "secondary" : "ghost";
   const spanClassName = cn(
     "inline-block truncate text-sm font-medium xl:max-w-[120px]",
@@ -27,7 +27,7 @@ export function ProjectSwitcherButton({
   );
 
   return (
-    <Button className="h-8 px-2" variant={buttonVariant}>
+    <Button ref={ref} className="h-8 px-2" variant={buttonVariant}>
       <div className="flex items-center space-x-3 pr-2">
         {selectedProject && (
           <>
@@ -49,4 +49,6 @@ export function ProjectSwitcherButton({
       />
     </Button>
   );
-}
+});
+
+ProjectSwitcherButton.displayName = "ProjectSwitcherButton";

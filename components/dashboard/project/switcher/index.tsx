@@ -10,12 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CreateProjectDialog } from "@/components/dashboard/create-project-dialog";
-import { ProjectList } from "@/components/dashboard/project-list";
-import { ProjectSwitcherButton } from "@/components/dashboard/project-switcher-button";
-import { ProjectSwitcherEmpty } from "@/components/dashboard/project-switcher-empty";
-import { ProjectSwitcherPlaceholder } from "@/components/dashboard/project-switcher-placeholder";
-import { useCreateProject } from "@/components/dashboard/use-create-project";
+import { CreateProjectDialog } from "@/components/dashboard/project/create-dialog";
+import { ProjectList } from "@/components/dashboard/project/list";
+import { useCreateProject } from "@/components/dashboard/project/use-create-project";
+
+import { ProjectSwitcherButton } from "./button";
+import { ProjectSwitcherEmpty } from "./empty";
+import { ProjectSwitcherPlaceholder } from "./placeholder";
 
 interface IProject {
   id: string;
