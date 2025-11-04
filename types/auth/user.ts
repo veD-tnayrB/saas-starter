@@ -1,5 +1,3 @@
-import { UserRole } from "@prisma/client";
-
 /**
  * Core user data structure
  */
@@ -9,7 +7,6 @@ export interface IAuthUser {
   email?: string | null;
   emailVerified?: Date | null;
   image?: string | null;
-  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,7 +19,6 @@ export interface IUserCreateData {
   email: string;
   emailVerified?: Date;
   image?: string;
-  role?: UserRole;
 }
 
 /**
@@ -33,7 +29,6 @@ export interface IUserUpdateData {
   email?: string;
   emailVerified?: Date;
   image?: string;
-  role?: UserRole;
 }
 
 /**
@@ -44,7 +39,6 @@ export interface IUserProfile {
   name?: string | null;
   email?: string | null;
   image?: string | null;
-  role: UserRole;
   isEmailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -66,7 +60,6 @@ export interface IUserVerificationStatus {
 export interface IUserSearchCriteria {
   id?: string;
   email?: string;
-  role?: UserRole;
   isEmailVerified?: boolean;
 }
 
@@ -88,6 +81,7 @@ export interface IUserAuthResult {
   user: IAuthUser;
   isNewUser: boolean;
   requiresVerification: boolean;
+  project?: import("@/repositories/projects/project").IProject | null;
 }
 
 /**

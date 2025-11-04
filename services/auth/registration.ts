@@ -1,4 +1,5 @@
 import { createDefaultEmailClient } from "@/clients/auth";
+import type { IProject } from "@/repositories/projects/project";
 import { projectService } from "@/services/projects";
 
 import type {
@@ -34,18 +35,22 @@ export class RegistrationService {
         throw new Error("User already exists");
       }
 
-      // Create user
+      // Create user (no role - roles are project-specific)
       const result = await userAuthService.registerUser({
         name: data.name,
         email: data.email,
         image: data.image,
-        role: "USER",
       });
+      console.log(
+        "--------------- registration result ---------------: ",
+        result,
+      );
 
-      // Auto-create personal project for new user
+      // Auto-create personal project for new user (atomic)
+      let project: IProject | null = null;
       if (result.user && result.isNewUser) {
         try {
-          await projectService.createPersonalProject(
+          project = await projectService.createPersonalProject(
             result.user.id,
             result.user.name || null,
           );
@@ -55,7 +60,10 @@ export class RegistrationService {
         }
       }
 
-      return result;
+      return {
+        ...result,
+        project,
+      };
     } catch (error) {
       console.error("Error initiating registration:", error);
       throw new Error("Failed to initiate registration");

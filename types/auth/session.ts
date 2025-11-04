@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
 
 // Import types to avoid duplications
@@ -7,7 +6,6 @@ import type { IAuthUser } from "./user";
 
 /**
  * Extended session interface for NextAuth
- * Extends the default session with user role information
  */
 export interface IAuthSession extends DefaultSession {
   user: {
@@ -15,7 +13,6 @@ export interface IAuthSession extends DefaultSession {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    role: UserRole;
   };
   expires: string;
 }
@@ -28,7 +25,6 @@ export interface IJWTToken {
   name?: string | null;
   email?: string | null;
   picture?: string | null;
-  role?: UserRole;
   iat?: number;
   exp?: number;
 }
@@ -51,7 +47,6 @@ export interface IJWTCallbackParams {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    role: UserRole;
   };
   account?: {
     provider: string;

@@ -46,7 +46,6 @@ export class SessionService {
           name: user.name,
           email: user.email,
           image: user.image,
-          role: user.role,
         },
         expires: session.expires.toISOString(),
       };
@@ -147,7 +146,6 @@ export class JWTService {
       name: user.name,
       email: user.email,
       picture: user.image,
-      role: user.role,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
     };
@@ -253,7 +251,6 @@ export class SessionManagementService {
           name: token.name,
           email: token.email,
           image: token.picture,
-          role: token.role || "USER",
         },
         expires:
           token.exp && typeof token.exp === "number"
@@ -279,9 +276,6 @@ export class SessionManagementService {
           name: user.name,
           email: user.email,
           picture: user.image,
-          role:
-            (user as { role?: import("@prisma/client").UserRole }).role ||
-            "USER",
         };
       }
 
@@ -328,23 +322,19 @@ export class SessionManagementService {
   }
 
   /**
-   * Check if user has specific role
-   */
-  async hasRole(sessionToken: string, role: string): Promise<boolean> {
-    try {
-      const user = await this.getCurrentUser(sessionToken);
-      return user?.role === role;
-    } catch (error) {
-      console.error("Error checking user role:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Check if user is admin
+   * Check if user is platform admin (owner/admin of any project)
    */
   async isAdmin(sessionToken: string): Promise<boolean> {
-    return this.hasRole(sessionToken, "ADMIN");
+    try {
+      const user = await this.getCurrentUser(sessionToken);
+      if (!user) return false;
+
+      const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+      return await isPlatformAdmin(user.id);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      return false;
+    }
   }
 }
 

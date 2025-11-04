@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ProjectRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER');
+CREATE TYPE "ProjectRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
 
 -- CreateTable
 CREATE TABLE "projects" (
@@ -48,6 +48,12 @@ CREATE INDEX "project_members_projectId_idx" ON "project_members"("projectId");
 CREATE INDEX "project_members_userId_idx" ON "project_members"("userId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "project_members_projectId_userId_key" ON "project_members"("projectId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "project_invitations_token_key" ON "project_invitations"("token");
+
+-- CreateIndex
 CREATE INDEX "project_invitations_projectId_idx" ON "project_invitations"("projectId");
 
 -- CreateIndex
@@ -55,12 +61,6 @@ CREATE INDEX "project_invitations_email_idx" ON "project_invitations"("email");
 
 -- CreateIndex
 CREATE INDEX "project_invitations_token_idx" ON "project_invitations"("token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "project_members_projectId_userId_key" ON "project_members"("projectId", "userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "project_invitations_token_key" ON "project_invitations"("token");
 
 -- AddForeignKey
 ALTER TABLE "projects" ADD CONSTRAINT "projects_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -76,4 +76,3 @@ ALTER TABLE "project_invitations" ADD CONSTRAINT "project_invitations_projectId_
 
 -- AddForeignKey
 ALTER TABLE "project_invitations" ADD CONSTRAINT "project_invitations_invitedById_fkey" FOREIGN KEY ("invitedById") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

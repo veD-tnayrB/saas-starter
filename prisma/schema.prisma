@@ -6,13 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-}
-
-enum UserRole {
-  ADMIN
-  USER
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -57,15 +52,14 @@ model User {
   image         String?
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @default(now()) @map(name: "updated_at")
-  role          UserRole  @default(USER)
 
   accounts Account[]
   sessions Session[]
-  
+
   // Project relations
-  ownedProjects    Project[]            @relation("ProjectOwner")
-  projectMembers   ProjectMember[]
-  sentInvitations  ProjectInvitation[] @relation("InvitedBy")
+  ownedProjects   Project[]           @relation("ProjectOwner")
+  projectMembers  ProjectMember[]
+  sentInvitations ProjectInvitation[] @relation("InvitedBy")
 
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
@@ -88,17 +82,16 @@ enum ProjectRole {
   OWNER
   ADMIN
   MEMBER
-  VIEWER
 }
 
 model Project {
-  id         String   @id @default(cuid())
-  name       String
-  createdAt  DateTime @default(now()) @map(name: "created_at")
-  updatedAt  DateTime @updatedAt @map(name: "updated_at")
-  ownerId    String
-  owner      User     @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members    ProjectMember[]
+  id          String              @id @default(cuid())
+  name        String
+  createdAt   DateTime            @default(now()) @map(name: "created_at")
+  updatedAt   DateTime            @updatedAt @map(name: "updated_at")
+  ownerId     String
+  owner       User                @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
   invitations ProjectInvitation[]
 
   @@index([ownerId])
@@ -106,12 +99,12 @@ model Project {
 }
 
 model ProjectMember {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   projectId String
   userId    String
   role      ProjectRole
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  createdAt DateTime    @default(now()) @map(name: "created_at")
+  updatedAt DateTime    @updatedAt @map(name: "updated_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -123,14 +116,14 @@ model ProjectMember {
 }
 
 model ProjectInvitation {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   projectId   String
   email       String
   role        ProjectRole
   invitedById String
-  token       String   @unique
-  createdAt   DateTime @default(now()) @map(name: "created_at")
-  expiresAt   DateTime @map(name: "expires_at")
+  token       String      @unique
+  createdAt   DateTime    @default(now()) @map(name: "created_at")
+  expiresAt   DateTime    @map(name: "expires_at")
 
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   invitedBy User    @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)

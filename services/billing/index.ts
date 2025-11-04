@@ -242,10 +242,16 @@ export class BillingService {
    * @param targetUserId - Target user ID for the operation
    * @returns True if user has access
    */
-  validateUserAccess(user: IAuthUser, targetUserId: string): boolean {
+  async validateUserAccess(
+    user: IAuthUser,
+    targetUserId: string,
+  ): Promise<boolean> {
     // Users can only access their own billing information
-    // Admins can access any user's billing information
-    return user.id === targetUserId || user.role === "ADMIN";
+    // Platform admins (project owners/admins) can access any user's billing information
+    if (user.id === targetUserId) return true;
+
+    const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+    return await isPlatformAdmin(user.id);
   }
 
   /**
@@ -258,7 +264,7 @@ export class BillingService {
     user: IAuthUser,
     targetUserId: string,
   ): Promise<string | null> {
-    if (!this.validateUserAccess(user, targetUserId)) {
+    if (!(await this.validateUserAccess(user, targetUserId))) {
       return null;
     }
 
@@ -278,7 +284,7 @@ export class BillingService {
     targetUserId: string,
     priceId: string,
   ): Promise<string | null> {
-    if (!this.validateUserAccess(user, targetUserId)) {
+    if (!(await this.validateUserAccess(user, targetUserId))) {
       return null;
     }
 

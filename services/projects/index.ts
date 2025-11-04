@@ -6,6 +6,6 @@
  * @module services/projects
  */
 
-export { InvitationService, invitationService } from "./invitationService";
-export { MemberService, memberService } from "./memberService";
-export { ProjectService, projectService } from "./projectService";
+export { InvitationService, invitationService } from "./invitation-service";
+export { MemberService, memberService } from "./member-service";
+export { ProjectService, projectService } from "./project-service";

@@ -8,7 +8,7 @@ import { z } from "zod";
 const inviteSchema = z.object({
   projectId: z.string().min(1),
   email: z.string().email(),
-  role: z.enum(["ADMIN", "MEMBER", "VIEWER"]),
+  role: z.enum(["ADMIN", "MEMBER"]),
 });
 
 export async function POST(req: Request) {

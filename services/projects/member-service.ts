@@ -26,10 +26,9 @@ export class MemberService {
       if (!role) return false;
 
       const roleHierarchy: Record<ProjectRole, number> = {
-        OWNER: 4,
-        ADMIN: 3,
-        MEMBER: 2,
-        VIEWER: 1,
+        OWNER: 3,
+        ADMIN: 2,
+        MEMBER: 1,
       };
 
       return roleHierarchy[role] >= roleHierarchy[requiredRole];

@@ -10,7 +10,7 @@ export const metadata = constructMetadata({
 
 export default async function OrdersPage() {
   // const user = await getCurrentUser();
-  // if (!user || user.role !== "ADMIN") redirect("/login");
+  // Admin access is checked in admin/layout.tsx
 
   return (
     <>

@@ -20,10 +20,14 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   if (!user) redirect("/login");
 
+  const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+  const userIsAdmin = await isPlatformAdmin(user.id);
+
   const filteredLinks = sidebarLinks.map((section) => ({
     ...section,
     items: section.items.filter(
-      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user.role,
+      ({ authorizeOnly }) =>
+        !authorizeOnly || (authorizeOnly === "ADMIN" && userIsAdmin),
     ),
   }));
 

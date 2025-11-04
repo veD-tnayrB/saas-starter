@@ -33,7 +33,6 @@ export const ProjectInvitationEmail = ({
     OWNER: "Owner",
     ADMIN: "Administrator",
     MEMBER: "Member",
-    VIEWER: "Viewer",
   };
 
   return (

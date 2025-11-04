@@ -112,14 +112,12 @@ export function ProjectMembers({
     OWNER: "Owner",
     ADMIN: "Administrator",
     MEMBER: "Member",
-    VIEWER: "Viewer",
   };
 
   const roleColors: Record<ProjectRole, string> = {
     OWNER: "bg-primary/20 text-primary",
     ADMIN: "bg-primary/15 text-primary/90",
     MEMBER: "bg-muted text-muted-foreground",
-    VIEWER: "bg-muted/50 text-muted-foreground/80",
   };
 
   return (
@@ -132,83 +130,77 @@ export function ProjectMembers({
               Manage team members and their roles in this project.
             </CardDescription>
           </div>
-          {canInvite && (
-            <>
-              {isMounted ? (
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift text-background">
-                      <Icons.add className="mr-2 h-4 w-4" />
-                      Invite Member
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Invite Team Member</DialogTitle>
-                      <DialogDescription>
-                        Send an invitation to join this project. They will
-                        receive an email with instructions.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                          Email Address
-                        </label>
-                        <Input
-                          type="email"
-                          placeholder="colleague@example.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                          Role
-                        </label>
-                        <Select
-                          value={role}
-                          onValueChange={(value) =>
-                            setRole(value as ProjectRole)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ADMIN">Administrator</SelectItem>
-                            <SelectItem value="MEMBER">Member</SelectItem>
-                            <SelectItem value="VIEWER">Viewer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button
-                        onClick={handleInvite}
-                        disabled={isLoading || !email}
-                        className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift w-full text-background"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          "Send Invitation"
-                        )}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              ) : (
-                <Button
-                  className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift text-background"
-                  onClick={() => setIsOpen(true)}
-                >
+          {canInvite && isMounted && (
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift text-background">
                   <Icons.add className="mr-2 h-4 w-4" />
                   Invite Member
                 </Button>
-              )}
-            </>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Invite Team Member</DialogTitle>
+                  <DialogDescription>
+                    Send an invitation to join this project. They will receive
+                    an email with instructions.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">
+                      Email Address
+                    </label>
+                    <Input
+                      type="email"
+                      placeholder="colleague@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">
+                      Role
+                    </label>
+                    <Select
+                      value={role}
+                      onValueChange={(value) => setRole(value as ProjectRole)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADMIN">Administrator</SelectItem>
+                        <SelectItem value="MEMBER">Member</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={handleInvite}
+                    disabled={isLoading || !email}
+                    className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift w-full text-background"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Invitation"
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+          {canInvite && !isMounted && (
+            <Button
+              className="bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift text-background"
+              onClick={() => setIsOpen(true)}
+            >
+              <Icons.add className="mr-2 h-4 w-4" />
+              Invite Member
+            </Button>
           )}
         </div>
       </CardHeader>

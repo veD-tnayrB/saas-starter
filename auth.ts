@@ -1,6 +1,6 @@
 import { sessionManagementService } from "@/services/auth";
+import { projectService } from "@/services/projects";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { UserRole } from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
 
 import authConfig from "@/config/auth";
@@ -11,7 +11,6 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      role: UserRole;
     } & DefaultSession["user"];
   }
 }
@@ -36,6 +35,17 @@ const nextAuthConfig = {
         user,
       );
       return result || token;
+    },
+  },
+  events: {
+    async createUser({ user }) {
+      // Auto-create personal project for new OAuth users
+      try {
+        await projectService.createPersonalProject(user.id, user.name || null);
+      } catch (error) {
+        console.error("Error creating personal project for new user:", error);
+        // Don't throw - allow user creation to succeed
+      }
     },
   },
   ...authConfig,

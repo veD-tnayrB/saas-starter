@@ -26,6 +26,8 @@ export default async function DashboardPage() {
 
   // Get all user projects
   const projects = await findAllUserProjects(user.id);
+  console.log("projects: ", projects);
+  console.log("usr: ", user);
 
   // If user has exactly one project, redirect to it
   if (projects.length === 1) {

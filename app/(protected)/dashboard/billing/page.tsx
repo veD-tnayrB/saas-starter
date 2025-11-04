@@ -16,12 +16,11 @@ export const metadata = constructMetadata({
 export default async function BillingPage() {
   const user = await getCurrentUser();
 
-  let userSubscriptionPlan;
-  if (user && user.id && user.role === "USER") {
-    userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
-  } else {
+  if (!user || !user.id) {
     redirect("/login");
   }
+
+  const userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
 
   return (
     <>

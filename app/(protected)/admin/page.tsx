@@ -2,18 +2,22 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
 
 import { constructMetadata } from "@/lib/utils";
+import { isPlatformAdmin } from "@/lib/utils/platform-admin";
 import { DashboardHeader } from "@/components/dashboard/header";
 import InfoCard from "@/components/dashboard/info-card";
 import TransactionsList from "@/components/dashboard/transactions-list";
 
 export const metadata = constructMetadata({
-  title: "Admin – SaaS Starter",
+  title: "Admin – SaaS Starter",
   description: "Admin page for only admin management.",
 });
 
 export default async function AdminPage() {
   const user = await getCurrentUser();
-  if (!user || user.role !== "ADMIN") redirect("/login");
+  if (!user) redirect("/login");
+
+  const userIsAdmin = await isPlatformAdmin(user.id);
+  if (!userIsAdmin) redirect("/dashboard");
 
   return (
     <>

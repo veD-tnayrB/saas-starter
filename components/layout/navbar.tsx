@@ -103,10 +103,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
           {status === "loading" ? (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           ) : session ? (
-            <Link
-              href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
-              className="hidden md:block"
-            >
+            <Link href="/dashboard" className="hidden md:block">
               <Button
                 className="gap-2 px-5"
                 variant="default"

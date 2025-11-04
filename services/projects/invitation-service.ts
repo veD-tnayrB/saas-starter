@@ -20,7 +20,7 @@ import { Resend } from "resend";
 import { env } from "@/env.mjs";
 import { siteConfig } from "@/config/site";
 
-import { memberService } from "./memberService";
+import { memberService } from "./member-service";
 
 /**
  * Invitation service for business logic

@@ -9,7 +9,9 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
   const user = await getCurrentUser();
 
   if (user) {
-    if (user.role === "ADMIN") redirect("/admin");
+    const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+    const userIsAdmin = await isPlatformAdmin(user.id);
+    if (userIsAdmin) redirect("/admin");
     redirect("/dashboard");
   }
 

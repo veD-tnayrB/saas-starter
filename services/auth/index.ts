@@ -261,19 +261,7 @@ export class AuthService {
   }
 
   /**
-   * Check if user has role
-   */
-  async hasRole(sessionToken: string, role: string): Promise<boolean> {
-    try {
-      return await this.sessionManagement.hasRole(sessionToken, role);
-    } catch (error) {
-      console.error("Error checking user role:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Check if user is admin
+   * Check if user is platform admin (owner/admin of any project)
    */
   async isAdmin(sessionToken: string): Promise<boolean> {
     try {

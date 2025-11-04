@@ -196,10 +196,7 @@ export class UserService {
       errors.push("Name must be at least 2 characters long");
     }
 
-    // Role validation
-    if (data.role && !["USER", "ADMIN"].includes(data.role)) {
-      errors.push("Invalid role");
-    }
+    // No role validation needed - roles are project-specific
 
     return {
       isValid: errors.length === 0,
