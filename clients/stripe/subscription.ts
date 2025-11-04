@@ -4,7 +4,8 @@ import {
   CheckoutSessionData,
   UpdateSubscriptionData,
 } from "@/types/subscriptions";
-import { stripe } from "@/lib/stripe";
+
+import { stripe } from "./client";
 
 /**
  * Create Stripe checkout session

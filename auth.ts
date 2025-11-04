@@ -1,10 +1,10 @@
+import { prisma } from "@/clients/db";
 import { sessionManagementService } from "@/services/auth";
 import { projectService } from "@/services/projects";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import NextAuth, { type DefaultSession } from "next-auth";
 
 import authConfig from "@/config/auth";
-import { prisma } from "@/lib/db";
 
 // More info: https://next-auth.js.org/getting-started/typescript#module-augmentation
 declare module "next-auth" {

@@ -1,9 +1,9 @@
+import { stripe } from "@/clients/stripe";
 import { findUserById } from "@/repositories/auth";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
 import Stripe from "stripe";
 
 import type { IAuthUser } from "@/types/auth";
-import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
 
 /**
@@ -250,7 +250,7 @@ export class BillingService {
     // Platform admins (project owners/admins) can access any user's billing information
     if (user.id === targetUserId) return true;
 
-    const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+    const { isPlatformAdmin } = await import("@/services/auth/platform-admin");
     return await isPlatformAdmin(user.id);
   }
 

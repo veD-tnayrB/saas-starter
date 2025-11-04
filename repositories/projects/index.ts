@@ -9,7 +9,9 @@
 
 // Project repository functions
 export {
+  countProjectsByOwner,
   createProject,
+  createProjectWithOwner,
   deleteProject,
   findAllUserProjects,
   findProjectById,
@@ -20,6 +22,7 @@ export {
 
 // Project member repository functions
 export {
+  countAdminMemberships,
   createProjectMember,
   findProjectMember,
   findProjectMembers,

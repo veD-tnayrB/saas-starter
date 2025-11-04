@@ -5,6 +5,8 @@ import type { ProjectRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { canInviteMembers } from "@/lib/project-roles";
+
 const inviteSchema = z.object({
   projectId: z.string().min(1),
   email: z.string().email(),
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
       projectId,
       session.user.id,
     );
-    if (!userRole || (userRole !== "OWNER" && userRole !== "ADMIN")) {
+    if (!canInviteMembers(userRole)) {
       return NextResponse.json(
         { error: "You don't have permission to invite members" },
         { status: 403 },

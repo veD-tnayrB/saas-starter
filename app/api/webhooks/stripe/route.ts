@@ -1,9 +1,9 @@
 import { headers } from "next/headers";
+import { stripe } from "@/clients/stripe";
 import { handleWebhookEvent } from "@/services/subscriptions";
 import Stripe from "stripe";
 
 import { env } from "@/env.mjs";
-import { stripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {
   const body = await req.text();

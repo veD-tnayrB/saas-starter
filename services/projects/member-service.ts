@@ -9,6 +9,8 @@ import {
 } from "@/repositories/projects/members";
 import type { ProjectRole } from "@prisma/client";
 
+import { hasPermissionLevel } from "@/lib/project-roles";
+
 /**
  * Project member service for business logic
  */
@@ -23,15 +25,7 @@ export class MemberService {
   ): Promise<boolean> {
     try {
       const role = await getUserProjectRole(projectId, userId);
-      if (!role) return false;
-
-      const roleHierarchy: Record<ProjectRole, number> = {
-        OWNER: 3,
-        ADMIN: 2,
-        MEMBER: 1,
-      };
-
-      return roleHierarchy[role] >= roleHierarchy[requiredRole];
+      return hasPermissionLevel(role, requiredRole);
     } catch (error) {
       console.error("Error checking permission:", error);
       return false;

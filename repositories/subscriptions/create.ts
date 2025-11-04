@@ -1,9 +1,10 @@
+import { prisma } from "@/clients/db";
+
 import {
   CreateSubscriptionData,
   SubscriptionData,
   UserSubscriptionRecord,
 } from "@/types/subscriptions";
-import { prisma } from "@/lib/db";
 
 /**
  * Create new subscription record

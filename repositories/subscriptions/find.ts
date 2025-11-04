@@ -1,5 +1,6 @@
+import { prisma } from "@/clients/db";
+
 import { UserSubscriptionRecord } from "@/types/subscriptions";
-import { prisma } from "@/lib/db";
 
 /**
  * Find user subscription data by user ID

@@ -329,7 +329,7 @@ export class SessionManagementService {
       const user = await this.getCurrentUser(sessionToken);
       if (!user) return false;
 
-      const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+      const { isPlatformAdmin } = await import("./platform-admin");
       return await isPlatformAdmin(user.id);
     } catch (error) {
       console.error("Error checking admin status:", error);

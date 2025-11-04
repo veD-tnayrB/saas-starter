@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
-
-import { isPlatformAdmin } from "@/lib/utils/platform-admin";
+import { isPlatformAdmin } from "@/services/auth/platform-admin";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;

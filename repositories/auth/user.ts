@@ -1,3 +1,5 @@
+import { prisma } from "@/clients/db";
+
 import type {
   IAuthUser,
   IUserActivity,
@@ -7,7 +9,6 @@ import type {
   IUserStats,
   IUserUpdateData,
 } from "@/types/auth";
-import { prisma } from "@/lib/db";
 
 /**
  * Find user by ID

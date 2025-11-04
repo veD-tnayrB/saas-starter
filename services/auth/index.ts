@@ -65,6 +65,9 @@ export {
   providerService,
 } from "./providers";
 
+// Platform admin service exports
+export { isPlatformAdmin } from "./platform-admin";
+
 // Re-export types for convenience
 export type {
   IAuthSession,

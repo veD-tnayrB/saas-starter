@@ -18,7 +18,7 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   if (!user) redirect("/login");
 
-  const { isPlatformAdmin } = await import("@/lib/utils/platform-admin");
+  const { isPlatformAdmin } = await import("@/services/auth/platform-admin");
   const userIsAdmin = await isPlatformAdmin(user.id);
 
   const filteredLinks = sidebarLinks.map((section) => ({

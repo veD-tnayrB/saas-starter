@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/clients/db";
+import type { ProjectRole } from "@prisma/client";
 
 /**
  * Project data transfer object
@@ -72,6 +73,20 @@ export async function findProjectsByOwner(
   } catch (error) {
     console.error("Error finding projects by owner:", error);
     throw new Error("Failed to find projects");
+  }
+}
+
+/**
+ * Count projects owned by user
+ */
+export async function countProjectsByOwner(ownerId: string): Promise<number> {
+  try {
+    return await prisma.project.count({
+      where: { ownerId },
+    });
+  } catch (error) {
+    console.error("Error counting projects by owner:", error);
+    throw new Error("Failed to count projects");
   }
 }
 
@@ -151,6 +166,49 @@ export async function createProject(
     return project;
   } catch (error) {
     console.error("Error creating project:", error);
+    throw new Error("Failed to create project");
+  }
+}
+
+/**
+ * Create project with owner as member (atomic transaction)
+ */
+export async function createProjectWithOwner(
+  data: IProjectCreateData,
+  ownerRole: ProjectRole,
+): Promise<IProject> {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Create project
+      const project = await tx.project.create({
+        data: {
+          name: data.name,
+          ownerId: data.ownerId,
+        },
+        select: {
+          id: true,
+          name: true,
+          ownerId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      // Add owner as member
+      await tx.projectMember.create({
+        data: {
+          projectId: project.id,
+          userId: data.ownerId,
+          role: ownerRole,
+        },
+      });
+
+      return project;
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error creating project with owner:", error);
     throw new Error("Failed to create project");
   }
 }

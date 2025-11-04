@@ -11,6 +11,9 @@
 export {
   BaseEmailClient,
   EmailTemplateGenerator,
+  emailClient,
+  resend,
+  sendVerificationRequest,
   type EmailClient,
   type EmailConfig,
   type EmailResult,

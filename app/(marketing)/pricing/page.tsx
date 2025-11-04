@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCurrentUser } from "@/repositories/auth/session";
+import { isPlatformAdmin } from "@/services/auth/platform-admin";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
 
 import { constructMetadata } from "@/lib/utils";
-import { isPlatformAdmin } from "@/lib/utils/platform-admin";
 import { ComparePlans } from "@/components/pricing/compare-plans";
 import { PricingCards } from "@/components/pricing/pricing-cards";
 import { PricingFaq } from "@/components/pricing/pricing-faq";

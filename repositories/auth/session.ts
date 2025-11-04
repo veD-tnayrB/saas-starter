@@ -2,6 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import NextAuth from "@/auth";
+import { prisma } from "@/clients/db";
 import { getServerSession } from "next-auth";
 
 import type {
@@ -10,7 +11,6 @@ import type {
   ISessionValidationResult,
   ISessionWithUserData,
 } from "@/types/auth";
-import { prisma } from "@/lib/db";
 
 /**
  * Find session by ID

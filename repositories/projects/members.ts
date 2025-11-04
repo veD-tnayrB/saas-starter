@@ -1,6 +1,5 @@
+import { prisma } from "@/clients/db";
 import type { ProjectRole } from "@prisma/client";
-
-import { prisma } from "@/lib/db";
 
 /**
  * Project member data transfer object
@@ -57,9 +56,7 @@ export async function findProjectMember(
 /**
  * Find all members of a project with user information
  */
-export async function findProjectMembers(
-  projectId: string,
-): Promise<
+export async function findProjectMembers(projectId: string): Promise<
   (IProjectMember & {
     user: {
       id: string;
@@ -199,5 +196,24 @@ export async function removeProjectMember(
   } catch (error) {
     console.error("Error removing project member:", error);
     throw new Error("Failed to remove project member");
+  }
+}
+
+/**
+ * Count admin memberships for a user (OWNER or ADMIN roles)
+ */
+export async function countAdminMemberships(userId: string): Promise<number> {
+  try {
+    return await prisma.projectMember.count({
+      where: {
+        userId,
+        role: {
+          in: ["OWNER", "ADMIN"],
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error counting admin memberships:", error);
+    throw new Error("Failed to count admin memberships");
   }
 }

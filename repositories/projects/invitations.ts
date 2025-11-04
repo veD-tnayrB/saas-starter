@@ -1,6 +1,5 @@
+import { prisma } from "@/clients/db";
 import type { ProjectRole } from "@prisma/client";
-
-import { prisma } from "@/lib/db";
 
 /**
  * Project invitation data transfer object

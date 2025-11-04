@@ -1,4 +1,5 @@
 import {
+  createProjectWithOwner,
   findAllUserProjects,
   findProjectById,
   type IProject,
@@ -7,7 +8,11 @@ import {
 } from "@/repositories/projects/project";
 import type { ProjectRole } from "@prisma/client";
 
-import { prisma } from "@/lib/db";
+import {
+  canDeleteProject,
+  canUpdateSettings,
+  PROJECT_ROLES,
+} from "@/lib/project-roles";
 
 import { invitationService } from "./invitation-service";
 import { memberService } from "./member-service";
@@ -36,34 +41,11 @@ export class ProjectService {
     IProject & { members: Array<{ email: string; role: ProjectRole }> }
   > {
     try {
-      // Use transaction to ensure atomicity
-      const result = await prisma.$transaction(async (tx) => {
-        // Create project
-        const project = await tx.project.create({
-          data: {
-            name: data.name,
-            ownerId: data.ownerId,
-          },
-          select: {
-            id: true,
-            name: true,
-            ownerId: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        });
-
-        // Add owner as OWNER member
-        await tx.projectMember.create({
-          data: {
-            projectId: project.id,
-            userId: data.ownerId,
-            role: "OWNER",
-          },
-        });
-
-        return project;
-      });
+      // Create project with owner as member (atomic transaction in repository)
+      const result = await createProjectWithOwner(
+        { name: data.name, ownerId: data.ownerId },
+        PROJECT_ROLES.OWNER,
+      );
 
       // Handle initial members (send invitations for non-existent users)
       const memberResults: Array<{ email: string; role: ProjectRole }> = [];
@@ -165,7 +147,7 @@ export class ProjectService {
 
           return {
             ...project,
-            userRole: userRole || ("MEMBER" as ProjectRole),
+            userRole: userRole || (PROJECT_ROLES.MEMBER as ProjectRole),
             owner: {
               id: owner?.id || project.ownerId,
               name: owner?.name || null,
@@ -202,7 +184,7 @@ export class ProjectService {
     try {
       // Check permission
       const userRole = await memberService.getUserRole(id, userId);
-      if (!userRole || (userRole !== "OWNER" && userRole !== "ADMIN")) {
+      if (!canUpdateSettings(userRole)) {
         throw new Error("You don't have permission to update this project");
       }
 
@@ -316,7 +298,7 @@ export class ProjectService {
     try {
       // Check if user is OWNER
       const userRole = await memberService.getUserRole(id, userId);
-      if (userRole !== "OWNER") {
+      if (!canDeleteProject(userRole)) {
         throw new Error("Only the project owner can delete the project");
       }
 

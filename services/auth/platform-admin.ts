@@ -1,4 +1,7 @@
-import { prisma } from "@/lib/db";
+import {
+  countAdminMemberships,
+  countProjectsByOwner,
+} from "@/repositories/projects";
 
 /**
  * Check if user has platform admin privileges
@@ -7,23 +10,14 @@ import { prisma } from "@/lib/db";
 export async function isPlatformAdmin(userId: string): Promise<boolean> {
   try {
     // Check if user is OWNER of any project
-    const ownedProjects = await prisma.project.count({
-      where: { ownerId: userId },
-    });
+    const ownedProjects = await countProjectsByOwner(userId);
 
     if (ownedProjects > 0) {
       return true;
     }
 
     // Check if user has ADMIN role in any project
-    const adminMemberships = await prisma.projectMember.count({
-      where: {
-        userId,
-        role: {
-          in: ["OWNER", "ADMIN"],
-        },
-      },
-    });
+    const adminMemberships = await countAdminMemberships(userId);
 
     return adminMemberships > 0;
   } catch (error) {
@@ -31,3 +25,4 @@ export async function isPlatformAdmin(userId: string): Promise<boolean> {
     return false;
   }
 }
+

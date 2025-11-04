@@ -1,9 +1,10 @@
+import { prisma } from "@/clients/db";
+
 import type {
   IProviderAccount,
   IProviderLinkData,
   IProviderUnlinkData,
 } from "@/types/auth";
-import { prisma } from "@/lib/db";
 
 /**
  * Find account by provider and provider account ID

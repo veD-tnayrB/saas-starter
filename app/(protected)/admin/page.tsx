@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
+import { isPlatformAdmin } from "@/services/auth/platform-admin";
 
 import { constructMetadata } from "@/lib/utils";
-import { isPlatformAdmin } from "@/lib/utils/platform-admin";
 import { DashboardHeader } from "@/components/dashboard/header";
 import InfoCard from "@/components/dashboard/info-card";
 import TransactionsList from "@/components/dashboard/transactions-list";

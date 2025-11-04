@@ -1,8 +1,9 @@
+import { prisma } from "@/clients/db";
+
 import {
   UpdateSubscriptionData,
   UserSubscriptionRecord,
 } from "@/types/subscriptions";
-import { prisma } from "@/lib/db";
 
 /**
  * Update user subscription data
