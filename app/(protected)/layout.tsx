@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
 
 import { sidebarLinks } from "@/config/dashboard";
+import { filterNavigationItems } from "@/lib/navigation-auth";
 import { SearchCommand } from "@/components/dashboard/search-command";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { MobileSheetSidebar } from "@/components/layout/mobile-sheet-sidebar";
@@ -21,12 +22,11 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
   const { isPlatformAdmin } = await import("@/services/auth/platform-admin");
   const userIsAdmin = await isPlatformAdmin(user.id);
 
+  // Filter links for ADMIN (OWNER filtering is done in client component)
+  // OWNER filtering requires pathname which is only available in client components
   const filteredLinks = sidebarLinks.map((section) => ({
     ...section,
-    items: section.items.filter(
-      ({ authorizeOnly }) =>
-        !authorizeOnly || (authorizeOnly === "ADMIN" && userIsAdmin),
-    ),
+    items: filterNavigationItems(section.items, userIsAdmin, false),
   }));
 
   return (

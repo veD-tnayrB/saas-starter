@@ -54,46 +54,46 @@ export const infos: InfoLdg[] = [
 
 export const features: FeatureLdg[] = [
   {
-    title: "Feature 1",
+    title: "Multi-Project Support",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
-    link: "/",
-    icon: "nextjs",
-  },
-  {
-    title: "Feature 2",
-    description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
-    link: "/",
-    icon: "google",
-  },
-  {
-    title: "Feature 3",
-    description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
-    link: "/",
-    icon: "gitHub",
-  },
-  {
-    title: "Feature 4",
-    description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Users can belong to multiple projects with different roles per project. Perfect for teams managing multiple initiatives with granular access control.",
     link: "/",
     icon: "laptop",
   },
   {
-    title: "Feature 5",
+    title: "Authentication & Authorization",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Built with Auth.js v5 supporting OAuth providers (Google, GitHub) and secure JWT-based sessions. Platform admin access for project owners and admins.",
     link: "/",
     icon: "user",
   },
   {
-    title: "Feature 6",
+    title: "Stripe Integration",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Complete subscription management with Stripe. Customer portal, flexible pricing tiers, and automated billing all handled seamlessly.",
     link: "/",
-    icon: "copy",
+    icon: "billing",
+  },
+  {
+    title: "Email System",
+    description:
+      "Beautiful, responsive email templates with React Email and reliable delivery via Resend. Project invitations with branded emails included.",
+    link: "/",
+    icon: "mail",
+  },
+  {
+    title: "Role-Based Access Control",
+    description:
+      "Project-specific roles (OWNER, ADMIN, MEMBER) with permission-based access. Fine-grained control over who can do what in each project.",
+    link: "/",
+    icon: "settings",
+  },
+  {
+    title: "Clean Architecture",
+    description:
+      "Repository/Service pattern for maintainable and scalable code. Clear separation of concerns with type-safe TypeScript throughout.",
+    link: "/",
+    icon: "gitHub",
   },
 ];
 

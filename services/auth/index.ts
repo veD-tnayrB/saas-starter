@@ -66,7 +66,7 @@ export {
 } from "./providers";
 
 // Platform admin service exports
-export { isPlatformAdmin } from "./platform-admin";
+export { isPlatformAdmin, isPlatformOwner } from "./platform-admin";
 
 // Re-export types for convenience
 export type {

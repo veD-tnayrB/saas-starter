@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
+import { memberService } from "@/services/projects";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
 
 import { constructMetadata } from "@/lib/utils";
@@ -8,16 +9,28 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { BillingInfo } from "@/components/pricing/billing-info";
 import { Icons } from "@/components/shared/icons";
 
+interface BillingPageProps {
+  params: Promise<{ projectId: string }>;
+}
+
 export const metadata = constructMetadata({
-  title: "Billing – SaaS Starter",
+  title: "Billing – SaaS Starter",
   description: "Manage billing and your subscription plan.",
 });
 
-export default async function BillingPage() {
+export default async function BillingPage({ params }: BillingPageProps) {
   const user = await getCurrentUser();
 
   if (!user || !user.id) {
     redirect("/login");
+  }
+
+  const { projectId } = await params;
+
+  // Verify user is OWNER of the project
+  const userRole = await memberService.getUserRole(projectId, user.id);
+  if (userRole !== "OWNER") {
+    redirect(`/dashboard/${projectId}`);
   }
 
   const userSubscriptionPlan = await getUserSubscriptionPlan(user.id);

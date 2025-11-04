@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ProjectSwitcher } from "@/components/dashboard/project/switcher";
-import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { MobileNavigationSections } from "@/components/layout/navigation/mobile";
 import { Icons } from "@/components/shared/icons";
 
@@ -59,10 +58,6 @@ export function MobileSheetSidebar({ links }: IMobileSheetSidebarProps) {
                   path={path}
                   onItemClick={() => setOpen(false)}
                 />
-
-                <div className="mt-auto">
-                  <UpgradeCard />
-                </div>
               </nav>
             </div>
           </ScrollArea>

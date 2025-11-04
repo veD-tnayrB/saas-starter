@@ -12,23 +12,10 @@ export const sidebarLinks: SidebarNavItem[] = [
       },
       { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
       {
-        href: "/dashboard/billing",
+        href: "/dashboard/[projectId]/billing",
         icon: "billing",
         title: "Billing",
-      },
-      { href: "/dashboard/charts", icon: "lineChart", title: "Charts" },
-      {
-        href: "/admin/orders",
-        icon: "package",
-        title: "Orders",
-        badge: 2,
-        authorizeOnly: "ADMIN", // Platform admin (any project owner/admin)
-      },
-      {
-        href: "#/dashboard/posts",
-        icon: "post",
-        title: "User Posts",
-        disabled: true,
+        authorizeOnly: "OWNER", // Only project owners can access billing
       },
     ],
   },
@@ -38,12 +25,6 @@ export const sidebarLinks: SidebarNavItem[] = [
       { href: "/dashboard/settings", icon: "settings", title: "Settings" },
       { href: "/", icon: "home", title: "Homepage" },
       { href: "/docs", icon: "bookOpen", title: "Documentation" },
-      {
-        href: "#",
-        icon: "messages",
-        title: "Support",
-        disabled: true,
-      },
     ],
   },
 ];

@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
 
 import { features } from "@/config/landing";
 import { Icons } from "@/components/shared/icons";
@@ -65,7 +63,7 @@ export function FeaturesSection() {
                       },
                     }}
                     whileHover={{ y: -4 }}
-                    className="transition-silver hover:shadow-silver/10 hover-lift group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg sm:p-8"
+                    className="transition-silver hover-lift group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-silver/10 sm:p-8"
                   >
                     {/* Silver gradient background on hover */}
                     <div className="transition-silver group-hover:opacity-8 absolute inset-0 -z-10 bg-gradient-to-br from-[#C0C0C0]/0 via-[#E0E0E0]/0 to-[#C0C0C0]/0 opacity-0 transition-opacity duration-500" />
@@ -103,17 +101,6 @@ export function FeaturesSection() {
                       <p className="text-muted-foreground">
                         {feature.description}
                       </p>
-                    </div>
-
-                    {/* CTA */}
-                    <div className="mt-6 border-t border-border/50 pt-6">
-                      <Link
-                        href={feature.link || "/"}
-                        className="group/btn flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        <span>Learn more</span>
-                        <ArrowUpRight className="size-4 transition-transform group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1" />
-                      </Link>
                     </div>
                   </motion.div>
                 );

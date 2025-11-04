@@ -26,3 +26,16 @@ export async function isPlatformAdmin(userId: string): Promise<boolean> {
   }
 }
 
+/**
+ * Check if user is OWNER of any project
+ * A user is a platform owner if they are OWNER (not just ADMIN) of any project
+ */
+export async function isPlatformOwner(userId: string): Promise<boolean> {
+  try {
+    const ownedProjects = await countProjectsByOwner(userId);
+    return ownedProjects > 0;
+  } catch (error) {
+    console.error("Error checking platform owner status:", error);
+    return false;
+  }
+}

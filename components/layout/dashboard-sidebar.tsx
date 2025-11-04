@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProjectSwitcher } from "@/components/dashboard/project/switcher";
-import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { NavigationSections } from "@/components/layout/navigation";
 
 interface IDashboardSidebarProps {
@@ -99,10 +98,6 @@ export function DashboardSidebar({ links }: IDashboardSidebarProps) {
                   path={path}
                 />
               </nav>
-
-              <div className="mt-auto xl:p-4">
-                {isSidebarExpanded && <UpgradeCard />}
-              </div>
             </div>
           </aside>
         </ScrollArea>

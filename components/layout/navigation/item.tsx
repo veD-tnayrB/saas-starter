@@ -65,6 +65,7 @@ export function NavigationItem({
           key={`link-tooltip-${item.title}`}
           href={linkHref}
           className={tooltipLinkClass}
+          prefetch={false}
         >
           <span className="flex size-full items-center justify-center">
             <Icon className={cn("size-5", iconClass)} />

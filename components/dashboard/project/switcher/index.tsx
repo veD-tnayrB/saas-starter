@@ -37,6 +37,7 @@ export function ProjectSwitcher({ large = false }: { large?: boolean }) {
     openDialog,
     setOpenDialog,
   } = useCreateProject(refreshProjects);
+  console.log("open popover: ", openPopover);
 
   const currentProjectId = pathname?.match(/\/dashboard\/([^/]+)/)?.[1] || null;
 

@@ -120,7 +120,7 @@ export function CTASection() {
                       prefetch={true}
                       className={cn(
                         buttonVariants({ size: "lg", rounded: "full" }),
-                        "bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden font-semibold text-background transition-all",
+                        "bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden font-semibold text-background shadow-silver transition-all",
                       )}
                     >
                       <span className="relative z-10 flex items-center gap-2">
@@ -164,23 +164,6 @@ export function CTASection() {
                   </motion.div>
                 </div>
               </MotionSlideUp>
-
-              {/* Trust indicators */}
-              <MotionFadeIn delay={0.6}>
-                <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <span>✓ No credit card required</span>
-                  </div>
-                  <div className="h-4 w-px bg-border" />
-                  <div className="flex items-center gap-2">
-                    <span>✓ 14-day free trial</span>
-                  </div>
-                  <div className="h-4 w-px bg-border" />
-                  <div className="flex items-center gap-2">
-                    <span>✓ Cancel anytime</span>
-                  </div>
-                </div>
-              </MotionFadeIn>
             </div>
           </motion.div>
         </div>

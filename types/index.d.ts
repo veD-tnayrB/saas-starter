@@ -20,7 +20,7 @@ export type NavItem = {
   badge?: number;
   disabled?: boolean;
   external?: boolean;
-  authorizeOnly?: "ADMIN"; // Platform admin (project owner/admin)
+  authorizeOnly?: "ADMIN" | "OWNER"; // Platform admin (project owner/admin) or Owner only
   icon?: keyof typeof Icons;
 };
 
