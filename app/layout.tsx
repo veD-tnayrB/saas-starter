@@ -38,7 +38,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <Providers session={session}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
