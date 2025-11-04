@@ -50,6 +50,7 @@ export function ProjectSwitcher({ large = false }: { large?: boolean }) {
   }
 
   const selectedProject = currentProject || projects[0];
+  console.log("selected project: ", selectedProject);
 
   if (status === "loading" || loading) {
     return <ProjectSwitcherPlaceholder />;

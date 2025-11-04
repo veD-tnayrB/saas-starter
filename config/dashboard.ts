@@ -5,12 +5,10 @@ export const sidebarLinks: SidebarNavItem[] = [
     title: "MENU",
     items: [
       {
-        href: "/admin",
-        icon: "laptop",
-        title: "Admin Panel",
-        authorizeOnly: "ADMIN", // Platform admin (any project owner/admin)
+        href: "/dashboard/[projectId]",
+        icon: "dashboard",
+        title: "Dashboard",
       },
-      { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
       {
         href: "/dashboard/[projectId]/billing",
         icon: "billing",

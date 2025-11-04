@@ -24,6 +24,12 @@ export function MobileNavigationSection({
   const items = section.items
     .filter((item) => {
       if (!item.href) return false;
+
+      // Hide items that require projectId if no projectId is available
+      if (item.href.includes("[projectId]") && !currentProjectId) {
+        return false;
+      }
+
       // Filter OWNER items: only show if user is OWNER of current project
       // ADMIN items are already filtered in server component
       return canAccessNavigationItem(item, true, isCurrentProjectOwner);

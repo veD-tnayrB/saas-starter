@@ -44,6 +44,14 @@ export {
   findProjectInvitations,
 } from "./invitations";
 
+// Project statistics repository functions
+export {
+  getProjectInvitationStats,
+  getProjectMemberCount,
+  getProjectMemberGrowth,
+  getProjectMembersByRole,
+} from "./statistics";
+
 // Re-export types
 export type {
   IProject,
@@ -61,3 +69,9 @@ export type {
   IProjectMemberCreateData,
   IProjectMemberUpdateData,
 } from "./members";
+
+export type {
+  IMemberGrowthDataPoint,
+  IProjectInvitationStats,
+  IProjectMembersByRole,
+} from "./statistics";
