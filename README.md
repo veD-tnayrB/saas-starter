@@ -8,6 +8,9 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/veD-tnayrB/saas-starter">
+    <img src="https://img.shields.io/badge/Fork%20of-mickasmt%2Fnext--saas--stripe--starter-blue?style=flat" alt="Fork" />
+  </a>
   <a href="https://twitter.com/miickasmt">
     <img src="https://img.shields.io/twitter/follow/miickasmt?style=flat&label=miickasmt&logo=twitter&color=0bf&logoColor=fff" alt="Mickasmt Twitter follower count" />
   </a>
@@ -16,7 +19,9 @@
 <p align="center">
   <a href="#introduction"><strong>Introduction</strong></a> ·
   <a href="#installation"><strong>Installation</strong></a> ·
-  <a href="#tech-stack--features"><strong>Tech Stack + Features</strong></a> ·
+  <a href="#features"><strong>Features</strong></a> ·
+  <a href="#tech-stack--features"><strong>Tech Stack</strong></a> ·
+  <a href="#architecture"><strong>Architecture</strong></a> ·
   <a href="#author"><strong>Author</strong></a> ·
   <a href="#credits"><strong>Credits</strong></a>
 </p>
@@ -26,7 +31,9 @@
 
 Empower your next project with the stack of Next.js 16, Prisma, Neon, Auth.js v5, Resend, React Email, Shadcn/ui, and Stripe.
 <br/>
-All seamlessly integrated with the SaaS Starter to accelerate your development and saas journey.
+All seamlessly integrated to accelerate your development and saas journey.
+
+**This is an enhanced fork** of [mickasmt/next-saas-stripe-starter](https://github.com/mickasmt/next-saas-stripe-starter) with additional features including multi-project support, project invitations, and a clean architecture pattern.
 
 ## Installation
 
@@ -65,10 +72,83 @@ pnpm run dev
 >
 > Use this command for update your project: `ncu -i --format group`
 
+## Features
+
+### 🚀 Core Features
+
+- **Multi-Project Support** – Users can belong to multiple projects with different roles per project
+- **Project Invitations** – Beautiful email invitations with secure token-based acceptance
+- **Unified Role System** – Project-specific roles (OWNER, ADMIN, MEMBER) with permission-based access
+- **Clean Architecture** – Repository/Service pattern for maintainable and scalable code
+- **Auto Project Creation** – Personal project automatically created for new users
+- **Project CRUD** – Full Create, Read, Update, Delete operations for projects
+- **Member Management** – Add, update, and remove project members with role-based permissions
+
+### 🔐 Authentication & Authorization
+
+- **Auth.js v5** – Modern authentication with OAuth providers (Google, GitHub, etc.)
+- **Session Management** – Secure JWT-based sessions
+- **Platform Admin** – Users who own or admin any project have platform-wide admin access
+- **Role-Based Access Control** – Permissions based on project membership roles
+
+### 💳 Payment & Subscriptions
+
+- **Stripe Integration** – Full subscription management
+- **Customer Portal** – Self-service billing management
+- **Subscription Plans** – Flexible pricing tiers
+
+### 📧 Email System
+
+- **React Email** – Beautiful, responsive email templates
+- **Resend** – Reliable email delivery
+- **Project Invitations** – Branded invitation emails with Soft Black & Silver theme
+
+### 🎨 UI/UX
+
+- **Soft Black & Silver Theme** – Modern, premium design system
+- **Light/Dark Mode** – Full theme support with smooth transitions
+- **Framer Motion** – Smooth animations and transitions
+- **Responsive Design** – Mobile-first, fully responsive components
+- **Shadcn/ui** – Accessible, customizable component library
+
+## Architecture
+
+This project follows a **clean architecture pattern** with clear separation of concerns:
+
+```
+├── repositories/     # Data access layer (Prisma queries)
+│   ├── auth/        # User authentication repositories
+│   └── projects/    # Project, member, and invitation repositories
+├── services/         # Business logic layer
+│   ├── auth/        # Authentication services
+│   ├── projects/    # Project management services
+│   └── subscriptions/ # Subscription services
+├── clients/          # External API clients
+│   ├── auth/        # Auth providers (OAuth, email)
+│   ├── email/       # Email service (Resend)
+│   └── stripe/      # Stripe integration
+├── actions/          # Next.js Server Actions
+├── app/              # Next.js App Router
+│   ├── api/         # API routes
+│   └── (protected)/ # Protected routes
+└── components/       # React components
+```
+
+### Key Architectural Decisions
+
+- **Repository Pattern**: All database queries isolated in repositories
+- **Service Layer**: Business logic separated from data access
+- **Project-Specific Roles**: No global user roles; roles are defined per project
+- **Atomic Operations**: Project creation and member management use Prisma transactions
+- **Type Safety**: Full TypeScript coverage with strict typing
+
 ## Roadmap
 
 - [ ] Upgrade eslint to v9
 - [ ] Add resend for success subscriptions
+- [ ] Project templates and presets
+- [ ] Real-time collaboration features
+- [ ] Advanced project analytics
 
 ## Tech Stack + Features
 
@@ -116,14 +196,65 @@ https://github.com/veD-tnayrB/saas-starter/assets/62285783/828a4e0f-30e3-4cfe-96
 
 - [Vercel Analytics](https://vercel.com/analytics) – Track unique visitors, pageviews, and more in a privacy-friendly way
 
+## Multi-Project Setup
+
+### Database Schema
+
+The project uses a multi-project architecture with the following models:
+
+- **Project** – Represents a project with an owner and members
+- **ProjectMember** – Links users to projects with roles (OWNER, ADMIN, MEMBER)
+- **ProjectInvitation** – Manages email invitations with secure tokens
+
+### Creating Projects
+
+When a user registers, a personal project is automatically created:
+
+```typescript
+// Automatically happens on user registration
+const project = await projectService.createPersonalProject(userId, userName);
+```
+
+### Inviting Members
+
+Projects owners and admins can invite members via email:
+
+```typescript
+// API endpoint: POST /api/projects/invite
+{
+  "projectId": "project-id",
+  "email": "member@example.com",
+  "role": "ADMIN" // or "MEMBER"
+}
+```
+
+### Project Roles
+
+- **OWNER** – Full control, can delete project and manage all members
+- **ADMIN** – Can manage members and project settings (except deletion)
+- **MEMBER** – Standard access to project resources
+
+### API Routes
+
+- `GET /api/projects` – List user's projects
+- `POST /api/projects` – Create new project
+- `GET /api/projects/:id` – Get project details
+- `PUT /api/projects/:id` – Update project and members
+- `DELETE /api/projects/:id` – Delete project (OWNER only)
+- `POST /api/projects/invite` – Send invitation
+- `GET /api/projects/accept?token=...` – Accept invitation
+
 ## Author
 
-Created by [@miickasmt](https://twitter.com/miickasmt) in 2023, released under the [MIT license](https://github.com/shadcn/taxonomy/blob/main/LICENSE.md).
+Original project created by [@miickasmt](https://twitter.com/miickasmt) in 2023, released under the [MIT license](https://github.com/shadcn/taxonomy/blob/main/LICENSE.md).
+
+This fork is maintained by [@veD-tnayrB](https://github.com/veD-tnayrB) with additional features for multi-project support.
 
 ## Credits
 
-This project was inspired by shadcn's [Taxonomy](https://github.com/shadcn-ui/taxonomy), Steven Tey’s [Precedent](https://github.com/steven-tey/precedent), and Antonio Erdeljac's [Next 13 AI SaaS](https://github.com/AntonioErdeljac/next13-ai-saas).
+This project was inspired by shadcn's [Taxonomy](https://github.com/shadcn-ui/taxonomy), Steven Tey's [Precedent](https://github.com/steven-tey/precedent), and Antonio Erdeljac's [Next 13 AI SaaS](https://github.com/AntonioErdeljac/next13-ai-saas).
 
 - Shadcn ([@shadcn](https://twitter.com/shadcn))
 - Steven Tey ([@steventey](https://twitter.com/steventey))
 - Antonio Erdeljac ([@YTCodeAntonio](https://twitter.com/AntonioErdeljac))
+- Original author: Mickasmt ([@miickasmt](https://twitter.com/miickasmt))

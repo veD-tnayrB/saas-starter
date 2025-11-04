@@ -9,9 +9,8 @@ export default async function HeroLanding() {
     <section className="lg:py-30 space-y-6 py-12 sm:py-20">
       <div className="container flex max-w-5xl flex-col items-center gap-5 text-center lg:py-8">
         <h1 className="text-balance font-urban text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-[66px]">
-          Kick off with a bang with{" "}
           <span className="text-gradient_silver font-extrabold">
-            SaaS Starter
+            SaaS Starter isn't new. It's inevitable.
           </span>
         </h1>
 
@@ -19,8 +18,8 @@ export default async function HeroLanding() {
           className="max-w-2xl text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8"
           style={{ animationDelay: "0.35s", animationFillMode: "forwards" }}
         >
-          Build your next project using Next.js 16, Prisma, Neon, Auth.js v5,
-          Resend, React Email, Shadcn/ui, Stripe.
+          Empower your next project with Next.js 16, Prisma, Neon, Auth.js v5,
+          Resend, React Email, Shadcn/ui, and Stripe.
         </p>
 
         <div

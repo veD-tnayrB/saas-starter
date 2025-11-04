@@ -131,10 +131,9 @@ export function HeroSection() {
           {/* Main headline - refined and balanced */}
           <MotionSlideUp delay={0.2} y={30}>
             <h1 className="text-balance font-urban text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Build your SaaS{" "}
               <span className="relative inline-block">
                 <span className="text-gradient_silver relative z-10">
-                  faster than ever
+                  SaaS Starter isn't new. It's inevitable.
                 </span>
                 {/* Premium silver gradient underline */}
                 <motion.span
@@ -150,8 +149,8 @@ export function HeroSection() {
           {/* Subheadline - refined spacing */}
           <MotionSlideUp delay={0.4} y={25}>
             <p className="mx-auto max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
-              Kick off with a bang using Next.js 16, Prisma, Neon, Auth.js v5,
-              Resend, React Email, Shadcn/ui, and Stripe. All seamlessly
+              Empower your next project with Next.js 16, Prisma, Neon, Auth.js
+              v5, Resend, React Email, Shadcn/ui, and Stripe. All seamlessly
               integrated to accelerate your development journey.
             </p>
           </MotionSlideUp>
