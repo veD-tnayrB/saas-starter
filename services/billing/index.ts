@@ -250,7 +250,6 @@ export class BillingService {
     // Platform admins (project owners/admins) can access any user's billing information
     if (user.id === targetUserId) return true;
 
-    const { isPlatformAdmin } = await import("@/services/auth/platform-admin");
     return await isPlatformAdmin(user.id);
   }
 

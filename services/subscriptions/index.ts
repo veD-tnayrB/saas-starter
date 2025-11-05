@@ -12,7 +12,10 @@
 
 export { cancelSubscription, validateSubscriptionCancellation } from "./cancel";
 export { createSubscription, validateSubscriptionCreation } from "./create";
-export { getUserSubscriptionPlan } from "./get-plan";
+export {
+  getProjectSubscriptionPlan,
+  getUserSubscriptionPlan,
+} from "./get-plan";
 export { updateSubscription, validateSubscriptionUpdate } from "./update";
 export {
   handleCheckoutCompleted,

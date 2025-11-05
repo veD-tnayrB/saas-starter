@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ProjectRole } from "@prisma/client";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,9 @@ import { MembersList } from "./list";
 interface IProjectMember {
   id: string;
   userId: string;
-  role: ProjectRole;
+  role: {
+    name: string;
+  };
   user?: {
     id: string;
     name: string | null;
@@ -47,7 +48,7 @@ interface IProjectMember {
 interface IProjectMembersProps {
   projectId: string;
   members: IProjectMember[];
-  userRole: ProjectRole;
+  userRole: string;
 }
 
 export function ProjectMembers({
@@ -56,7 +57,7 @@ export function ProjectMembers({
   userRole,
 }: IProjectMembersProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<ProjectRole>("MEMBER");
+  const [role, setRole] = useState<string>("MEMBER");
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -109,13 +110,13 @@ export function ProjectMembers({
     }
   }
 
-  const roleDisplay: Record<ProjectRole, string> = {
+  const roleDisplay: Record<string, string> = {
     OWNER: "Owner",
     ADMIN: "Administrator",
     MEMBER: "Member",
   };
 
-  const roleColors: Record<ProjectRole, string> = {
+  const roleColors: Record<string, string> = {
     OWNER: "bg-primary/20 text-primary",
     ADMIN: "bg-primary/15 text-primary/90",
     MEMBER: "bg-muted text-muted-foreground",
@@ -168,7 +169,7 @@ export function ProjectMembers({
                     </label>
                     <Select
                       value={role}
-                      onValueChange={(value) => setRole(value as ProjectRole)}
+                      onValueChange={(value) => setRole(value)}
                     >
                       <SelectTrigger>
                         <SelectValue />

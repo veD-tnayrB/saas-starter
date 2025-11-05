@@ -1,4 +1,5 @@
 import {
+  createUser,
   deleteUser,
   findUserByEmail,
   findUserById,
@@ -7,7 +8,7 @@ import {
   getUserStats,
   searchUsers,
   updateUser,
-} from "@/repositories/auth";
+} from "@/repositories/auth/user";
 
 import type {
   IAuthUser,
@@ -60,10 +61,7 @@ export class UserService {
         throw new Error("User with this email already exists");
       }
 
-      const { createUser: createUserRepo } = await import(
-        "@/repositories/auth/user"
-      );
-      return await createUserRepo(data);
+      return await createUser(data);
     } catch (error) {
       console.error("Error creating user:", error);
       throw new Error("Failed to create user");

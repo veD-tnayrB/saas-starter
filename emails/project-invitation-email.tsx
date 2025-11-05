@@ -1,4 +1,3 @@
-import type { ProjectRole } from "@prisma/client";
 import {
   Body,
   Button,
@@ -17,7 +16,7 @@ import { Icons } from "../components/shared/icons";
 type ProjectInvitationEmailProps = {
   projectName: string;
   inviterName: string;
-  role: ProjectRole;
+  role: string;
   acceptUrl: string;
   siteName: string;
 };
@@ -29,7 +28,7 @@ export const ProjectInvitationEmail = ({
   acceptUrl,
   siteName,
 }: ProjectInvitationEmailProps) => {
-  const roleDisplay: Record<ProjectRole, string> = {
+  const roleDisplay: Record<string, string> = {
     OWNER: "Owner",
     ADMIN: "Administrator",
     MEMBER: "Member",

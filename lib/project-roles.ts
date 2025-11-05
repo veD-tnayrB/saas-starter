@@ -1,5 +1,3 @@
-import type { ProjectRole } from "@prisma/client";
-
 /**
  * Project role constants
  */
@@ -10,9 +8,18 @@ export const PROJECT_ROLES = {
 } as const;
 
 /**
+ * Role hierarchy mapping (higher = more permissions)
+ */
+const ROLE_HIERARCHY: Record<string, number> = {
+  OWNER: 3,
+  ADMIN: 2,
+  MEMBER: 1,
+};
+
+/**
  * Check if role can manage project (update settings, manage members)
  */
-export function canManageProject(role: ProjectRole | null): boolean {
+export function canManageProject(role: string | null): boolean {
   if (!role) return false;
   return role === PROJECT_ROLES.OWNER || role === PROJECT_ROLES.ADMIN;
 }
@@ -20,53 +27,47 @@ export function canManageProject(role: ProjectRole | null): boolean {
 /**
  * Check if role can delete project
  */
-export function canDeleteProject(role: ProjectRole | null): boolean {
+export function canDeleteProject(role: string | null): boolean {
   return role === PROJECT_ROLES.OWNER;
 }
 
 /**
  * Check if role can invite members
  */
-export function canInviteMembers(role: ProjectRole | null): boolean {
+export function canInviteMembers(role: string | null): boolean {
   return canManageProject(role);
 }
 
 /**
  * Check if role can update project settings
  */
-export function canUpdateSettings(role: ProjectRole | null): boolean {
+export function canUpdateSettings(role: string | null): boolean {
   return canManageProject(role);
 }
 
 /**
  * Check if role can manage project members (add, remove, update roles)
  */
-export function canManageMembers(role: ProjectRole | null): boolean {
+export function canManageMembers(role: string | null): boolean {
   return canManageProject(role);
 }
 
 /**
  * Get role hierarchy level (higher = more permissions)
  */
-export function getRoleHierarchy(role: ProjectRole | null): number {
+export function getRoleHierarchy(role: string | null): number {
   if (!role) return 0;
-  const hierarchy: Record<ProjectRole, number> = {
-    OWNER: 3,
-    ADMIN: 2,
-    MEMBER: 1,
-  };
-  return hierarchy[role];
+  return ROLE_HIERARCHY[role] || 0;
 }
 
 /**
  * Check if role has at least the required permission level
  */
 export function hasPermissionLevel(
-  role: ProjectRole | null,
-  requiredRole: ProjectRole,
+  role: string | null,
+  requiredRole: string,
 ): boolean {
   const roleLevel = getRoleHierarchy(role);
   const requiredLevel = getRoleHierarchy(requiredRole);
   return roleLevel >= requiredLevel;
 }
-

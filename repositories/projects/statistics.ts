@@ -33,10 +33,9 @@ export async function getProjectMembersByRole(
   projectId: string,
 ): Promise<IProjectMembersByRole> {
   try {
-    const members = await prisma.projectMember.groupBy({
-      by: ["role"],
+    const members = await prisma.projectMember.findMany({
       where: { projectId },
-      _count: {
+      include: {
         role: true,
       },
     });
@@ -48,7 +47,10 @@ export async function getProjectMembersByRole(
     };
 
     members.forEach((member) => {
-      stats[member.role] = member._count.role;
+      const roleName = member.role.name as keyof IProjectMembersByRole;
+      if (roleName in stats) {
+        stats[roleName]++;
+      }
     });
 
     return stats;

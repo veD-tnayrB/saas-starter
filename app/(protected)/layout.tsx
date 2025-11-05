@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
+import { isPlatformAdmin } from "@/services/auth/platform-admin";
 
 import { sidebarLinks } from "@/config/dashboard";
 import { filterNavigationItems } from "@/lib/navigation-auth";
@@ -19,7 +20,6 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   if (!user) redirect("/login");
 
-  const { isPlatformAdmin } = await import("@/services/auth/platform-admin");
   const userIsAdmin = await isPlatformAdmin(user.id);
 
   // Filter links for ADMIN (OWNER filtering is done in client component)

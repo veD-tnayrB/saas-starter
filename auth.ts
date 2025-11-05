@@ -2,7 +2,7 @@ import { prisma } from "@/clients/db";
 import { sessionManagementService } from "@/services/auth";
 import { projectService } from "@/services/projects";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth, { getServerSession, type DefaultSession } from "next-auth";
 
 import authConfig from "@/config/auth";
 
@@ -59,6 +59,5 @@ export default nextAuthConfig;
 
 // Export auth function for use in server components and API routes
 export const auth = async () => {
-  const { getServerSession } = await import("next-auth");
   return getServerSession(nextAuthConfig);
 };

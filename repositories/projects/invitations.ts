@@ -1,5 +1,4 @@
 import { prisma } from "@/clients/db";
-import type { ProjectRole } from "@prisma/client";
 
 /**
  * Project invitation data transfer object
@@ -8,7 +7,12 @@ export interface IProjectInvitation {
   id: string;
   projectId: string;
   email: string;
-  role: ProjectRole;
+  roleId: string;
+  role: {
+    id: string;
+    name: string;
+    priority: number;
+  };
   invitedById: string;
   token: string;
   createdAt: Date;
@@ -21,7 +25,7 @@ export interface IProjectInvitation {
 export interface IProjectInvitationCreateData {
   projectId: string;
   email: string;
-  role: ProjectRole;
+  roleId: string;
   invitedById: string;
   token: string;
   expiresAt: Date;
@@ -36,9 +40,28 @@ export async function findInvitationByToken(
   try {
     const invitation = await prisma.projectInvitation.findUnique({
       where: { token },
+      include: {
+        role: true,
+      },
     });
 
-    return invitation;
+    if (!invitation) return null;
+
+    return {
+      id: invitation.id,
+      projectId: invitation.projectId,
+      email: invitation.email,
+      roleId: invitation.roleId,
+      role: {
+        id: invitation.role.id,
+        name: invitation.role.name,
+        priority: invitation.role.priority,
+      },
+      invitedById: invitation.invitedById,
+      token: invitation.token,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
+    };
   } catch (error) {
     console.error("Error finding invitation by token:", error);
     throw new Error("Failed to find invitation");
@@ -61,10 +84,29 @@ export async function findInvitationByEmailAndProject(
           gt: new Date(),
         },
       },
+      include: {
+        role: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    return invitation;
+    if (!invitation) return null;
+
+    return {
+      id: invitation.id,
+      projectId: invitation.projectId,
+      email: invitation.email,
+      roleId: invitation.roleId,
+      role: {
+        id: invitation.role.id,
+        name: invitation.role.name,
+        priority: invitation.role.priority,
+      },
+      invitedById: invitation.invitedById,
+      token: invitation.token,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
+    };
   } catch (error) {
     console.error("Error finding invitation by email and project:", error);
     throw new Error("Failed to find invitation");
@@ -85,10 +127,27 @@ export async function findProjectInvitations(
           gt: new Date(),
         },
       },
+      include: {
+        role: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    return invitations;
+    return invitations.map((invitation) => ({
+      id: invitation.id,
+      projectId: invitation.projectId,
+      email: invitation.email,
+      roleId: invitation.roleId,
+      role: {
+        id: invitation.role.id,
+        name: invitation.role.name,
+        priority: invitation.role.priority,
+      },
+      invitedById: invitation.invitedById,
+      token: invitation.token,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
+    }));
   } catch (error) {
     console.error("Error finding project invitations:", error);
     throw new Error("Failed to find project invitations");
@@ -123,11 +182,26 @@ export async function findPendingInvitationsByEmail(
             email: true,
           },
         },
+        role: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return invitations;
+    return invitations.map((invitation) => ({
+      id: invitation.id,
+      projectId: invitation.projectId,
+      email: invitation.email,
+      roleId: invitation.roleId,
+      role: {
+        id: invitation.role.id,
+        name: invitation.role.name,
+        priority: invitation.role.priority,
+      },
+      invitedById: invitation.invitedById,
+      token: invitation.token,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
+    }));
   } catch (error) {
     console.error("Error finding pending invitations by email:", error);
     throw new Error("Failed to find pending invitations");
@@ -145,14 +219,31 @@ export async function createProjectInvitation(
       data: {
         projectId: data.projectId,
         email: data.email,
-        role: data.role,
+        roleId: data.roleId,
         invitedById: data.invitedById,
         token: data.token,
         expiresAt: data.expiresAt,
       },
+      include: {
+        role: true,
+      },
     });
 
-    return invitation;
+    return {
+      id: invitation.id,
+      projectId: invitation.projectId,
+      email: invitation.email,
+      roleId: invitation.roleId,
+      role: {
+        id: invitation.role.id,
+        name: invitation.role.name,
+        priority: invitation.role.priority,
+      },
+      invitedById: invitation.invitedById,
+      token: invitation.token,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
+    };
   } catch (error) {
     console.error("Error creating project invitation:", error);
     throw new Error("Failed to create project invitation");

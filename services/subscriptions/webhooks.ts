@@ -6,6 +6,7 @@ import {
   updateSubscriptionPrice,
   updateUserOnSubscriptionCreate,
 } from "@/repositories/subscriptions";
+import { render } from "@react-email/render";
 import { Resend } from "resend";
 import Stripe from "stripe";
 
@@ -72,7 +73,6 @@ async function sendSubscriptionConfirmationEmail(data: {
     const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard`;
     const billingPortalUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard/billing`;
 
-    const { render } = await import("@react-email/render");
     const html = await render(
       SubscriptionConfirmationEmail({
         userName: data.userName || "there",

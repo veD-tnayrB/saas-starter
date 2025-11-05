@@ -1,5 +1,4 @@
 import { prisma } from "@/clients/db";
-import type { ProjectRole } from "@prisma/client";
 
 /**
  * Project member data transfer object
@@ -8,7 +7,12 @@ export interface IProjectMember {
   id: string;
   projectId: string;
   userId: string;
-  role: ProjectRole;
+  roleId: string;
+  role: {
+    id: string;
+    name: string;
+    priority: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,14 +23,14 @@ export interface IProjectMember {
 export interface IProjectMemberCreateData {
   projectId: string;
   userId: string;
-  role: ProjectRole;
+  roleId: string;
 }
 
 /**
  * Project member update data
  */
 export interface IProjectMemberUpdateData {
-  role?: ProjectRole;
+  roleId?: string;
 }
 
 /**
@@ -44,9 +48,26 @@ export async function findProjectMember(
           userId,
         },
       },
+      include: {
+        role: true,
+      },
     });
 
-    return member;
+    if (!member) return null;
+
+    return {
+      id: member.id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
+      role: {
+        id: member.role.id,
+        name: member.role.name,
+        priority: member.role.priority,
+      },
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+    };
   } catch (error) {
     console.error("Error finding project member:", error);
     throw new Error("Failed to find project member");
@@ -78,14 +99,28 @@ export async function findProjectMembers(projectId: string): Promise<
             image: true,
           },
         },
+        role: true,
       },
       orderBy: [
-        { role: "asc" }, // OWNER first, then ADMIN, etc.
-        { createdAt: "asc" },
+        { role: { priority: "asc" as const } }, // Lower priority first (OWNER=0, ADMIN=1, MEMBER=2)
+        { createdAt: "asc" as const },
       ],
     });
 
-    return members;
+    return members.map((member) => ({
+      id: member.id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
+      role: {
+        id: member.role.id,
+        name: member.role.name,
+        priority: member.role.priority,
+      },
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+      user: member.user,
+    }));
   } catch (error) {
     console.error("Error finding project members:", error);
     throw new Error("Failed to find project members");
@@ -101,10 +136,25 @@ export async function findUserProjectMemberships(
   try {
     const memberships = await prisma.projectMember.findMany({
       where: { userId },
+      include: {
+        role: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    return memberships;
+    return memberships.map((member) => ({
+      id: member.id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
+      role: {
+        id: member.role.id,
+        name: member.role.name,
+        priority: member.role.priority,
+      },
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+    }));
   } catch (error) {
     console.error("Error finding user project memberships:", error);
     throw new Error("Failed to find user memberships");
@@ -112,15 +162,16 @@ export async function findUserProjectMemberships(
 }
 
 /**
- * Get user role in project
+ * Get user role name in project
+ * Returns the role name (OWNER, ADMIN, MEMBER) or null
  */
 export async function getUserProjectRole(
   projectId: string,
   userId: string,
-): Promise<ProjectRole | null> {
+): Promise<string | null> {
   try {
     const member = await findProjectMember(projectId, userId);
-    return member?.role ?? null;
+    return member?.role.name ?? null;
   } catch (error) {
     console.error("Error getting user project role:", error);
     throw new Error("Failed to get user project role");
@@ -138,11 +189,26 @@ export async function createProjectMember(
       data: {
         projectId: data.projectId,
         userId: data.userId,
-        role: data.role,
+        roleId: data.roleId,
+      },
+      include: {
+        role: true,
       },
     });
 
-    return member;
+    return {
+      id: member.id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
+      role: {
+        id: member.role.id,
+        name: member.role.name,
+        priority: member.role.priority,
+      },
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+    };
   } catch (error) {
     console.error("Error creating project member:", error);
     throw new Error("Failed to create project member");
@@ -166,11 +232,26 @@ export async function updateProjectMember(
         },
       },
       data: {
-        role: data.role,
+        roleId: data.roleId,
+      },
+      include: {
+        role: true,
       },
     });
 
-    return member;
+    return {
+      id: member.id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
+      role: {
+        id: member.role.id,
+        name: member.role.name,
+        priority: member.role.priority,
+      },
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+    };
   } catch (error) {
     console.error("Error updating project member:", error);
     throw new Error("Failed to update project member");
@@ -201,6 +282,7 @@ export async function removeProjectMember(
 
 /**
  * Count admin memberships for a user (OWNER or ADMIN roles)
+ * Checks roles with priority <= 1 (OWNER=0, ADMIN=1)
  */
 export async function countAdminMemberships(userId: string): Promise<number> {
   try {
@@ -208,7 +290,9 @@ export async function countAdminMemberships(userId: string): Promise<number> {
       where: {
         userId,
         role: {
-          in: ["OWNER", "ADMIN"],
+          priority: {
+            lte: 1, // OWNER (0) or ADMIN (1)
+          },
         },
       },
     });

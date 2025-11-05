@@ -1,11 +1,11 @@
-import type { ProjectRole } from "@prisma/client";
-
 import { MemberItem } from "./item";
 
 interface IProjectMember {
   id: string;
   userId: string;
-  role: ProjectRole;
+  role: {
+    name: string;
+  };
   user?: {
     id: string;
     name: string | null;
@@ -16,8 +16,8 @@ interface IProjectMember {
 
 interface IMembersListProps {
   members: IProjectMember[];
-  roleDisplay: Record<ProjectRole, string>;
-  roleColors: Record<ProjectRole, string>;
+  roleDisplay: Record<string, string>;
+  roleColors: Record<string, string>;
 }
 
 export function MembersList({

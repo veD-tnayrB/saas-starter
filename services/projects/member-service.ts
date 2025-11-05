@@ -1,3 +1,4 @@
+import { findRoleByName } from "@/repositories/permissions";
 import {
   createProjectMember,
   findProjectMember,
@@ -7,7 +8,6 @@ import {
   updateProjectMember,
   type IProjectMember,
 } from "@/repositories/projects/members";
-import type { ProjectRole } from "@prisma/client";
 
 import { hasPermissionLevel } from "@/lib/project-roles";
 
@@ -17,15 +17,17 @@ import { hasPermissionLevel } from "@/lib/project-roles";
 export class MemberService {
   /**
    * Check if user has permission in project
+   * @deprecated Use permissionService.canUserPerformAction instead
    */
   async hasPermission(
     projectId: string,
     userId: string,
-    requiredRole: ProjectRole,
+    requiredRole: string, // Role name: "OWNER", "ADMIN", "MEMBER"
   ): Promise<boolean> {
     try {
       const role = await getUserProjectRole(projectId, userId);
-      return hasPermissionLevel(role, requiredRole);
+      if (!role) return false;
+      return hasPermissionLevel(role as any, requiredRole as any);
     } catch (error) {
       console.error("Error checking permission:", error);
       return false;
@@ -33,12 +35,9 @@ export class MemberService {
   }
 
   /**
-   * Get user role in project
+   * Get user role name in project
    */
-  async getUserRole(
-    projectId: string,
-    userId: string,
-  ): Promise<ProjectRole | null> {
+  async getUserRole(projectId: string, userId: string): Promise<string | null> {
     try {
       return await getUserProjectRole(projectId, userId);
     } catch (error) {
@@ -78,7 +77,7 @@ export class MemberService {
   async addMember(
     projectId: string,
     userId: string,
-    role: ProjectRole,
+    roleName: string, // Role name: "OWNER", "ADMIN", "MEMBER"
   ): Promise<IProjectMember> {
     try {
       // Check if already a member
@@ -87,10 +86,16 @@ export class MemberService {
         throw new Error("User is already a member of this project");
       }
 
+      // Get role by name
+      const role = await findRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role ${roleName} not found`);
+      }
+
       return await createProjectMember({
         projectId,
         userId,
-        role,
+        roleId: role.id,
       });
     } catch (error) {
       console.error("Error adding member:", error);
@@ -104,10 +109,16 @@ export class MemberService {
   async updateMemberRole(
     projectId: string,
     userId: string,
-    role: ProjectRole,
+    roleName: string, // Role name: "OWNER", "ADMIN", "MEMBER"
   ): Promise<IProjectMember> {
     try {
-      return await updateProjectMember(projectId, userId, { role });
+      // Get role by name
+      const role = await findRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role ${roleName} not found`);
+      }
+
+      return await updateProjectMember(projectId, userId, { roleId: role.id });
     } catch (error) {
       console.error("Error updating member role:", error);
       throw new Error("Failed to update member role");

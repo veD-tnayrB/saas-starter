@@ -49,10 +49,17 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
-const ChartStyle = ({ id, config }: { id: string; config: unknown }) => {
-  const colorConfig = Object.entries(config).filter(
-    ([_, config]) => config.theme || config.color,
-  );
+const ChartStyle = ({
+  id,
+  config,
+}: {
+  id: string;
+  config: Record<string, unknown>;
+}) => {
+  const colorConfig = Object.entries(config).filter(([_, itemConfig]) => {
+    const configItem = itemConfig as Record<string, unknown>;
+    return configItem.theme || configItem.color;
+  });
 
   if (!colorConfig.length) {
     return null;
@@ -63,13 +70,14 @@ const ChartStyle = ({ id, config }: { id: string; config: unknown }) => {
       dangerouslySetInnerHTML={{
         __html: Object.entries(config)
           .map(([key, itemConfig]) => {
+            const configItem = itemConfig as Record<string, unknown>;
             const color =
-              "color" in itemConfig && itemConfig.color
-                ? itemConfig.color
+              "color" in configItem && configItem.color
+                ? String(configItem.color)
                 : undefined;
             const theme =
-              "theme" in itemConfig && itemConfig.theme
-                ? itemConfig.theme
+              "theme" in configItem && configItem.theme
+                ? (configItem.theme as Record<string, string>)
                 : undefined;
 
             if (!color && !theme) {

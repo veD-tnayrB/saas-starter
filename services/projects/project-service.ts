@@ -1,12 +1,19 @@
+import { findUserByEmail, findUserById } from "@/repositories/auth/user";
+import { findRoleByName } from "@/repositories/permissions";
+import {
+  deleteInvitationByToken,
+  findInvitationByEmailAndProject,
+} from "@/repositories/projects/invitations";
 import {
   createProjectWithOwner,
+  deleteProject,
   findAllUserProjects,
   findProjectById,
+  updateProject,
   type IProject,
   type IProjectCreateData,
   type IProjectUpdateData,
 } from "@/repositories/projects/project";
-import type { ProjectRole } from "@prisma/client";
 
 import {
   canDeleteProject,
@@ -23,7 +30,7 @@ import { memberService } from "./member-service";
 export interface IProjectCreateWithMembersData extends IProjectCreateData {
   members?: Array<{
     email: string;
-    role: ProjectRole;
+    role: string; // Role name: "OWNER", "ADMIN", "MEMBER"
   }>;
 }
 
@@ -37,25 +44,26 @@ export class ProjectService {
    */
   async createProject(
     data: IProjectCreateWithMembersData,
-  ): Promise<
-    IProject & { members: Array<{ email: string; role: ProjectRole }> }
-  > {
+  ): Promise<IProject & { members: Array<{ email: string; role: string }> }> {
     try {
+      // Get OWNER role ID
+      const ownerRole = await findRoleByName(PROJECT_ROLES.OWNER);
+      if (!ownerRole) {
+        throw new Error("OWNER role not found");
+      }
+
       // Create project with owner as member (atomic transaction in repository)
       const result = await createProjectWithOwner(
         { name: data.name, ownerId: data.ownerId },
-        PROJECT_ROLES.OWNER,
+        ownerRole.id,
       );
 
       // Handle initial members (send invitations for non-existent users)
-      const memberResults: Array<{ email: string; role: ProjectRole }> = [];
+      const memberResults: Array<{ email: string; role: string }> = [];
       if (data.members && data.members.length > 0) {
         for (const member of data.members) {
           try {
             // Try to find user by email
-            const { findUserByEmail } = await import(
-              "@/repositories/auth/user"
-            );
             const existingUser = await findUserByEmail(member.email);
 
             if (existingUser) {
@@ -126,7 +134,7 @@ export class ProjectService {
   async getUserProjects(userId: string): Promise<
     Array<
       IProject & {
-        userRole: ProjectRole;
+        userRole: string | null;
         owner: { id: string; name: string | null; email: string | null };
         memberCount: number;
       }
@@ -142,12 +150,11 @@ export class ProjectService {
           const members = await memberService.getProjectMembers(project.id);
 
           // Get owner info
-          const { findUserById } = await import("@/repositories/auth/user");
           const owner = await findUserById(project.ownerId);
 
           return {
             ...project,
-            userRole: userRole || (PROJECT_ROLES.MEMBER as ProjectRole),
+            userRole: userRole || PROJECT_ROLES.MEMBER,
             owner: {
               id: owner?.id || project.ownerId,
               name: owner?.name || null,
@@ -173,14 +180,12 @@ export class ProjectService {
     data: IProjectUpdateData & {
       members?: Array<{
         email: string;
-        role: ProjectRole;
+        role: string; // Role name: "OWNER", "ADMIN", "MEMBER"
         action: "add" | "update" | "remove";
       }>;
     },
     userId: string,
-  ): Promise<
-    IProject & { members: Array<{ email: string; role: ProjectRole }> }
-  > {
+  ): Promise<IProject & { members: Array<{ email: string; role: string }> }> {
     try {
       // Check permission
       const userRole = await memberService.getUserRole(id, userId);
@@ -190,20 +195,14 @@ export class ProjectService {
 
       // Update project name if provided
       if (data.name) {
-        const { updateProject } = await import(
-          "@/repositories/projects/project"
-        );
         await updateProject(id, { name: data.name });
       }
 
       // Handle member updates
-      const memberResults: Array<{ email: string; role: ProjectRole }> = [];
+      const memberResults: Array<{ email: string; role: string }> = [];
       if (data.members && data.members.length > 0) {
         for (const member of data.members) {
           try {
-            const { findUserByEmail } = await import(
-              "@/repositories/auth/user"
-            );
             const existingUser = await findUserByEmail(member.email);
 
             if (member.action === "remove") {
@@ -211,17 +210,11 @@ export class ProjectService {
                 await memberService.removeMember(id, existingUser.id);
               }
               // Also cancel any pending invitations
-              const { findInvitationByEmailAndProject } = await import(
-                "@/repositories/projects/invitations"
-              );
               const invitation = await findInvitationByEmailAndProject(
                 member.email,
                 id,
               );
               if (invitation) {
-                const { deleteInvitationByToken } = await import(
-                  "@/repositories/projects/invitations"
-                );
                 await deleteInvitationByToken(invitation.token);
               }
             } else if (existingUser) {
@@ -312,7 +305,6 @@ export class ProjectService {
       }
 
       // Delete project (cascade will handle members and invitations)
-      const { deleteProject } = await import("@/repositories/projects/project");
       await deleteProject(id);
     } catch (error) {
       console.error("Error deleting project:", error);

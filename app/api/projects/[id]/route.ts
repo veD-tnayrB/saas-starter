@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import NextAuth from "@/auth";
 import { memberService, projectService } from "@/services/projects";
-import type { ProjectRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
@@ -113,7 +112,7 @@ export async function PUT(
         members: members as
           | Array<{
               email: string;
-              role: ProjectRole;
+              role: string;
               action: "add" | "update" | "remove";
             }>
           | undefined,

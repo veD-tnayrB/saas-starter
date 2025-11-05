@@ -51,7 +51,7 @@ export function ProjectStatsCard({
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
-        {trendText && (
+        {trend && trendText && (
           <p
             className={`mt-1 text-xs ${
               trend.isPositive ? "text-green-600" : "text-red-600"

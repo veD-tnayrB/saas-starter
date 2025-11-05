@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
 import { memberService } from "@/services/projects";
-import { getUserSubscriptionPlan } from "@/services/subscriptions";
+import { getProjectSubscriptionPlan } from "@/services/subscriptions";
 
 import { constructMetadata } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,7 +33,7 @@ export default async function BillingPage({ params }: BillingPageProps) {
     redirect(`/dashboard/${projectId}`);
   }
 
-  const userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
+  const userSubscriptionPlan = await getProjectSubscriptionPlan(projectId);
 
   return (
     <>

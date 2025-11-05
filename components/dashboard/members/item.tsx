@@ -1,11 +1,11 @@
-import type { ProjectRole } from "@prisma/client";
-
 import { UserAvatar } from "@/components/shared/user-avatar";
 
 interface IProjectMember {
   id: string;
   userId: string;
-  role: ProjectRole;
+  role: {
+    name: string;
+  };
   user?: {
     id: string;
     name: string | null;
@@ -16,8 +16,8 @@ interface IProjectMember {
 
 interface IMemberItemProps {
   member: IProjectMember;
-  roleDisplay: Record<ProjectRole, string>;
-  roleColors: Record<ProjectRole, string>;
+  roleDisplay: Record<string, string>;
+  roleColors: Record<string, string>;
 }
 
 export function MemberItem({
@@ -27,8 +27,9 @@ export function MemberItem({
 }: IMemberItemProps) {
   const userName = member.user?.name || "Unknown User";
   const userEmail = member.user?.email || "No email";
-  const roleBadgeClass = `rounded-full px-3 py-1 text-xs font-medium ${roleColors[member.role]}`;
-  const roleLabel = roleDisplay[member.role];
+  const roleName = member.role.name;
+  const roleBadgeClass = `rounded-full px-3 py-1 text-xs font-medium ${roleColors[roleName] || ""}`;
+  const roleLabel = roleDisplay[roleName] || roleName;
 
   return (
     <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">

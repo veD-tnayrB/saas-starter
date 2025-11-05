@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import NextAuth from "@/auth";
 import { projectService } from "@/services/projects";
-import type { ProjectRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
@@ -75,9 +74,7 @@ export async function POST(req: Request) {
     const project = await projectService.createProject({
       name,
       ownerId: session.user.id,
-      members: members as
-        | Array<{ email: string; role: ProjectRole }>
-        | undefined,
+      members: members as Array<{ email: string; role: string }> | undefined,
     });
 
     return NextResponse.json(

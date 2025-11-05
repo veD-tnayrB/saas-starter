@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Copy,
   CreditCard,
+  Edit,
   File,
   FileText,
   HelpCircle,
@@ -48,6 +49,7 @@ export const Icons = {
   close: X,
   copy: Copy,
   dashboard: LayoutPanelLeft,
+  edit: Edit,
   ellipsis: MoreVertical,
   gitHub: ({ ...props }: LucideProps) => (
     <svg

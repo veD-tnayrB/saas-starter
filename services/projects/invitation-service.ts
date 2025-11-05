@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { ProjectInvitationEmail } from "@/emails/project-invitation-email";
-import { findUserByEmail } from "@/repositories/auth";
+import { findUserByEmail, findUserById } from "@/repositories/auth/user";
+import { findRoleByName } from "@/repositories/permissions";
 import {
   createProjectInvitation,
   deleteInvitationByToken,
@@ -14,7 +15,7 @@ import {
   findProjectMember,
 } from "@/repositories/projects/members";
 import { findProjectById } from "@/repositories/projects/project";
-import type { ProjectRole } from "@prisma/client";
+import { render } from "@react-email/render";
 import { Resend } from "resend";
 
 import { env } from "@/env.mjs";
@@ -36,7 +37,7 @@ export class InvitationService {
   async createInvitation(
     projectId: string,
     email: string,
-    role: ProjectRole,
+    roleName: string, // Role name: "OWNER", "ADMIN", "MEMBER"
     invitedById: string,
   ): Promise<IProjectInvitation> {
     try {
@@ -64,6 +65,12 @@ export class InvitationService {
         throw new Error("Invitation already sent to this email");
       }
 
+      // Get role by name
+      const role = await findRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role ${roleName} not found`);
+      }
+
       // Generate token and expiration (7 days)
       const token = randomUUID();
       const expiresAt = new Date();
@@ -73,14 +80,13 @@ export class InvitationService {
       const invitation = await createProjectInvitation({
         projectId,
         email,
-        role,
+        roleId: role.id,
         invitedById,
         token,
         expiresAt,
       });
 
       // Get inviter info
-      const { findUserById } = await import("@/repositories/auth/user");
       const inviter = await findUserById(invitedById);
 
       // Send invitation email
@@ -112,12 +118,11 @@ export class InvitationService {
     try {
       const acceptUrl = `${env.NEXT_PUBLIC_APP_URL}/accept-invitation?token=${data.invitation.token}`;
 
-      const { render } = await import("@react-email/render");
       const html = await render(
         ProjectInvitationEmail({
           projectName: data.projectName,
           inviterName: data.inviterName,
-          role: data.invitation.role,
+          role: data.invitation.role.name,
           acceptUrl,
           siteName: siteConfig.name,
         }) as React.ReactElement,
@@ -126,7 +131,7 @@ export class InvitationService {
       const text = `
         You've been invited to join "${data.projectName}" on ${siteConfig.name}
 
-        ${data.inviterName} has invited you to join their project as ${data.invitation.role}.
+        ${data.inviterName} has invited you to join their project as ${data.invitation.role.name}.
 
         Accept invitation: ${acceptUrl}
 
@@ -173,9 +178,7 @@ export class InvitationService {
       }
 
       // Verify user email matches invitation email
-      const user = await (
-        await import("@/repositories/auth/user")
-      ).findUserById(userId);
+      const user = await findUserById(userId);
       if (!user || user.email !== invitation.email) {
         throw new Error("Email does not match invitation");
       }
@@ -198,7 +201,7 @@ export class InvitationService {
       await createProjectMember({
         projectId: invitation.projectId,
         userId,
-        role: invitation.role,
+        roleId: invitation.roleId,
       });
 
       // Delete invitation

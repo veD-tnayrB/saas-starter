@@ -1,10 +1,8 @@
-import type { ProjectRole } from "@prisma/client";
-
 /**
- * Unified role type (same as UserRole and ProjectRole)
- * Currently: OWNER | ADMIN | MEMBER
+ * Unified role type
+ * Currently: "OWNER" | "ADMIN" | "MEMBER"
  */
-export type UnifiedRole = ProjectRole;
+export type UnifiedRole = "OWNER" | "ADMIN" | "MEMBER";
 
 /**
  * Check if a role can manage project members

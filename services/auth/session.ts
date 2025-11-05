@@ -5,6 +5,7 @@ import {
   findUserById,
   validateSession,
 } from "@/repositories/auth";
+import { isPlatformAdmin } from "@/services/auth/platform-admin";
 import type { User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
@@ -329,7 +330,6 @@ export class SessionManagementService {
       const user = await this.getCurrentUser(sessionToken);
       if (!user) return false;
 
-      const { isPlatformAdmin } = await import("./platform-admin");
       return await isPlatformAdmin(user.id);
     } catch (error) {
       console.error("Error checking admin status:", error);

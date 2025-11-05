@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import NextAuth from "@/auth";
 import { invitationService, memberService } from "@/services/projects";
-import type { ProjectRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
@@ -49,7 +48,7 @@ export async function POST(req: Request) {
     const invitation = await invitationService.createInvitation(
       projectId,
       email,
-      role as ProjectRole,
+      role,
       session.user.id,
     );
 
@@ -59,7 +58,7 @@ export async function POST(req: Request) {
         invitation: {
           id: invitation.id,
           email: invitation.email,
-          role: invitation.role,
+          role: invitation.role.name,
           expiresAt: invitation.expiresAt,
         },
       },
