@@ -1,3 +1,6 @@
+import { OAuthClientFactory } from "./oauth";
+import { createResendClient, getDefaultResendConfig } from "./resend";
+
 /**
  * Auth Client Module
  *
@@ -10,8 +13,8 @@
 // Email client exports
 export {
   BaseEmailClient,
-  EmailTemplateGenerator,
   emailClient,
+  EmailTemplateGenerator,
   resend,
   sendVerificationRequest,
   type EmailClient,
@@ -22,9 +25,9 @@ export {
 
 // Resend client exports
 export {
-  ResendEmailClient,
   createResendClient,
   getDefaultResendConfig,
+  ResendEmailClient,
 } from "./resend";
 
 // OAuth client exports
@@ -51,7 +54,6 @@ export type {
  * Create default email client instance
  */
 export function createDefaultEmailClient() {
-  const { getDefaultResendConfig, createResendClient } = require("./resend");
   const config = getDefaultResendConfig();
   return createResendClient(config);
 }
@@ -60,7 +62,6 @@ export function createDefaultEmailClient() {
  * Create default OAuth client for Google
  */
 export function createDefaultOAuthClient() {
-  const { OAuthClientFactory } = require("./oauth");
   return OAuthClientFactory.createGoogleClient();
 }
 

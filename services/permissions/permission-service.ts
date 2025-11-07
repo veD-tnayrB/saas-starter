@@ -1,4 +1,3 @@
-import { prisma } from "@/clients/db";
 import {
   canRolePerformActionInPlan,
   findActionBySlug,
@@ -8,6 +7,7 @@ import {
   getProjectSubscriptionPlan,
   setCachedPermission,
 } from "@/repositories/permissions";
+import { findProjectMember } from "@/repositories/projects/members";
 
 /**
  * Permission Service
@@ -43,17 +43,7 @@ export class PermissionService {
       }
 
       // Get user's role in the project (with roleId)
-      const projectMember = await prisma.projectMember.findUnique({
-        where: {
-          projectId_userId: {
-            projectId,
-            userId,
-          },
-        },
-        include: {
-          role: true,
-        },
-      });
+      const projectMember = await findProjectMember(projectId, userId);
 
       if (!projectMember || !projectMember.role) {
         return false;

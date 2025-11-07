@@ -1,4 +1,7 @@
-import { prisma } from "@/clients/db";
+import { randomUUID } from "crypto";
+import { sql } from "kysely";
+
+import { db } from "@/lib/db";
 
 /**
  * Project invitation data transfer object
@@ -38,29 +41,54 @@ export async function findInvitationByToken(
   token: string,
 ): Promise<IProjectInvitation | null> {
   try {
-    const invitation = await prisma.projectInvitation.findUnique({
-      where: { token },
-      include: {
-        role: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      project_id: string;
+      email: string;
+      role_id: string;
+      invited_by_id: string;
+      token: string;
+      created_at: Date;
+      expires_at: Date;
+      role_id_2: string;
+      role_name: string;
+      role_priority: number;
+    }>`
+      SELECT 
+        pi.id,
+        pi.project_id,
+        pi.email,
+        pi.role_id,
+        pi.invited_by_id,
+        pi.token,
+        pi.created_at,
+        pi.expires_at,
+        ar.id as role_id_2,
+        ar.name as role_name,
+        ar.priority as role_priority
+      FROM project_invitations pi
+      INNER JOIN app_roles ar ON ar.id = pi.role_id
+      WHERE pi.token = ${token}
+      LIMIT 1
+    `.execute(db);
 
-    if (!invitation) return null;
+    const row = result.rows[0];
+    if (!row) return null;
 
     return {
-      id: invitation.id,
-      projectId: invitation.projectId,
-      email: invitation.email,
-      roleId: invitation.roleId,
+      id: row.id,
+      projectId: row.project_id,
+      email: row.email,
+      roleId: row.role_id,
       role: {
-        id: invitation.role.id,
-        name: invitation.role.name,
-        priority: invitation.role.priority,
+        id: row.role_id_2,
+        name: row.role_name,
+        priority: row.role_priority,
       },
-      invitedById: invitation.invitedById,
-      token: invitation.token,
-      createdAt: invitation.createdAt,
-      expiresAt: invitation.expiresAt,
+      invitedById: row.invited_by_id,
+      token: row.token,
+      createdAt: row.created_at,
+      expiresAt: row.expires_at,
     };
   } catch (error) {
     console.error("Error finding invitation by token:", error);
@@ -76,36 +104,59 @@ export async function findInvitationByEmailAndProject(
   projectId: string,
 ): Promise<IProjectInvitation | null> {
   try {
-    const invitation = await prisma.projectInvitation.findFirst({
-      where: {
-        email,
-        projectId,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        role: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const now = new Date();
 
-    if (!invitation) return null;
+    const result = await sql<{
+      id: string;
+      project_id: string;
+      email: string;
+      role_id: string;
+      invited_by_id: string;
+      token: string;
+      created_at: Date;
+      expires_at: Date;
+      role_id_2: string;
+      role_name: string;
+      role_priority: number;
+    }>`
+      SELECT 
+        pi.id,
+        pi.project_id,
+        pi.email,
+        pi.role_id,
+        pi.invited_by_id,
+        pi.token,
+        pi.created_at,
+        pi.expires_at,
+        ar.id as role_id_2,
+        ar.name as role_name,
+        ar.priority as role_priority
+      FROM project_invitations pi
+      INNER JOIN app_roles ar ON ar.id = pi.role_id
+      WHERE pi.email = ${email}
+        AND pi.project_id = ${projectId}
+        AND pi.expires_at > ${now}
+      ORDER BY pi.created_at DESC
+      LIMIT 1
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) return null;
 
     return {
-      id: invitation.id,
-      projectId: invitation.projectId,
-      email: invitation.email,
-      roleId: invitation.roleId,
+      id: row.id,
+      projectId: row.project_id,
+      email: row.email,
+      roleId: row.role_id,
       role: {
-        id: invitation.role.id,
-        name: invitation.role.name,
-        priority: invitation.role.priority,
+        id: row.role_id_2,
+        name: row.role_name,
+        priority: row.role_priority,
       },
-      invitedById: invitation.invitedById,
-      token: invitation.token,
-      createdAt: invitation.createdAt,
-      expiresAt: invitation.expiresAt,
+      invitedById: row.invited_by_id,
+      token: row.token,
+      createdAt: row.created_at,
+      expiresAt: row.expires_at,
     };
   } catch (error) {
     console.error("Error finding invitation by email and project:", error);
@@ -120,33 +171,54 @@ export async function findProjectInvitations(
   projectId: string,
 ): Promise<IProjectInvitation[]> {
   try {
-    const invitations = await prisma.projectInvitation.findMany({
-      where: {
-        projectId,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        role: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const now = new Date();
 
-    return invitations.map((invitation) => ({
-      id: invitation.id,
-      projectId: invitation.projectId,
-      email: invitation.email,
-      roleId: invitation.roleId,
+    const result = await sql<{
+      id: string;
+      project_id: string;
+      email: string;
+      role_id: string;
+      invited_by_id: string;
+      token: string;
+      created_at: Date;
+      expires_at: Date;
+      role_id_2: string;
+      role_name: string;
+      role_priority: number;
+    }>`
+      SELECT 
+        pi.id,
+        pi.project_id,
+        pi.email,
+        pi.role_id,
+        pi.invited_by_id,
+        pi.token,
+        pi.created_at,
+        pi.expires_at,
+        ar.id as role_id_2,
+        ar.name as role_name,
+        ar.priority as role_priority
+      FROM project_invitations pi
+      INNER JOIN app_roles ar ON ar.id = pi.role_id
+      WHERE pi.project_id = ${projectId}
+        AND pi.expires_at > ${now}
+      ORDER BY pi.created_at DESC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      email: row.email,
+      roleId: row.role_id,
       role: {
-        id: invitation.role.id,
-        name: invitation.role.name,
-        priority: invitation.role.priority,
+        id: row.role_id_2,
+        name: row.role_name,
+        priority: row.role_priority,
       },
-      invitedById: invitation.invitedById,
-      token: invitation.token,
-      createdAt: invitation.createdAt,
-      expiresAt: invitation.expiresAt,
+      invitedById: row.invited_by_id,
+      token: row.token,
+      createdAt: row.created_at,
+      expiresAt: row.expires_at,
     }));
   } catch (error) {
     console.error("Error finding project invitations:", error);
@@ -161,46 +233,54 @@ export async function findPendingInvitationsByEmail(
   email: string,
 ): Promise<IProjectInvitation[]> {
   try {
-    const invitations = await prisma.projectInvitation.findMany({
-      where: {
-        email,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        invitedBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        role: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const now = new Date();
 
-    return invitations.map((invitation) => ({
-      id: invitation.id,
-      projectId: invitation.projectId,
-      email: invitation.email,
-      roleId: invitation.roleId,
+    const result = await sql<{
+      id: string;
+      project_id: string;
+      email: string;
+      role_id: string;
+      invited_by_id: string;
+      token: string;
+      created_at: Date;
+      expires_at: Date;
+      role_id_2: string;
+      role_name: string;
+      role_priority: number;
+    }>`
+      SELECT 
+        pi.id,
+        pi.project_id,
+        pi.email,
+        pi.role_id,
+        pi.invited_by_id,
+        pi.token,
+        pi.created_at,
+        pi.expires_at,
+        ar.id as role_id_2,
+        ar.name as role_name,
+        ar.priority as role_priority
+      FROM project_invitations pi
+      INNER JOIN app_roles ar ON ar.id = pi.role_id
+      WHERE pi.email = ${email}
+        AND pi.expires_at > ${now}
+      ORDER BY pi.created_at DESC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      email: row.email,
+      roleId: row.role_id,
       role: {
-        id: invitation.role.id,
-        name: invitation.role.name,
-        priority: invitation.role.priority,
+        id: row.role_id_2,
+        name: row.role_name,
+        priority: row.role_priority,
       },
-      invitedById: invitation.invitedById,
-      token: invitation.token,
-      createdAt: invitation.createdAt,
-      expiresAt: invitation.expiresAt,
+      invitedById: row.invited_by_id,
+      token: row.token,
+      createdAt: row.created_at,
+      expiresAt: row.expires_at,
     }));
   } catch (error) {
     console.error("Error finding pending invitations by email:", error);
@@ -215,34 +295,73 @@ export async function createProjectInvitation(
   data: IProjectInvitationCreateData,
 ): Promise<IProjectInvitation> {
   try {
-    const invitation = await prisma.projectInvitation.create({
-      data: {
-        projectId: data.projectId,
-        email: data.email,
-        roleId: data.roleId,
-        invitedById: data.invitedById,
-        token: data.token,
-        expiresAt: data.expiresAt,
-      },
-      include: {
-        role: true,
-      },
-    });
+    const id = randomUUID();
+
+    const invitationResult = await sql<{
+      id: string;
+      project_id: string;
+      email: string;
+      role_id: string;
+      invited_by_id: string;
+      token: string;
+      created_at: Date;
+      expires_at: Date;
+    }>`
+      INSERT INTO project_invitations (
+        id,
+        project_id,
+        email,
+        role_id,
+        invited_by_id,
+        token,
+        created_at,
+        expires_at
+      )
+      VALUES (
+        ${id},
+        ${data.projectId},
+        ${data.email},
+        ${data.roleId},
+        ${data.invitedById},
+        ${data.token},
+        CURRENT_TIMESTAMP,
+        ${data.expiresAt}
+      )
+      RETURNING *
+    `.execute(db);
+
+    const invitation = invitationResult.rows[0];
+    if (!invitation) throw new Error("Failed to create project invitation");
+
+    // Fetch role data
+    const roleResult = await sql<{
+      id: string;
+      name: string;
+      priority: number;
+    }>`
+      SELECT id, name, priority
+      FROM app_roles
+      WHERE id = ${data.roleId}
+      LIMIT 1
+    `.execute(db);
+
+    const role = roleResult.rows[0];
+    if (!role) throw new Error("Role not found");
 
     return {
       id: invitation.id,
-      projectId: invitation.projectId,
+      projectId: invitation.project_id,
       email: invitation.email,
-      roleId: invitation.roleId,
+      roleId: invitation.role_id,
       role: {
-        id: invitation.role.id,
-        name: invitation.role.name,
-        priority: invitation.role.priority,
+        id: role.id,
+        name: role.name,
+        priority: role.priority,
       },
-      invitedById: invitation.invitedById,
+      invitedById: invitation.invited_by_id,
       token: invitation.token,
-      createdAt: invitation.createdAt,
-      expiresAt: invitation.expiresAt,
+      createdAt: invitation.created_at,
+      expiresAt: invitation.expires_at,
     };
   } catch (error) {
     console.error("Error creating project invitation:", error);
@@ -255,9 +374,10 @@ export async function createProjectInvitation(
  */
 export async function deleteInvitation(id: string): Promise<void> {
   try {
-    await prisma.projectInvitation.delete({
-      where: { id },
-    });
+    await sql`
+      DELETE FROM project_invitations
+      WHERE id = ${id}
+    `.execute(db);
   } catch (error) {
     console.error("Error deleting invitation:", error);
     throw new Error("Failed to delete invitation");
@@ -269,9 +389,10 @@ export async function deleteInvitation(id: string): Promise<void> {
  */
 export async function deleteInvitationByToken(token: string): Promise<void> {
   try {
-    await prisma.projectInvitation.delete({
-      where: { token },
-    });
+    await sql`
+      DELETE FROM project_invitations
+      WHERE token = ${token}
+    `.execute(db);
   } catch (error) {
     console.error("Error deleting invitation by token:", error);
     throw new Error("Failed to delete invitation");
@@ -283,15 +404,15 @@ export async function deleteInvitationByToken(token: string): Promise<void> {
  */
 export async function cleanupExpiredInvitations(): Promise<number> {
   try {
-    const result = await prisma.projectInvitation.deleteMany({
-      where: {
-        expiresAt: {
-          lt: new Date(),
-        },
-      },
-    });
+    const now = new Date();
 
-    return result.count;
+    const result = await sql<{ id: string }>`
+      DELETE FROM project_invitations
+      WHERE expires_at < ${now}
+      RETURNING id
+    `.execute(db);
+
+    return result.rows.length;
   } catch (error) {
     console.error("Error cleaning up expired invitations:", error);
     throw new Error("Failed to cleanup expired invitations");

@@ -1,4 +1,7 @@
-import { prisma } from "@/clients/db";
+import { randomUUID } from "crypto";
+import { sql } from "kysely";
+
+import { db } from "@/lib/db";
 
 export interface IAction {
   id: string;
@@ -29,10 +32,29 @@ export interface IActionUpdateData {
  */
 export async function findAllActions(): Promise<IAction[]> {
   try {
-    const actions = await prisma.action.findMany({
-      orderBy: [{ category: "asc" }, { name: "asc" }],
-    });
-    return actions;
+    const result = await sql<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      category: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM actions
+      ORDER BY category ASC, name ASC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error finding all actions:", error);
     throw new Error("Failed to find actions");
@@ -46,10 +68,33 @@ export async function findActionById(
   actionId: string,
 ): Promise<IAction | null> {
   try {
-    const action = await prisma.action.findUnique({
-      where: { id: actionId },
-    });
-    return action;
+    const result = await sql<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      category: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM actions
+      WHERE id = ${actionId}
+      LIMIT 1
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding action by ID:", error);
     throw new Error("Failed to find action");
@@ -61,10 +106,33 @@ export async function findActionById(
  */
 export async function findActionBySlug(slug: string): Promise<IAction | null> {
   try {
-    const action = await prisma.action.findUnique({
-      where: { slug },
-    });
-    return action;
+    const result = await sql<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      category: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM actions
+      WHERE slug = ${slug}
+      LIMIT 1
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding action by slug:", error);
     throw new Error("Failed to find action");
@@ -78,11 +146,30 @@ export async function findActionsByCategory(
   category: string,
 ): Promise<IAction[]> {
   try {
-    const actions = await prisma.action.findMany({
-      where: { category },
-      orderBy: { name: "asc" },
-    });
-    return actions;
+    const result = await sql<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      category: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM actions
+      WHERE category = ${category}
+      ORDER BY name ASC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error finding actions by category:", error);
     throw new Error("Failed to find actions");
@@ -94,15 +181,34 @@ export async function findActionsByCategory(
  */
 export async function createAction(data: IActionCreateData): Promise<IAction> {
   try {
-    const action = await prisma.action.create({
-      data: {
-        slug: data.slug,
-        name: data.name,
-        description: data.description ?? null,
-        category: data.category,
-      },
-    });
-    return action;
+    const id = randomUUID();
+
+    const result = await sql<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      category: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      INSERT INTO actions (id, slug, name, description, category, created_at, updated_at)
+      VALUES (${id}, ${data.slug}, ${data.name}, ${data.description ?? null}, ${data.category}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      RETURNING *
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("Failed to create action");
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error creating action:", error);
     throw new Error("Failed to create action");
@@ -117,16 +223,47 @@ export async function updateAction(
   data: IActionUpdateData,
 ): Promise<IAction> {
   try {
-    const action = await prisma.action.update({
-      where: { id: actionId },
-      data: {
-        slug: data.slug,
-        name: data.name,
-        description: data.description,
-        category: data.category,
-      },
-    });
-    return action;
+    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    if (data.slug !== undefined) {
+      setParts.push(`slug = ${sql.lit(data.slug)}`);
+    }
+    if (data.name !== undefined) {
+      setParts.push(`name = ${sql.lit(data.name)}`);
+    }
+    if (data.description !== undefined) {
+      setParts.push(`description = ${sql.lit(data.description ?? null)}`);
+    }
+    if (data.category !== undefined) {
+      setParts.push(`category = ${sql.lit(data.category)}`);
+    }
+
+    const result = await sql<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      category: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      UPDATE actions
+      SET ${sql.raw(setParts.join(", "))}
+      WHERE id = ${actionId}
+      RETURNING *
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("Action not found");
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      category: row.category,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error updating action:", error);
     throw new Error("Failed to update action");
@@ -138,12 +275,12 @@ export async function updateAction(
  */
 export async function deleteAction(actionId: string): Promise<void> {
   try {
-    await prisma.action.delete({
-      where: { id: actionId },
-    });
+    await sql`
+      DELETE FROM actions
+      WHERE id = ${actionId}
+    `.execute(db);
   } catch (error) {
     console.error("Error deleting action:", error);
     throw new Error("Failed to delete action");
   }
 }
-

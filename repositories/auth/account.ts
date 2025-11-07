@@ -1,10 +1,12 @@
-import { prisma } from "@/clients/db";
+import { randomUUID } from "crypto";
+import { sql } from "kysely";
 
 import type {
   IProviderAccount,
   IProviderLinkData,
   IProviderUnlinkData,
 } from "@/types/auth";
+import { db } from "@/lib/db";
 
 /**
  * Find account by provider and provider account ID
@@ -17,14 +19,48 @@ export async function findAccountByProvider(
   providerAccountId: string,
 ): Promise<IProviderAccount | null> {
   try {
-    const account = await prisma.account.findFirst({
-      where: {
-        provider,
-        providerAccountId,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      user_id: string;
+      type: string;
+      provider: string;
+      provider_account_id: string;
+      refresh_token: string | null;
+      access_token: string | null;
+      expires_at: number | null;
+      token_type: string | null;
+      scope: string | null;
+      id_token: string | null;
+      session_state: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM accounts
+      WHERE provider = ${provider}
+        AND provider_account_id = ${providerAccountId}
+      LIMIT 1
+    `.execute(db);
 
-    return account;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      provider: row.provider,
+      providerAccountId: row.provider_account_id,
+      refresh_token: row.refresh_token,
+      access_token: row.access_token,
+      expires_at: row.expires_at,
+      token_type: row.token_type,
+      scope: row.scope,
+      id_token: row.id_token,
+      session_state: row.session_state,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding account by provider:", error);
     throw new Error("Failed to find account by provider");
@@ -40,12 +76,44 @@ export async function findAccountsByUserId(
   userId: string,
 ): Promise<IProviderAccount[]> {
   try {
-    const accounts = await prisma.account.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
+    const result = await sql<{
+      id: string;
+      user_id: string;
+      type: string;
+      provider: string;
+      provider_account_id: string;
+      refresh_token: string | null;
+      access_token: string | null;
+      expires_at: number | null;
+      token_type: string | null;
+      scope: string | null;
+      id_token: string | null;
+      session_state: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM accounts
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC
+    `.execute(db);
 
-    return accounts;
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      provider: row.provider,
+      providerAccountId: row.provider_account_id,
+      refresh_token: row.refresh_token,
+      access_token: row.access_token,
+      expires_at: row.expires_at,
+      token_type: row.token_type,
+      scope: row.scope,
+      id_token: row.id_token,
+      session_state: row.session_state,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error finding accounts by user ID:", error);
     throw new Error("Failed to find accounts by user ID");
@@ -61,11 +129,47 @@ export async function findAccountById(
   id: string,
 ): Promise<IProviderAccount | null> {
   try {
-    const account = await prisma.account.findUnique({
-      where: { id },
-    });
+    const result = await sql<{
+      id: string;
+      user_id: string;
+      type: string;
+      provider: string;
+      provider_account_id: string;
+      refresh_token: string | null;
+      access_token: string | null;
+      expires_at: number | null;
+      token_type: string | null;
+      scope: string | null;
+      id_token: string | null;
+      session_state: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM accounts
+      WHERE id = ${id}
+      LIMIT 1
+    `.execute(db);
 
-    return account;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      provider: row.provider,
+      providerAccountId: row.provider_account_id,
+      refresh_token: row.refresh_token,
+      access_token: row.access_token,
+      expires_at: row.expires_at,
+      token_type: row.token_type,
+      scope: row.scope,
+      id_token: row.id_token,
+      session_state: row.session_state,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding account by ID:", error);
     throw new Error("Failed to find account by ID");
@@ -91,23 +195,78 @@ export async function createAccount(data: {
   session_state?: string | null;
 }): Promise<IProviderAccount> {
   try {
-    const account = await prisma.account.create({
-      data: {
-        userId: data.userId,
-        type: data.type,
-        provider: data.provider,
-        providerAccountId: data.providerAccountId,
-        refresh_token: data.refresh_token,
-        access_token: data.access_token,
-        expires_at: data.expires_at,
-        token_type: data.token_type,
-        scope: data.scope,
-        id_token: data.id_token,
-        session_state: data.session_state,
-      },
-    });
+    const id = randomUUID();
 
-    return account;
+    const result = await sql<{
+      id: string;
+      user_id: string;
+      type: string;
+      provider: string;
+      provider_account_id: string;
+      refresh_token: string | null;
+      access_token: string | null;
+      expires_at: number | null;
+      token_type: string | null;
+      scope: string | null;
+      id_token: string | null;
+      session_state: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      INSERT INTO accounts (
+        id,
+        user_id,
+        type,
+        provider,
+        provider_account_id,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${id},
+        ${data.userId},
+        ${data.type},
+        ${data.provider},
+        ${data.providerAccountId},
+        ${data.refresh_token ?? null},
+        ${data.access_token ?? null},
+        ${data.expires_at ?? null},
+        ${data.token_type ?? null},
+        ${data.scope ?? null},
+        ${data.id_token ?? null},
+        ${data.session_state ?? null},
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      RETURNING *
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("Failed to create account");
+
+    return {
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      provider: row.provider,
+      providerAccountId: row.provider_account_id,
+      refresh_token: row.refresh_token,
+      access_token: row.access_token,
+      expires_at: row.expires_at,
+      token_type: row.token_type,
+      scope: row.scope,
+      id_token: row.id_token,
+      session_state: row.session_state,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error creating account:", error);
     throw new Error("Failed to create account");
@@ -133,20 +292,71 @@ export async function updateAccount(
   },
 ): Promise<IProviderAccount> {
   try {
-    const account = await prisma.account.update({
-      where: { id },
-      data: {
-        refresh_token: data.refresh_token,
-        access_token: data.access_token,
-        expires_at: data.expires_at,
-        token_type: data.token_type,
-        scope: data.scope,
-        id_token: data.id_token,
-        session_state: data.session_state,
-      },
-    });
+    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
 
-    return account;
+    if (data.refresh_token !== undefined) {
+      setParts.push(`refresh_token = ${sql.lit(data.refresh_token ?? null)}`);
+    }
+    if (data.access_token !== undefined) {
+      setParts.push(`access_token = ${sql.lit(data.access_token ?? null)}`);
+    }
+    if (data.expires_at !== undefined) {
+      setParts.push(`expires_at = ${sql.lit(data.expires_at ?? null)}`);
+    }
+    if (data.token_type !== undefined) {
+      setParts.push(`token_type = ${sql.lit(data.token_type ?? null)}`);
+    }
+    if (data.scope !== undefined) {
+      setParts.push(`scope = ${sql.lit(data.scope ?? null)}`);
+    }
+    if (data.id_token !== undefined) {
+      setParts.push(`id_token = ${sql.lit(data.id_token ?? null)}`);
+    }
+    if (data.session_state !== undefined) {
+      setParts.push(`session_state = ${sql.lit(data.session_state ?? null)}`);
+    }
+
+    const result = await sql<{
+      id: string;
+      user_id: string;
+      type: string;
+      provider: string;
+      provider_account_id: string;
+      refresh_token: string | null;
+      access_token: string | null;
+      expires_at: number | null;
+      token_type: string | null;
+      scope: string | null;
+      id_token: string | null;
+      session_state: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      UPDATE accounts
+      SET ${sql.raw(setParts.join(", "))}
+      WHERE id = ${id}
+      RETURNING *
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("Account not found");
+
+    return {
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      provider: row.provider,
+      providerAccountId: row.provider_account_id,
+      refresh_token: row.refresh_token,
+      access_token: row.access_token,
+      expires_at: row.expires_at,
+      token_type: row.token_type,
+      scope: row.scope,
+      id_token: row.id_token,
+      session_state: row.session_state,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error updating account:", error);
     throw new Error("Failed to update account");
@@ -160,9 +370,10 @@ export async function updateAccount(
  */
 export async function deleteAccount(id: string): Promise<boolean> {
   try {
-    await prisma.account.delete({
-      where: { id },
-    });
+    await sql`
+      DELETE FROM accounts
+      WHERE id = ${id}
+    `.execute(db);
 
     return true;
   } catch (error) {
@@ -218,13 +429,17 @@ export async function unlinkProviderAccount(
   data: IProviderUnlinkData,
 ): Promise<boolean> {
   try {
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: data.userId,
-        provider: data.provider,
-      },
-    });
+    const result = await sql<{
+      id: string;
+    }>`
+      SELECT id
+      FROM accounts
+      WHERE user_id = ${data.userId}
+        AND provider = ${data.provider}
+      LIMIT 1
+    `.execute(db);
 
+    const account = result.rows[0];
     if (!account) {
       throw new Error("Account not found");
     }
@@ -247,26 +462,35 @@ export async function getAccountStats(): Promise<{
   linkedUsers: number;
 }> {
   try {
-    const [totalAccounts, accountsByProvider, linkedUsers] = await Promise.all([
-      prisma.account.count(),
-      prisma.account.groupBy({
-        by: ["provider"],
-        _count: {
-          provider: true,
-        },
-      }),
-      prisma.user.count({
-        where: {
-          accounts: {
-            some: {},
-          },
-        },
-      }),
-    ]);
+    const [totalAccountsResult, accountsByProviderResult, linkedUsersResult] =
+      await Promise.all([
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM accounts
+        `.execute(db),
+        sql<{
+          provider: string;
+          count: string;
+        }>`
+          SELECT provider, COUNT(*)::text as count
+          FROM accounts
+          GROUP BY provider
+        `.execute(db),
+        sql<{ count: string }>`
+          SELECT COUNT(DISTINCT user_id)::text as count
+          FROM accounts
+        `.execute(db),
+      ]);
 
-    const providerStats = accountsByProvider.reduce(
-      (acc, item) => {
-        acc[item.provider] = item._count.provider;
+    const totalAccounts = parseInt(
+      totalAccountsResult.rows[0]?.count || "0",
+      10,
+    );
+    const linkedUsers = parseInt(linkedUsersResult.rows[0]?.count || "0", 10);
+
+    const providerStats = accountsByProviderResult.rows.reduce(
+      (acc, row) => {
+        acc[row.provider] = parseInt(row.count, 10);
         return acc;
       },
       {} as Record<string, number>,
@@ -289,20 +513,20 @@ export async function getAccountStats(): Promise<{
  */
 export async function cleanupExpiredTokens(): Promise<number> {
   try {
-    const result = await prisma.account.updateMany({
-      where: {
-        expires_at: {
-          lt: Math.floor(Date.now() / 1000),
-        },
-      },
-      data: {
-        access_token: null,
-        refresh_token: null,
-        expires_at: null,
-      },
-    });
+    const currentTimestamp = Math.floor(Date.now() / 1000);
 
-    return result.count;
+    const result = await sql<{ count: string }>`
+      UPDATE accounts
+      SET 
+        access_token = NULL,
+        refresh_token = NULL,
+        expires_at = NULL,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE expires_at < ${currentTimestamp}
+      RETURNING id
+    `.execute(db);
+
+    return result.rows.length;
   } catch (error) {
     console.error("Error cleaning up expired tokens:", error);
     throw new Error("Failed to cleanup expired tokens");
@@ -317,18 +541,46 @@ export async function findAccountsWithExpiredTokens(): Promise<
   IProviderAccount[]
 > {
   try {
-    const accounts = await prisma.account.findMany({
-      where: {
-        expires_at: {
-          lt: Math.floor(Date.now() / 1000),
-        },
-        access_token: {
-          not: null,
-        },
-      },
-    });
+    const currentTimestamp = Math.floor(Date.now() / 1000);
 
-    return accounts;
+    const result = await sql<{
+      id: string;
+      user_id: string;
+      type: string;
+      provider: string;
+      provider_account_id: string;
+      refresh_token: string | null;
+      access_token: string | null;
+      expires_at: number | null;
+      token_type: string | null;
+      scope: string | null;
+      id_token: string | null;
+      session_state: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM accounts
+      WHERE expires_at < ${currentTimestamp}
+        AND access_token IS NOT NULL
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      provider: row.provider,
+      providerAccountId: row.provider_account_id,
+      refresh_token: row.refresh_token,
+      access_token: row.access_token,
+      expires_at: row.expires_at,
+      token_type: row.token_type,
+      scope: row.scope,
+      id_token: row.id_token,
+      session_state: row.session_state,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error finding accounts with expired tokens:", error);
     throw new Error("Failed to find accounts with expired tokens");

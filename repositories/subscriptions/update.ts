@@ -1,9 +1,10 @@
-import { prisma } from "@/clients/db";
+import { sql } from "kysely";
 
 import {
   UpdateSubscriptionData,
   UserSubscriptionRecord,
 } from "@/types/subscriptions";
+import { db } from "@/lib/db";
 
 /**
  * Update user subscription data
@@ -13,32 +14,39 @@ export async function updateUserSubscription(
   data: UpdateSubscriptionData,
 ): Promise<UserSubscriptionRecord> {
   try {
-    const updateData: Record<string, unknown> = {};
+    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
 
-    if (data.priceId) {
-      updateData.stripePriceId = data.priceId;
+    if (data.priceId !== undefined) {
+      setParts.push(`stripe_price_id = ${sql.lit(data.priceId ?? null)}`);
     }
 
-    const user = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: updateData,
-      select: {
-        id: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-        stripePriceId: true,
-        stripeCurrentPeriodEnd: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      stripe_price_id: string | null;
+      stripe_current_period_end: Date | null;
+    }>`
+      UPDATE users
+      SET ${sql.raw(setParts.join(", "))}
+      WHERE id = ${userId}
+      RETURNING 
+        id,
+        stripe_customer_id,
+        stripe_subscription_id,
+        stripe_price_id,
+        stripe_current_period_end
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("User not found");
 
     return {
-      userId: user.id,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
-      stripePriceId: user.stripePriceId,
-      stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+      userId: row.id,
+      stripeCustomerId: row.stripe_customer_id,
+      stripeSubscriptionId: row.stripe_subscription_id,
+      stripePriceId: row.stripe_price_id,
+      stripeCurrentPeriodEnd: row.stripe_current_period_end,
     };
   } catch (error) {
     console.error("Error updating user subscription:", error);
@@ -54,28 +62,35 @@ export async function updateSubscriptionPeriod(
   periodEnd: Date,
 ): Promise<UserSubscriptionRecord> {
   try {
-    const user = await prisma.user.update({
-      where: {
-        stripeSubscriptionId: subscriptionId,
-      },
-      data: {
-        stripeCurrentPeriodEnd: periodEnd,
-      },
-      select: {
-        id: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-        stripePriceId: true,
-        stripeCurrentPeriodEnd: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      stripe_price_id: string | null;
+      stripe_current_period_end: Date | null;
+    }>`
+      UPDATE users
+      SET 
+        stripe_current_period_end = ${periodEnd},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE stripe_subscription_id = ${subscriptionId}
+      RETURNING 
+        id,
+        stripe_customer_id,
+        stripe_subscription_id,
+        stripe_price_id,
+        stripe_current_period_end
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("User not found");
 
     return {
-      userId: user.id,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
-      stripePriceId: user.stripePriceId,
-      stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+      userId: row.id,
+      stripeCustomerId: row.stripe_customer_id,
+      stripeSubscriptionId: row.stripe_subscription_id,
+      stripePriceId: row.stripe_price_id,
+      stripeCurrentPeriodEnd: row.stripe_current_period_end,
     };
   } catch (error) {
     console.error("Error updating subscription period:", error);
@@ -91,28 +106,35 @@ export async function updateSubscriptionPrice(
   priceId: string,
 ): Promise<UserSubscriptionRecord> {
   try {
-    const user = await prisma.user.update({
-      where: {
-        stripeSubscriptionId: subscriptionId,
-      },
-      data: {
-        stripePriceId: priceId,
-      },
-      select: {
-        id: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-        stripePriceId: true,
-        stripeCurrentPeriodEnd: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      stripe_price_id: string | null;
+      stripe_current_period_end: Date | null;
+    }>`
+      UPDATE users
+      SET 
+        stripe_price_id = ${priceId},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE stripe_subscription_id = ${subscriptionId}
+      RETURNING 
+        id,
+        stripe_customer_id,
+        stripe_subscription_id,
+        stripe_price_id,
+        stripe_current_period_end
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("User not found");
 
     return {
-      userId: user.id,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
-      stripePriceId: user.stripePriceId,
-      stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+      userId: row.id,
+      stripeCustomerId: row.stripe_customer_id,
+      stripeSubscriptionId: row.stripe_subscription_id,
+      stripePriceId: row.stripe_price_id,
+      stripeCurrentPeriodEnd: row.stripe_current_period_end,
     };
   } catch (error) {
     console.error("Error updating subscription price:", error);

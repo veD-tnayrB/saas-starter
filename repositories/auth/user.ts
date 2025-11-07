@@ -1,4 +1,5 @@
-import { prisma } from "@/clients/db";
+import { randomUUID } from "crypto";
+import { sql } from "kysely";
 
 import type {
   IAuthUser,
@@ -9,6 +10,7 @@ import type {
   IUserStats,
   IUserUpdateData,
 } from "@/types/auth";
+import { db } from "@/lib/db";
 
 /**
  * Find user by ID
@@ -17,20 +19,40 @@ import type {
  */
 export async function findUserById(id: string): Promise<IAuthUser | null> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = ${id}
+      LIMIT 1
+    `.execute(db);
 
-    return user;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding user by ID:", error);
     throw new Error("Failed to find user by ID");
@@ -46,20 +68,40 @@ export async function findUserByEmail(
   email: string,
 ): Promise<IAuthUser | null> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+      FROM users
+      WHERE email = ${email}
+      LIMIT 1
+    `.execute(db);
 
-    return user;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding user by email:", error);
     throw new Error("Failed to find user by email");
@@ -73,25 +115,50 @@ export async function findUserByEmail(
  */
 export async function createUser(data: IUserCreateData): Promise<IAuthUser> {
   try {
-    const user = await prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        emailVerified: data.emailVerified,
-        image: data.image,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    // Generate a UUID for the user ID
+    const id = randomUUID();
 
-    return user;
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      INSERT INTO users (id, name, email, email_verified, image, created_at, updated_at)
+      VALUES (
+        ${id},
+        ${data.name ?? null},
+        ${data.email},
+        ${data.emailVerified ?? null},
+        ${data.image ?? null},
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      RETURNING 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("Failed to create user");
+
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error creating user:", error);
     throw new Error("Failed to create user");
@@ -109,26 +176,56 @@ export async function updateUser(
   data: IUserUpdateData,
 ): Promise<IAuthUser> {
   try {
-    const user = await prisma.user.update({
-      where: { id },
-      data: {
-        name: data.name,
-        email: data.email,
-        emailVerified: data.emailVerified,
-        image: data.image,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    // Build SET clause parts conditionally
+    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
 
-    return user;
+    if (data.name !== undefined) {
+      setParts.push(`name = ${sql.lit(data.name ?? null)}`);
+    }
+    if (data.email !== undefined) {
+      setParts.push(`email = ${sql.lit(data.email ?? null)}`);
+    }
+    if (data.emailVerified !== undefined) {
+      setParts.push(`email_verified = ${sql.lit(data.emailVerified ?? null)}`);
+    }
+    if (data.image !== undefined) {
+      setParts.push(`image = ${sql.lit(data.image ?? null)}`);
+    }
+
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      UPDATE users
+      SET ${sql.raw(setParts.join(", "))}
+      WHERE id = ${id}
+      RETURNING 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+    `.execute(db);
+
+    const row = result.rows[0];
+    if (!row) throw new Error("User not found");
+
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error updating user:", error);
     throw new Error("Failed to update user");
@@ -142,9 +239,10 @@ export async function updateUser(
  */
 export async function deleteUser(id: string): Promise<boolean> {
   try {
-    await prisma.user.delete({
-      where: { id },
-    });
+    await sql`
+      DELETE FROM users
+      WHERE id = ${id}
+    `.execute(db);
 
     return true;
   } catch (error) {
@@ -164,27 +262,42 @@ export async function findUserByProvider(
   providerAccountId: string,
 ): Promise<IAuthUser | null> {
   try {
-    const account = await prisma.account.findFirst({
-      where: {
-        provider,
-        providerAccountId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u.email_verified,
+        u.image,
+        u.created_at,
+        u.updated_at
+      FROM users u
+      INNER JOIN accounts a ON a.user_id = u.id
+      WHERE a.provider = ${provider}
+        AND a.provider_account_id = ${providerAccountId}
+      LIMIT 1
+    `.execute(db);
 
-    return account?.user || null;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error finding user by provider:", error);
     throw new Error("Failed to find user by provider");
@@ -202,21 +315,42 @@ export async function updateUserVerification(
   emailVerified: Date,
 ): Promise<IAuthUser> {
   try {
-    const user = await prisma.user.update({
-      where: { id },
-      data: { emailVerified },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      UPDATE users
+      SET 
+        email_verified = ${emailVerified},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+      RETURNING 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+    `.execute(db);
 
-    return user;
+    const row = result.rows[0];
+    if (!row) throw new Error("User not found");
+
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
   } catch (error) {
     console.error("Error updating user verification:", error);
     throw new Error("Failed to update user verification");
@@ -230,24 +364,39 @@ export async function updateUserVerification(
  */
 export async function getUserProfile(id: string): Promise<IUserProfile | null> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = ${id}
+      LIMIT 1
+    `.execute(db);
 
-    if (!user) return null;
+    const row = result.rows[0];
+    if (!row) return null;
 
     return {
-      ...user,
-      isEmailVerified: !!user.emailVerified,
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      image: row.image,
+      isEmailVerified: !!row.email_verified,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     };
   } catch (error) {
     console.error("Error getting user profile:", error);
@@ -264,29 +413,59 @@ export async function searchUsers(
   criteria: IUserSearchCriteria,
 ): Promise<IAuthUser[]> {
   try {
-    const where: Record<string, unknown> = {};
+    // Build WHERE clause with proper parameterization
+    let whereClause = "";
+    const conditions: string[] = [];
 
-    if (criteria.id) where.id = criteria.id;
-    if (criteria.email) where.email = criteria.email;
+    if (criteria.id) {
+      conditions.push(`id = ${sql.lit(criteria.id)}`);
+    }
+    if (criteria.email) {
+      conditions.push(`email = ${sql.lit(criteria.email)}`);
+    }
     if (criteria.isEmailVerified !== undefined) {
-      where.emailVerified = criteria.isEmailVerified ? { not: null } : null;
+      if (criteria.isEmailVerified) {
+        conditions.push(`email_verified IS NOT NULL`);
+      } else {
+        conditions.push(`email_verified IS NULL`);
+      }
     }
 
-    const users = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        emailVerified: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    if (conditions.length > 0) {
+      whereClause = `WHERE ${conditions.join(" AND ")}`;
+    }
 
-    return users;
+    const result = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+      FROM users
+      ${sql.raw(whereClause)}
+      ORDER BY created_at DESC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.email_verified,
+      image: row.image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error searching users:", error);
     throw new Error("Failed to search users");
@@ -299,20 +478,37 @@ export async function searchUsers(
  */
 export async function getUserStats(): Promise<IUserStats> {
   try {
-    const [totalUsers, verifiedUsers, adminUsers, recentSignups] =
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [totalUsersResult, verifiedUsersResult, recentSignupsResult] =
       await Promise.all([
-        prisma.user.count(),
-        prisma.user.count({ where: { emailVerified: { not: null } } }),
-        // Admin users are determined by project ownership/admin roles, not a global user role
-        0,
-        prisma.user.count({
-          where: {
-            createdAt: {
-              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-            },
-          },
-        }),
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM users
+        `.execute(db),
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM users
+          WHERE email_verified IS NOT NULL
+        `.execute(db),
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM users
+          WHERE created_at >= ${thirtyDaysAgo}
+        `.execute(db),
       ]);
+
+    const totalUsers = parseInt(totalUsersResult.rows[0]?.count || "0", 10);
+    const verifiedUsers = parseInt(
+      verifiedUsersResult.rows[0]?.count || "0",
+      10,
+    );
+    // Admin users are determined by project ownership/admin roles, not a global user role
+    const adminUsers = 0;
+    const recentSignups = parseInt(
+      recentSignupsResult.rows[0]?.count || "0",
+      10,
+    );
 
     return {
       totalUsers,
@@ -336,15 +532,25 @@ export async function getUserBasicInfoByEmail(email: string): Promise<{
   emailVerified: Date | null;
 } | null> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        name: true,
-        emailVerified: true,
-      },
-    });
+    const result = await sql<{
+      name: string | null;
+      email_verified: Date | null;
+    }>`
+      SELECT 
+        name,
+        email_verified
+      FROM users
+      WHERE email = ${email}
+      LIMIT 1
+    `.execute(db);
 
-    return user;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      name: row.name,
+      emailVerified: row.email_verified,
+    };
   } catch (error) {
     console.error("Error getting user basic info by email:", error);
     return null;
@@ -360,29 +566,37 @@ export async function getUserActivity(
   id: string,
 ): Promise<IUserActivity | null> {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        accounts: {
-          select: {
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
-      },
-    });
+    const userResult = await sql<{
+      id: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = ${id}
+      LIMIT 1
+    `.execute(db);
 
+    const user = userResult.rows[0];
     if (!user) return null;
+
+    const accountsResult = await sql<{
+      created_at: Date;
+    }>`
+      SELECT created_at
+      FROM accounts
+      WHERE user_id = ${id}
+      ORDER BY created_at DESC
+    `.execute(db);
 
     return {
       userId: user.id,
-      lastLoginAt: user.accounts[0]?.createdAt,
-      loginCount: user.accounts.length,
-      lastActivityAt: user.updatedAt,
+      lastLoginAt: accountsResult.rows[0]?.created_at || null,
+      loginCount: accountsResult.rows.length,
+      lastActivityAt: user.updated_at,
     };
   } catch (error) {
     console.error("Error getting user activity:", error);

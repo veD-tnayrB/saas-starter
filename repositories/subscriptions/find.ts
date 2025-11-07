@@ -1,6 +1,7 @@
-import { prisma } from "@/clients/db";
+import { sql } from "kysely";
 
 import { UserSubscriptionRecord } from "@/types/subscriptions";
+import { db } from "@/lib/db";
 
 /**
  * Find user subscription data by user ID
@@ -9,29 +10,33 @@ export async function findUserSubscription(
   userId: string,
 ): Promise<UserSubscriptionRecord | null> {
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-      select: {
-        id: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-        stripePriceId: true,
-        stripeCurrentPeriodEnd: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      stripe_price_id: string | null;
+      stripe_current_period_end: Date | null;
+    }>`
+      SELECT 
+        id,
+        stripe_customer_id,
+        stripe_subscription_id,
+        stripe_price_id,
+        stripe_current_period_end
+      FROM users
+      WHERE id = ${userId}
+      LIMIT 1
+    `.execute(db);
 
-    if (!user) {
-      return null;
-    }
+    const row = result.rows[0];
+    if (!row) return null;
 
     return {
-      userId: user.id,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
-      stripePriceId: user.stripePriceId,
-      stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+      userId: row.id,
+      stripeCustomerId: row.stripe_customer_id,
+      stripeSubscriptionId: row.stripe_subscription_id,
+      stripePriceId: row.stripe_price_id,
+      stripeCurrentPeriodEnd: row.stripe_current_period_end,
     };
   } catch (error) {
     console.error("Error finding user subscription:", error);
@@ -46,29 +51,33 @@ export async function findUserByStripeCustomerId(
   customerId: string,
 ): Promise<UserSubscriptionRecord | null> {
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        stripeCustomerId: customerId,
-      },
-      select: {
-        id: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-        stripePriceId: true,
-        stripeCurrentPeriodEnd: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      stripe_price_id: string | null;
+      stripe_current_period_end: Date | null;
+    }>`
+      SELECT 
+        id,
+        stripe_customer_id,
+        stripe_subscription_id,
+        stripe_price_id,
+        stripe_current_period_end
+      FROM users
+      WHERE stripe_customer_id = ${customerId}
+      LIMIT 1
+    `.execute(db);
 
-    if (!user) {
-      return null;
-    }
+    const row = result.rows[0];
+    if (!row) return null;
 
     return {
-      userId: user.id,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
-      stripePriceId: user.stripePriceId,
-      stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+      userId: row.id,
+      stripeCustomerId: row.stripe_customer_id,
+      stripeSubscriptionId: row.stripe_subscription_id,
+      stripePriceId: row.stripe_price_id,
+      stripeCurrentPeriodEnd: row.stripe_current_period_end,
     };
   } catch (error) {
     console.error("Error finding user by Stripe customer ID:", error);
@@ -83,29 +92,33 @@ export async function findUserByStripeSubscriptionId(
   subscriptionId: string,
 ): Promise<UserSubscriptionRecord | null> {
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        stripeSubscriptionId: subscriptionId,
-      },
-      select: {
-        id: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-        stripePriceId: true,
-        stripeCurrentPeriodEnd: true,
-      },
-    });
+    const result = await sql<{
+      id: string;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      stripe_price_id: string | null;
+      stripe_current_period_end: Date | null;
+    }>`
+      SELECT 
+        id,
+        stripe_customer_id,
+        stripe_subscription_id,
+        stripe_price_id,
+        stripe_current_period_end
+      FROM users
+      WHERE stripe_subscription_id = ${subscriptionId}
+      LIMIT 1
+    `.execute(db);
 
-    if (!user) {
-      return null;
-    }
+    const row = result.rows[0];
+    if (!row) return null;
 
     return {
-      userId: user.id,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
-      stripePriceId: user.stripePriceId,
-      stripeCurrentPeriodEnd: user.stripeCurrentPeriodEnd,
+      userId: row.id,
+      stripeCustomerId: row.stripe_customer_id,
+      stripeSubscriptionId: row.stripe_subscription_id,
+      stripePriceId: row.stripe_price_id,
+      stripeCurrentPeriodEnd: row.stripe_current_period_end,
     };
   } catch (error) {
     console.error("Error finding user by Stripe subscription ID:", error);

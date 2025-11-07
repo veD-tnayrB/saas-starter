@@ -1,8 +1,9 @@
 import "server-only";
 
+import { randomUUID } from "crypto";
 import { cache } from "react";
 import NextAuth from "@/auth";
-import { prisma } from "@/clients/db";
+import { sql } from "kysely";
 import { getServerSession } from "next-auth";
 
 import type {
@@ -11,6 +12,7 @@ import type {
   ISessionValidationResult,
   ISessionWithUserData,
 } from "@/types/auth";
+import { db } from "@/lib/db";
 
 /**
  * Find session by ID
@@ -21,24 +23,55 @@ export async function findSessionById(
   id: string,
 ): Promise<ISessionWithUserData | null> {
   try {
-    const session = await prisma.session.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
+    const result = await sql<{
+      id: string;
+      session_token: string;
+      user_id: string;
+      expires: Date;
+      user_id_2: string;
+      user_name: string | null;
+      user_email: string | null;
+      user_email_verified: Date | null;
+      user_image: string | null;
+      user_created_at: Date;
+      user_updated_at: Date;
+    }>`
+      SELECT 
+        s.id,
+        s.session_token,
+        s.user_id,
+        s.expires,
+        u.id as user_id_2,
+        u.name as user_name,
+        u.email as user_email,
+        u.email_verified as user_email_verified,
+        u.image as user_image,
+        u.created_at as user_created_at,
+        u.updated_at as user_updated_at
+      FROM sessions s
+      INNER JOIN users u ON u.id = s.user_id
+      WHERE s.id = ${id}
+      LIMIT 1
+    `.execute(db);
 
-    return session;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      sessionToken: row.session_token,
+      userId: row.user_id,
+      expires: row.expires,
+      user: {
+        id: row.user_id_2,
+        name: row.user_name,
+        email: row.user_email,
+        emailVerified: row.user_email_verified,
+        image: row.user_image,
+        createdAt: row.user_created_at,
+        updatedAt: row.user_updated_at,
+      },
+    };
   } catch (error) {
     console.error("Error finding session by ID:", error);
     throw new Error("Failed to find session by ID");
@@ -54,24 +87,55 @@ export async function findSessionByToken(
   sessionToken: string,
 ): Promise<ISessionWithUserData | null> {
   try {
-    const session = await prisma.session.findUnique({
-      where: { sessionToken },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
+    const result = await sql<{
+      id: string;
+      session_token: string;
+      user_id: string;
+      expires: Date;
+      user_id_2: string;
+      user_name: string | null;
+      user_email: string | null;
+      user_email_verified: Date | null;
+      user_image: string | null;
+      user_created_at: Date;
+      user_updated_at: Date;
+    }>`
+      SELECT 
+        s.id,
+        s.session_token,
+        s.user_id,
+        s.expires,
+        u.id as user_id_2,
+        u.name as user_name,
+        u.email as user_email,
+        u.email_verified as user_email_verified,
+        u.image as user_image,
+        u.created_at as user_created_at,
+        u.updated_at as user_updated_at
+      FROM sessions s
+      INNER JOIN users u ON u.id = s.user_id
+      WHERE s.session_token = ${sessionToken}
+      LIMIT 1
+    `.execute(db);
 
-    return session;
+    const row = result.rows[0];
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      sessionToken: row.session_token,
+      userId: row.user_id,
+      expires: row.expires,
+      user: {
+        id: row.user_id_2,
+        name: row.user_name,
+        email: row.user_email,
+        emailVerified: row.user_email_verified,
+        image: row.user_image,
+        createdAt: row.user_created_at,
+        updatedAt: row.user_updated_at,
+      },
+    };
   } catch (error) {
     console.error("Error finding session by token:", error);
     throw new Error("Failed to find session by token");
@@ -87,25 +151,52 @@ export async function findSessionsByUserId(
   userId: string,
 ): Promise<ISessionWithUserData[]> {
   try {
-    const sessions = await prisma.session.findMany({
-      where: { userId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
-      orderBy: { expires: "desc" },
-    });
+    const result = await sql<{
+      id: string;
+      session_token: string;
+      user_id: string;
+      expires: Date;
+      user_id_2: string;
+      user_name: string | null;
+      user_email: string | null;
+      user_email_verified: Date | null;
+      user_image: string | null;
+      user_created_at: Date;
+      user_updated_at: Date;
+    }>`
+      SELECT 
+        s.id,
+        s.session_token,
+        s.user_id,
+        s.expires,
+        u.id as user_id_2,
+        u.name as user_name,
+        u.email as user_email,
+        u.email_verified as user_email_verified,
+        u.image as user_image,
+        u.created_at as user_created_at,
+        u.updated_at as user_updated_at
+      FROM sessions s
+      INNER JOIN users u ON u.id = s.user_id
+      WHERE s.user_id = ${userId}
+      ORDER BY s.expires DESC
+    `.execute(db);
 
-    return sessions;
+    return result.rows.map((row) => ({
+      id: row.id,
+      sessionToken: row.session_token,
+      userId: row.user_id,
+      expires: row.expires,
+      user: {
+        id: row.user_id_2,
+        name: row.user_name,
+        email: row.user_email,
+        emailVerified: row.user_email_verified,
+        image: row.user_image,
+        createdAt: row.user_created_at,
+        updatedAt: row.user_updated_at,
+      },
+    }));
   } catch (error) {
     console.error("Error finding sessions by user ID:", error);
     throw new Error("Failed to find sessions by user ID");
@@ -121,28 +212,64 @@ export async function createSession(
   data: ISessionCreateData,
 ): Promise<ISessionWithUserData> {
   try {
-    const session = await prisma.session.create({
-      data: {
-        userId: data.userId,
-        expires: data.expiresAt,
-        sessionToken: data.sessionToken || generateSessionToken(),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
+    const id = randomUUID();
+    const sessionToken = data.sessionToken || generateSessionToken();
 
-    return session;
+    const sessionResult = await sql<{
+      id: string;
+      session_token: string;
+      user_id: string;
+      expires: Date;
+    }>`
+      INSERT INTO sessions (id, session_token, user_id, expires)
+      VALUES (${id}, ${sessionToken}, ${data.userId}, ${data.expiresAt})
+      RETURNING *
+    `.execute(db);
+
+    const session = sessionResult.rows[0];
+    if (!session) throw new Error("Failed to create session");
+
+    // Fetch user data
+    const userResult = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = ${data.userId}
+      LIMIT 1
+    `.execute(db);
+
+    const user = userResult.rows[0];
+    if (!user) throw new Error("User not found");
+
+    return {
+      id: session.id,
+      sessionToken: session.session_token,
+      userId: session.user_id,
+      expires: session.expires,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.email_verified,
+        image: user.image,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
+      },
+    };
   } catch (error) {
     console.error("Error creating session:", error);
     throw new Error("Failed to create session");
@@ -160,28 +287,77 @@ export async function updateSession(
   data: ISessionUpdateData,
 ): Promise<ISessionWithUserData> {
   try {
-    const session = await prisma.session.update({
-      where: { id },
-      data: {
-        expires: data.expiresAt,
-        sessionToken: data.sessionToken,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            image: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
+    const setParts: string[] = [];
+    if (data.expiresAt !== undefined) {
+      setParts.push(`expires = ${sql.lit(data.expiresAt)}`);
+    }
+    if (data.sessionToken !== undefined) {
+      setParts.push(`session_token = ${sql.lit(data.sessionToken)}`);
+    }
 
-    return session;
+    if (setParts.length === 0) {
+      // No updates, just fetch existing session
+      const existing = await findSessionById(id);
+      if (!existing) throw new Error("Session not found");
+      return existing;
+    }
+
+    const sessionResult = await sql<{
+      id: string;
+      session_token: string;
+      user_id: string;
+      expires: Date;
+    }>`
+      UPDATE sessions
+      SET ${sql.raw(setParts.join(", "))}
+      WHERE id = ${id}
+      RETURNING *
+    `.execute(db);
+
+    const session = sessionResult.rows[0];
+    if (!session) throw new Error("Session not found");
+
+    // Fetch user data
+    const userResult = await sql<{
+      id: string;
+      name: string | null;
+      email: string | null;
+      email_verified: Date | null;
+      image: string | null;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT 
+        id,
+        name,
+        email,
+        email_verified,
+        image,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = ${session.user_id}
+      LIMIT 1
+    `.execute(db);
+
+    const user = userResult.rows[0];
+    if (!user) throw new Error("User not found");
+
+    return {
+      id: session.id,
+      sessionToken: session.session_token,
+      userId: session.user_id,
+      expires: session.expires,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.email_verified,
+        image: user.image,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
+      },
+    };
   } catch (error) {
     console.error("Error updating session:", error);
     throw new Error("Failed to update session");
@@ -195,9 +371,10 @@ export async function updateSession(
  */
 export async function deleteSession(id: string): Promise<boolean> {
   try {
-    await prisma.session.delete({
-      where: { id },
-    });
+    await sql`
+      DELETE FROM sessions
+      WHERE id = ${id}
+    `.execute(db);
 
     return true;
   } catch (error) {
@@ -215,9 +392,10 @@ export async function deleteSessionByToken(
   sessionToken: string,
 ): Promise<boolean> {
   try {
-    await prisma.session.delete({
-      where: { sessionToken },
-    });
+    await sql`
+      DELETE FROM sessions
+      WHERE session_token = ${sessionToken}
+    `.execute(db);
 
     return true;
   } catch (error) {
@@ -233,11 +411,13 @@ export async function deleteSessionByToken(
  */
 export async function deleteUserSessions(userId: string): Promise<number> {
   try {
-    const result = await prisma.session.deleteMany({
-      where: { userId },
-    });
+    const result = await sql<{ id: string }>`
+      DELETE FROM sessions
+      WHERE user_id = ${userId}
+      RETURNING id
+    `.execute(db);
 
-    return result.count;
+    return result.rows.length;
   } catch (error) {
     console.error("Error deleting user sessions:", error);
     throw new Error("Failed to delete user sessions");
@@ -302,15 +482,15 @@ export async function validateSession(
  */
 export async function cleanupExpiredSessions(): Promise<number> {
   try {
-    const result = await prisma.session.deleteMany({
-      where: {
-        expires: {
-          lt: new Date(),
-        },
-      },
-    });
+    const now = new Date();
 
-    return result.count;
+    const result = await sql<{ id: string }>`
+      DELETE FROM sessions
+      WHERE expires < ${now}
+      RETURNING id
+    `.execute(db);
+
+    return result.rows.length;
   } catch (error) {
     console.error("Error cleaning up expired sessions:", error);
     throw new Error("Failed to cleanup expired sessions");
@@ -327,23 +507,38 @@ export async function getSessionStats(): Promise<{
   expiredSessions: number;
 }> {
   try {
-    const [totalSessions, activeSessions, expiredSessions] = await Promise.all([
-      prisma.session.count(),
-      prisma.session.count({
-        where: {
-          expires: {
-            gt: new Date(),
-          },
-        },
-      }),
-      prisma.session.count({
-        where: {
-          expires: {
-            lt: new Date(),
-          },
-        },
-      }),
-    ]);
+    const now = new Date();
+
+    const [totalSessionsResult, activeSessionsResult, expiredSessionsResult] =
+      await Promise.all([
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM sessions
+        `.execute(db),
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM sessions
+          WHERE expires > ${now}
+        `.execute(db),
+        sql<{ count: string }>`
+          SELECT COUNT(*)::text as count
+          FROM sessions
+          WHERE expires < ${now}
+        `.execute(db),
+      ]);
+
+    const totalSessions = parseInt(
+      totalSessionsResult.rows[0]?.count || "0",
+      10,
+    );
+    const activeSessions = parseInt(
+      activeSessionsResult.rows[0]?.count || "0",
+      10,
+    );
+    const expiredSessions = parseInt(
+      expiredSessionsResult.rows[0]?.count || "0",
+      10,
+    );
 
     return {
       totalSessions,

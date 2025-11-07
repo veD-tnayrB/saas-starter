@@ -1,5 +1,6 @@
 import { stripe } from "@/clients/stripe";
 import { findUserById } from "@/repositories/auth";
+import { isPlatformAdmin } from "@/services/auth";
 import { getUserSubscriptionPlan } from "@/services/subscriptions";
 import Stripe from "stripe";
 

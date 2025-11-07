@@ -6,7 +6,7 @@ import {
 } from "@/repositories/projects/invitations";
 import {
   createProjectWithOwner,
-  deleteProject,
+  deleteProject as deleteProjectRepository,
   findAllUserProjects,
   findProjectById,
   updateProject,
@@ -305,7 +305,7 @@ export class ProjectService {
       }
 
       // Delete project (cascade will handle members and invitations)
-      await deleteProject(id);
+      await deleteProjectRepository(id);
     } catch (error) {
       console.error("Error deleting project:", error);
       throw error instanceof Error

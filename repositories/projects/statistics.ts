@@ -1,4 +1,6 @@
-import { prisma } from "@/clients/db";
+import { sql } from "kysely";
+
+import { db } from "@/lib/db";
 
 /**
  * Statistics about project members by role
@@ -33,12 +35,18 @@ export async function getProjectMembersByRole(
   projectId: string,
 ): Promise<IProjectMembersByRole> {
   try {
-    const members = await prisma.projectMember.findMany({
-      where: { projectId },
-      include: {
-        role: true,
-      },
-    });
+    const result = await sql<{
+      role_name: string;
+      count: string;
+    }>`
+      SELECT 
+        ar.name as role_name,
+        COUNT(*)::text as count
+      FROM project_members pm
+      INNER JOIN app_roles ar ON ar.id = pm.role_id
+      WHERE pm.project_id = ${projectId}
+      GROUP BY ar.name
+    `.execute(db);
 
     const stats: IProjectMembersByRole = {
       OWNER: 0,
@@ -46,10 +54,10 @@ export async function getProjectMembersByRole(
       MEMBER: 0,
     };
 
-    members.forEach((member) => {
-      const roleName = member.role.name as keyof IProjectMembersByRole;
+    result.rows.forEach((row) => {
+      const roleName = row.role_name as keyof IProjectMembersByRole;
       if (roleName in stats) {
-        stats[roleName]++;
+        stats[roleName] = parseInt(row.count, 10);
       }
     });
 
@@ -69,32 +77,30 @@ export async function getProjectInvitationStats(
   try {
     const now = new Date();
 
-    const [pending, expired, total] = await Promise.all([
-      prisma.projectInvitation.count({
-        where: {
-          projectId,
-          expiresAt: {
-            gt: now,
-          },
-        },
-      }),
-      prisma.projectInvitation.count({
-        where: {
-          projectId,
-          expiresAt: {
-            lte: now,
-          },
-        },
-      }),
-      prisma.projectInvitation.count({
-        where: { projectId },
-      }),
+    const [pendingResult, expiredResult, totalResult] = await Promise.all([
+      sql<{ count: string }>`
+        SELECT COUNT(*)::text as count
+        FROM project_invitations
+        WHERE project_id = ${projectId}
+          AND expires_at > ${now}
+      `.execute(db),
+      sql<{ count: string }>`
+        SELECT COUNT(*)::text as count
+        FROM project_invitations
+        WHERE project_id = ${projectId}
+          AND expires_at <= ${now}
+      `.execute(db),
+      sql<{ count: string }>`
+        SELECT COUNT(*)::text as count
+        FROM project_invitations
+        WHERE project_id = ${projectId}
+      `.execute(db),
     ]);
 
     return {
-      pending,
-      expired,
-      total,
+      pending: parseInt(pendingResult.rows[0]?.count || "0", 10),
+      expired: parseInt(expiredResult.rows[0]?.count || "0", 10),
+      total: parseInt(totalResult.rows[0]?.count || "0", 10),
     };
   } catch (error) {
     console.error("Error getting project invitation stats:", error);
@@ -112,17 +118,15 @@ export async function getProjectMemberGrowth(
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const members = await prisma.projectMember.findMany({
-      where: {
-        projectId,
-        createdAt: {
-          gte: thirtyDaysAgo,
-        },
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const membersResult = await sql<{
+      created_at: Date;
+    }>`
+      SELECT created_at
+      FROM project_members
+      WHERE project_id = ${projectId}
+        AND created_at >= ${thirtyDaysAgo}
+      ORDER BY created_at ASC
+    `.execute(db);
 
     // Create a map of dates to member counts
     const dateMap = new Map<string, number>();
@@ -136,8 +140,8 @@ export async function getProjectMemberGrowth(
     }
 
     // Count members added each day
-    members.forEach((member) => {
-      const dateKey = member.createdAt.toISOString().split("T")[0];
+    membersResult.rows.forEach((member) => {
+      const dateKey = member.created_at.toISOString().split("T")[0];
       const current = dateMap.get(dateKey) || 0;
       dateMap.set(dateKey, current + 1);
     });
@@ -147,16 +151,14 @@ export async function getProjectMemberGrowth(
     let cumulativeCount = 0;
 
     // Get total members before the 30-day window
-    const membersBefore = await prisma.projectMember.count({
-      where: {
-        projectId,
-        createdAt: {
-          lt: thirtyDaysAgo,
-        },
-      },
-    });
+    const membersBeforeResult = await sql<{ count: string }>`
+      SELECT COUNT(*)::text as count
+      FROM project_members
+      WHERE project_id = ${projectId}
+        AND created_at < ${thirtyDaysAgo}
+    `.execute(db);
 
-    cumulativeCount = membersBefore;
+    cumulativeCount = parseInt(membersBeforeResult.rows[0]?.count || "0", 10);
 
     // Sort dates and create data points
     const sortedDates = Array.from(dateMap.keys()).sort();
@@ -182,9 +184,13 @@ export async function getProjectMemberCount(
   projectId: string,
 ): Promise<number> {
   try {
-    return await prisma.projectMember.count({
-      where: { projectId },
-    });
+    const result = await sql<{ count: string }>`
+      SELECT COUNT(*)::text as count
+      FROM project_members
+      WHERE project_id = ${projectId}
+    `.execute(db);
+
+    return parseInt(result.rows[0]?.count || "0", 10);
   } catch (error) {
     console.error("Error getting project member count:", error);
     throw new Error("Failed to get project member count");

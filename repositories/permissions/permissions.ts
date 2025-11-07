@@ -1,4 +1,7 @@
-import { prisma } from "@/clients/db";
+import { randomUUID } from "crypto";
+import { sql } from "kysely";
+
+import { db } from "@/lib/db";
 
 export interface IPlanActionPermission {
   id: string;
@@ -40,16 +43,17 @@ export async function isActionEnabledForPlan(
   actionId: string,
 ): Promise<boolean> {
   try {
-    const permission = await prisma.planActionPermission.findUnique({
-      where: {
-        planId_actionId: {
-          planId,
-          actionId,
-        },
-      },
-    });
+    const result = await sql<{
+      enabled: boolean;
+    }>`
+      SELECT enabled
+      FROM plan_action_permissions
+      WHERE plan_id = ${planId}
+        AND action_id = ${actionId}
+      LIMIT 1
+    `.execute(db);
 
-    return permission?.enabled ?? false;
+    return result.rows[0]?.enabled ?? false;
   } catch (error) {
     console.error("Error checking plan action permission:", error);
     return false;
@@ -66,31 +70,34 @@ export async function canRolePerformActionInPlan(
 ): Promise<boolean> {
   try {
     // First check if action is enabled for the plan
-    const planPermission = await prisma.planActionPermission.findUnique({
-      where: {
-        planId_actionId: {
-          planId,
-          actionId,
-        },
-      },
-    });
+    const planPermissionResult = await sql<{
+      enabled: boolean;
+    }>`
+      SELECT enabled
+      FROM plan_action_permissions
+      WHERE plan_id = ${planId}
+        AND action_id = ${actionId}
+      LIMIT 1
+    `.execute(db);
 
+    const planPermission = planPermissionResult.rows[0];
     if (!planPermission?.enabled) {
       return false;
     }
 
     // Then check if role has permission for this action in this plan
-    const rolePermission = await prisma.roleActionPermission.findUnique({
-      where: {
-        planId_roleId_actionId: {
-          planId,
-          roleId,
-          actionId,
-        },
-      },
-    });
+    const rolePermissionResult = await sql<{
+      allowed: boolean;
+    }>`
+      SELECT allowed
+      FROM role_action_permissions
+      WHERE plan_id = ${planId}
+        AND role_id = ${roleId}
+        AND action_id = ${actionId}
+      LIMIT 1
+    `.execute(db);
 
-    return rolePermission?.allowed ?? false;
+    return rolePermissionResult.rows[0]?.allowed ?? false;
   } catch (error) {
     console.error("Error checking role action permission:", error);
     return false;
@@ -104,13 +111,27 @@ export async function getPlanActionPermissions(
   planId: string,
 ): Promise<IPlanActionPermission[]> {
   try {
-    const permissions = await prisma.planActionPermission.findMany({
-      where: { planId },
-      include: {
-        action: true,
-      },
-    });
-    return permissions;
+    const result = await sql<{
+      id: string;
+      plan_id: string;
+      action_id: string;
+      enabled: boolean;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      SELECT *
+      FROM plan_action_permissions
+      WHERE plan_id = ${planId}
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      planId: row.plan_id,
+      actionId: row.action_id,
+      enabled: row.enabled,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error getting plan action permissions:", error);
     throw new Error("Failed to get plan action permissions");
@@ -125,15 +146,44 @@ export async function getRoleActionPermissions(
   roleId?: string,
 ): Promise<IRoleActionPermission[]> {
   try {
-    const where = roleId ? { planId, roleId } : { planId };
-    const permissions = await prisma.roleActionPermission.findMany({
-      where,
-      include: {
-        role: true,
-        action: true,
-      },
-    });
-    return permissions;
+    const result = roleId
+      ? await sql<{
+          id: string;
+          plan_id: string;
+          role_id: string;
+          action_id: string;
+          allowed: boolean;
+          created_at: Date;
+          updated_at: Date;
+        }>`
+            SELECT *
+            FROM role_action_permissions
+            WHERE plan_id = ${planId}
+              AND role_id = ${roleId}
+          `.execute(db)
+      : await sql<{
+          id: string;
+          plan_id: string;
+          role_id: string;
+          action_id: string;
+          allowed: boolean;
+          created_at: Date;
+          updated_at: Date;
+        }>`
+            SELECT *
+            FROM role_action_permissions
+            WHERE plan_id = ${planId}
+          `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      planId: row.plan_id,
+      roleId: row.role_id,
+      actionId: row.action_id,
+      allowed: row.allowed,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   } catch (error) {
     console.error("Error getting role action permissions:", error);
     throw new Error("Failed to get role action permissions");
@@ -147,23 +197,90 @@ export async function upsertPlanActionPermission(
   data: IPermissionCreateData,
 ): Promise<IPlanActionPermission> {
   try {
-    const permission = await prisma.planActionPermission.upsert({
-      where: {
-        planId_actionId: {
-          planId: data.planId,
-          actionId: data.actionId,
-        },
-      },
-      update: {
-        enabled: data.enabled ?? true,
-      },
-      create: {
-        planId: data.planId,
-        actionId: data.actionId,
-        enabled: data.enabled ?? true,
-      },
-    });
-    return permission;
+    // Check if exists
+    const existingResult = await sql<{
+      id: string;
+    }>`
+      SELECT id
+      FROM plan_action_permissions
+      WHERE plan_id = ${data.planId}
+        AND action_id = ${data.actionId}
+      LIMIT 1
+    `.execute(db);
+
+    const existing = existingResult.rows[0];
+
+    if (existing) {
+      // Update
+      const result = await sql<{
+        id: string;
+        plan_id: string;
+        action_id: string;
+        enabled: boolean;
+        created_at: Date;
+        updated_at: Date;
+      }>`
+        UPDATE plan_action_permissions
+        SET 
+          enabled = ${data.enabled ?? true},
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${existing.id}
+        RETURNING *
+      `.execute(db);
+
+      const row = result.rows[0];
+      if (!row) throw new Error("Failed to update plan action permission");
+
+      return {
+        id: row.id,
+        planId: row.plan_id,
+        actionId: row.action_id,
+        enabled: row.enabled,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    } else {
+      // Create
+      const id = randomUUID();
+      const result = await sql<{
+        id: string;
+        plan_id: string;
+        action_id: string;
+        enabled: boolean;
+        created_at: Date;
+        updated_at: Date;
+      }>`
+        INSERT INTO plan_action_permissions (
+          id,
+          plan_id,
+          action_id,
+          enabled,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          ${id},
+          ${data.planId},
+          ${data.actionId},
+          ${data.enabled ?? true},
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        )
+        RETURNING *
+      `.execute(db);
+
+      const row = result.rows[0];
+      if (!row) throw new Error("Failed to create plan action permission");
+
+      return {
+        id: row.id,
+        planId: row.plan_id,
+        actionId: row.action_id,
+        enabled: row.enabled,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    }
   } catch (error) {
     console.error("Error upserting plan action permission:", error);
     throw new Error("Failed to upsert plan action permission");
@@ -177,25 +294,97 @@ export async function upsertRoleActionPermission(
   data: IRolePermissionCreateData,
 ): Promise<IRoleActionPermission> {
   try {
-    const permission = await prisma.roleActionPermission.upsert({
-      where: {
-        planId_roleId_actionId: {
-          planId: data.planId,
-          roleId: data.roleId,
-          actionId: data.actionId,
-        },
-      },
-      update: {
-        allowed: data.allowed ?? true,
-      },
-      create: {
-        planId: data.planId,
-        roleId: data.roleId,
-        actionId: data.actionId,
-        allowed: data.allowed ?? true,
-      },
-    });
-    return permission;
+    // Check if exists
+    const existingResult = await sql<{
+      id: string;
+    }>`
+      SELECT id
+      FROM role_action_permissions
+      WHERE plan_id = ${data.planId}
+        AND role_id = ${data.roleId}
+        AND action_id = ${data.actionId}
+      LIMIT 1
+    `.execute(db);
+
+    const existing = existingResult.rows[0];
+
+    if (existing) {
+      // Update
+      const result = await sql<{
+        id: string;
+        plan_id: string;
+        role_id: string;
+        action_id: string;
+        allowed: boolean;
+        created_at: Date;
+        updated_at: Date;
+      }>`
+        UPDATE role_action_permissions
+        SET 
+          allowed = ${data.allowed ?? true},
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${existing.id}
+        RETURNING *
+      `.execute(db);
+
+      const row = result.rows[0];
+      if (!row) throw new Error("Failed to update role action permission");
+
+      return {
+        id: row.id,
+        planId: row.plan_id,
+        roleId: row.role_id,
+        actionId: row.action_id,
+        allowed: row.allowed,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    } else {
+      // Create
+      const id = randomUUID();
+      const result = await sql<{
+        id: string;
+        plan_id: string;
+        role_id: string;
+        action_id: string;
+        allowed: boolean;
+        created_at: Date;
+        updated_at: Date;
+      }>`
+        INSERT INTO role_action_permissions (
+          id,
+          plan_id,
+          role_id,
+          action_id,
+          allowed,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          ${id},
+          ${data.planId},
+          ${data.roleId},
+          ${data.actionId},
+          ${data.allowed ?? true},
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        )
+        RETURNING *
+      `.execute(db);
+
+      const row = result.rows[0];
+      if (!row) throw new Error("Failed to create role action permission");
+
+      return {
+        id: row.id,
+        planId: row.plan_id,
+        roleId: row.role_id,
+        actionId: row.action_id,
+        allowed: row.allowed,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    }
   } catch (error) {
     console.error("Error upserting role action permission:", error);
     throw new Error("Failed to upsert role action permission");
@@ -210,14 +399,11 @@ export async function deletePlanActionPermission(
   actionId: string,
 ): Promise<void> {
   try {
-    await prisma.planActionPermission.delete({
-      where: {
-        planId_actionId: {
-          planId,
-          actionId,
-        },
-      },
-    });
+    await sql`
+      DELETE FROM plan_action_permissions
+      WHERE plan_id = ${planId}
+        AND action_id = ${actionId}
+    `.execute(db);
   } catch (error) {
     console.error("Error deleting plan action permission:", error);
     throw new Error("Failed to delete plan action permission");
@@ -233,15 +419,12 @@ export async function deleteRoleActionPermission(
   actionId: string,
 ): Promise<void> {
   try {
-    await prisma.roleActionPermission.delete({
-      where: {
-        planId_roleId_actionId: {
-          planId,
-          roleId,
-          actionId,
-        },
-      },
-    });
+    await sql`
+      DELETE FROM role_action_permissions
+      WHERE plan_id = ${planId}
+        AND role_id = ${roleId}
+        AND action_id = ${actionId}
+    `.execute(db);
   } catch (error) {
     console.error("Error deleting role action permission:", error);
     throw new Error("Failed to delete role action permission");
@@ -257,4 +440,3 @@ export async function clearPermissionsCache(): Promise<void> {
   // should be handled by the cache service layer
   return Promise.resolve();
 }
-
