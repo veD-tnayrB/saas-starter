@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/command";
 import { Icons } from "@/components/shared/icons";
 
-export function SearchCommand({ links }: { links: SidebarNavItem[] }) {
+export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
   const [open, setOpen] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
   const router = useRouter();

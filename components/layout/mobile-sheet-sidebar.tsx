@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 import { Menu } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
@@ -16,7 +16,7 @@ import { MobileNavigationSections } from "@/components/layout/navigation/mobile"
 import { Icons } from "@/components/shared/icons";
 
 interface IMobileSheetSidebarProps {
-  links: SidebarNavItem[];
+  links: ISidebarNavItem[];
 }
 
 export function MobileSheetSidebar({ links }: IMobileSheetSidebarProps) {

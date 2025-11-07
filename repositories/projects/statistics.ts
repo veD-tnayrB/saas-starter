@@ -36,12 +36,12 @@ export async function getProjectMembersByRole(
 ): Promise<IProjectMembersByRole> {
   try {
     const result = await sql<{
-      role_name: string;
+      roleName: string;
       count: string;
     }>`
       SELECT 
-        ar.name as role_name,
-        COUNT(*)::text as count
+        ar.name AS roleName,
+        COUNT(*)::text AS count
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.project_id = ${projectId}
@@ -55,7 +55,7 @@ export async function getProjectMembersByRole(
     };
 
     result.rows.forEach((row) => {
-      const roleName = row.role_name as keyof IProjectMembersByRole;
+      const roleName = row.roleName as keyof IProjectMembersByRole;
       if (roleName in stats) {
         stats[roleName] = parseInt(row.count, 10);
       }
@@ -119,9 +119,9 @@ export async function getProjectMemberGrowth(
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const membersResult = await sql<{
-      created_at: Date;
+      createdAt: Date;
     }>`
-      SELECT created_at
+      SELECT created_at AS createdAt
       FROM project_members
       WHERE project_id = ${projectId}
         AND created_at >= ${thirtyDaysAgo}
@@ -141,7 +141,7 @@ export async function getProjectMemberGrowth(
 
     // Count members added each day
     membersResult.rows.forEach((member) => {
-      const dateKey = member.created_at.toISOString().split("T")[0];
+      const dateKey = member.createdAt.toISOString().split("T")[0];
       const current = dateMap.get(dateKey) || 0;
       dateMap.set(dateKey, current + 1);
     });

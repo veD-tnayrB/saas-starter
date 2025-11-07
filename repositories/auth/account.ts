@@ -19,23 +19,22 @@ export async function findAccountByProvider(
   providerAccountId: string,
 ): Promise<IProviderAccount | null> {
   try {
-    const result = await sql<{
-      id: string;
-      user_id: string;
-      type: string;
-      provider: string;
-      provider_account_id: string;
-      refresh_token: string | null;
-      access_token: string | null;
-      expires_at: number | null;
-      token_type: string | null;
-      scope: string | null;
-      id_token: string | null;
-      session_state: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IProviderAccount>`
+      SELECT 
+        id,
+        user_id AS userId,
+        type,
+        provider,
+        provider_account_id AS providerAccountId,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM accounts
       WHERE provider = ${provider}
         AND provider_account_id = ${providerAccountId}
@@ -45,22 +44,7 @@ export async function findAccountByProvider(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      userId: row.user_id,
-      type: row.type,
-      provider: row.provider,
-      providerAccountId: row.provider_account_id,
-      refresh_token: row.refresh_token,
-      access_token: row.access_token,
-      expires_at: row.expires_at,
-      token_type: row.token_type,
-      scope: row.scope,
-      id_token: row.id_token,
-      session_state: row.session_state,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding account by provider:", error);
     throw new Error("Failed to find account by provider");
@@ -76,44 +60,28 @@ export async function findAccountsByUserId(
   userId: string,
 ): Promise<IProviderAccount[]> {
   try {
-    const result = await sql<{
-      id: string;
-      user_id: string;
-      type: string;
-      provider: string;
-      provider_account_id: string;
-      refresh_token: string | null;
-      access_token: string | null;
-      expires_at: number | null;
-      token_type: string | null;
-      scope: string | null;
-      id_token: string | null;
-      session_state: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IProviderAccount>`
+      SELECT 
+        id,
+        user_id AS userId,
+        type,
+        provider,
+        provider_account_id AS providerAccountId,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM accounts
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      userId: row.user_id,
-      type: row.type,
-      provider: row.provider,
-      providerAccountId: row.provider_account_id,
-      refresh_token: row.refresh_token,
-      access_token: row.access_token,
-      expires_at: row.expires_at,
-      token_type: row.token_type,
-      scope: row.scope,
-      id_token: row.id_token,
-      session_state: row.session_state,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding accounts by user ID:", error);
     throw new Error("Failed to find accounts by user ID");
@@ -129,23 +97,22 @@ export async function findAccountById(
   id: string,
 ): Promise<IProviderAccount | null> {
   try {
-    const result = await sql<{
-      id: string;
-      user_id: string;
-      type: string;
-      provider: string;
-      provider_account_id: string;
-      refresh_token: string | null;
-      access_token: string | null;
-      expires_at: number | null;
-      token_type: string | null;
-      scope: string | null;
-      id_token: string | null;
-      session_state: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IProviderAccount>`
+      SELECT 
+        id,
+        user_id AS userId,
+        type,
+        provider,
+        provider_account_id AS providerAccountId,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM accounts
       WHERE id = ${id}
       LIMIT 1
@@ -154,22 +121,7 @@ export async function findAccountById(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      userId: row.user_id,
-      type: row.type,
-      provider: row.provider,
-      providerAccountId: row.provider_account_id,
-      refresh_token: row.refresh_token,
-      access_token: row.access_token,
-      expires_at: row.expires_at,
-      token_type: row.token_type,
-      scope: row.scope,
-      id_token: row.id_token,
-      session_state: row.session_state,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding account by ID:", error);
     throw new Error("Failed to find account by ID");
@@ -197,22 +149,7 @@ export async function createAccount(data: {
   try {
     const id = randomUUID();
 
-    const result = await sql<{
-      id: string;
-      user_id: string;
-      type: string;
-      provider: string;
-      provider_account_id: string;
-      refresh_token: string | null;
-      access_token: string | null;
-      expires_at: number | null;
-      token_type: string | null;
-      scope: string | null;
-      id_token: string | null;
-      session_state: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IProviderAccount>`
       INSERT INTO accounts (
         id,
         user_id,
@@ -245,28 +182,27 @@ export async function createAccount(data: {
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
-      RETURNING *
+      RETURNING 
+        id,
+        user_id AS userId,
+        type,
+        provider,
+        provider_account_id AS providerAccountId,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Failed to create account");
 
-    return {
-      id: row.id,
-      userId: row.user_id,
-      type: row.type,
-      provider: row.provider,
-      providerAccountId: row.provider_account_id,
-      refresh_token: row.refresh_token,
-      access_token: row.access_token,
-      expires_at: row.expires_at,
-      token_type: row.token_type,
-      scope: row.scope,
-      id_token: row.id_token,
-      session_state: row.session_state,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error creating account:", error);
     throw new Error("Failed to create account");
@@ -316,47 +252,31 @@ export async function updateAccount(
       setParts.push(`session_state = ${sql.lit(data.session_state ?? null)}`);
     }
 
-    const result = await sql<{
-      id: string;
-      user_id: string;
-      type: string;
-      provider: string;
-      provider_account_id: string;
-      refresh_token: string | null;
-      access_token: string | null;
-      expires_at: number | null;
-      token_type: string | null;
-      scope: string | null;
-      id_token: string | null;
-      session_state: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IProviderAccount>`
       UPDATE accounts
       SET ${sql.raw(setParts.join(", "))}
       WHERE id = ${id}
-      RETURNING *
+      RETURNING 
+        id,
+        user_id AS userId,
+        type,
+        provider,
+        provider_account_id AS providerAccountId,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Account not found");
 
-    return {
-      id: row.id,
-      userId: row.user_id,
-      type: row.type,
-      provider: row.provider,
-      providerAccountId: row.provider_account_id,
-      refresh_token: row.refresh_token,
-      access_token: row.access_token,
-      expires_at: row.expires_at,
-      token_type: row.token_type,
-      scope: row.scope,
-      id_token: row.id_token,
-      session_state: row.session_state,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error updating account:", error);
     throw new Error("Failed to update account");
@@ -543,44 +463,28 @@ export async function findAccountsWithExpiredTokens(): Promise<
   try {
     const currentTimestamp = Math.floor(Date.now() / 1000);
 
-    const result = await sql<{
-      id: string;
-      user_id: string;
-      type: string;
-      provider: string;
-      provider_account_id: string;
-      refresh_token: string | null;
-      access_token: string | null;
-      expires_at: number | null;
-      token_type: string | null;
-      scope: string | null;
-      id_token: string | null;
-      session_state: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IProviderAccount>`
+      SELECT 
+        id,
+        user_id AS userId,
+        type,
+        provider,
+        provider_account_id AS providerAccountId,
+        refresh_token,
+        access_token,
+        expires_at,
+        token_type,
+        scope,
+        id_token,
+        session_state,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM accounts
       WHERE expires_at < ${currentTimestamp}
         AND access_token IS NOT NULL
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      userId: row.user_id,
-      type: row.type,
-      provider: row.provider,
-      providerAccountId: row.provider_account_id,
-      refresh_token: row.refresh_token,
-      access_token: row.access_token,
-      expires_at: row.expires_at,
-      token_type: row.token_type,
-      scope: row.scope,
-      id_token: row.id_token,
-      session_state: row.session_state,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding accounts with expired tokens:", error);
     throw new Error("Failed to find accounts with expired tokens");

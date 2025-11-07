@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { MobileNavigationSection } from "./section";
 
 interface IMobileNavigationSectionsProps {
-  links: SidebarNavItem[];
+  links: ISidebarNavItem[];
   path: string;
   onItemClick: () => void;
 }

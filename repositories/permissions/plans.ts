@@ -38,33 +38,22 @@ export interface ISubscriptionPlanUpdateData {
  */
 export async function findAllPlans(): Promise<ISubscriptionPlan[]> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<ISubscriptionPlan>`
+      SELECT 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM subscription_plans
       ORDER BY name ASC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding all plans:", error);
     throw new Error("Failed to find plans");
@@ -76,34 +65,23 @@ export async function findAllPlans(): Promise<ISubscriptionPlan[]> {
  */
 export async function findActivePlans(): Promise<ISubscriptionPlan[]> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<ISubscriptionPlan>`
+      SELECT 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM subscription_plans
       WHERE is_active = true
       ORDER BY name ASC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding active plans:", error);
     throw new Error("Failed to find active plans");
@@ -117,18 +95,17 @@ export async function findPlanById(
   planId: string,
 ): Promise<ISubscriptionPlan | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<ISubscriptionPlan>`
+      SELECT 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM subscription_plans
       WHERE id = ${planId}
       LIMIT 1
@@ -137,17 +114,7 @@ export async function findPlanById(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding plan by ID:", error);
     throw new Error("Failed to find plan");
@@ -161,18 +128,17 @@ export async function findPlanByName(
   name: string,
 ): Promise<ISubscriptionPlan | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<ISubscriptionPlan>`
+      SELECT 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM subscription_plans
       WHERE name = ${name}
       LIMIT 1
@@ -181,17 +147,7 @@ export async function findPlanByName(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding plan by name:", error);
     throw new Error("Failed to find plan");
@@ -205,18 +161,17 @@ export async function findPlanByStripePriceId(
   priceId: string,
 ): Promise<ISubscriptionPlan | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<ISubscriptionPlan>`
+      SELECT 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM subscription_plans
       WHERE stripe_price_id_monthly = ${priceId}
          OR stripe_price_id_yearly = ${priceId}
@@ -226,17 +181,7 @@ export async function findPlanByStripePriceId(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding plan by Stripe price ID:", error);
     throw new Error("Failed to find plan");
@@ -251,18 +196,18 @@ export async function getProjectSubscriptionPlan(
 ): Promise<ISubscriptionPlan | null> {
   try {
     const projectResult = await sql<{
-      subscription_plan_id: string | null;
+      subscriptionPlanId: string | null;
     }>`
-      SELECT subscription_plan_id
+      SELECT subscription_plan_id AS subscriptionPlanId
       FROM projects
       WHERE id = ${projectId}
       LIMIT 1
     `.execute(db);
 
     const project = projectResult.rows[0];
-    if (!project || !project.subscription_plan_id) return null;
+    if (!project || !project.subscriptionPlanId) return null;
 
-    return await findPlanById(project.subscription_plan_id);
+    return await findPlanById(project.subscriptionPlanId);
   } catch (error) {
     console.error("Error getting project subscription plan:", error);
     throw new Error("Failed to get project subscription plan");
@@ -278,17 +223,7 @@ export async function createPlan(
   try {
     const id = randomUUID();
 
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<ISubscriptionPlan>`
       INSERT INTO subscription_plans (
         id,
         name,
@@ -311,23 +246,22 @@ export async function createPlan(
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )
-      RETURNING *
+      RETURNING 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Failed to create plan");
 
-    return {
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error creating plan:", error);
     throw new Error("Failed to create plan");
@@ -366,37 +300,26 @@ export async function updatePlan(
       setParts.push(`is_active = ${sql.lit(data.isActive)}`);
     }
 
-    const result = await sql<{
-      id: string;
-      name: string;
-      display_name: string;
-      description: string | null;
-      stripe_price_id_monthly: string | null;
-      stripe_price_id_yearly: string | null;
-      is_active: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<ISubscriptionPlan>`
       UPDATE subscription_plans
       SET ${sql.raw(setParts.join(", "))}
       WHERE id = ${planId}
-      RETURNING *
+      RETURNING 
+        id,
+        name,
+        display_name AS displayName,
+        description,
+        stripe_price_id_monthly AS stripePriceIdMonthly,
+        stripe_price_id_yearly AS stripePriceIdYearly,
+        is_active AS isActive,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Plan not found");
 
-    return {
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      description: row.description,
-      stripePriceIdMonthly: row.stripe_price_id_monthly,
-      stripePriceIdYearly: row.stripe_price_id_yearly,
-      isActive: row.is_active,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error updating plan:", error);
     throw new Error("Failed to update plan");

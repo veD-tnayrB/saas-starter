@@ -1,18 +1,18 @@
 // Core subscription data types
-export interface CreateSubscriptionData {
+export interface ICreateSubscriptionData {
   userId: string;
   priceId: string;
   customerEmail: string;
   metadata?: Record<string, string>;
 }
 
-export interface UpdateSubscriptionData {
+export interface IUpdateSubscriptionData {
   priceId?: string;
   cancelAtPeriodEnd?: boolean;
   prorationBehavior?: "create_prorations" | "none" | "always_invoice";
 }
 
-export interface SubscriptionData {
+export interface ISubscriptionData {
   subscriptionId: string;
   customerId: string;
   priceId: string;
@@ -22,7 +22,7 @@ export interface SubscriptionData {
 }
 
 // Stripe-specific types
-export interface CheckoutSessionData {
+export interface ICheckoutSessionData {
   priceId: string;
   customerEmail: string;
   successUrl: string;
@@ -30,20 +30,20 @@ export interface CheckoutSessionData {
   metadata: Record<string, string>;
 }
 
-export interface BillingPortalData {
+export interface IBillingPortalData {
   customerId: string;
   returnUrl: string;
 }
 
 // Webhook types
-export interface WebhookEventData {
+export interface IWebhookEventData {
   type: string;
   data: Record<string, unknown>;
   processed: boolean;
 }
 
 // Repository types
-export interface UserSubscriptionRecord {
+export interface IUserSubscriptionRecord {
   userId: string;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
@@ -52,21 +52,21 @@ export interface UserSubscriptionRecord {
 }
 
 // Service response types
-export interface SubscriptionServiceResponse<T = any> {
+export interface ISubscriptionServiceResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
 // Error types
-export interface SubscriptionError {
+export interface ISubscriptionError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
 }
 
 // Plan types (extending existing types)
-export interface SubscriptionPlan {
+export interface ISubscriptionPlan {
   title: string;
   description: string;
   benefits: string[];
@@ -81,7 +81,7 @@ export interface SubscriptionPlan {
   };
 }
 
-export interface UserSubscriptionPlan extends SubscriptionPlan {
+export interface IUserSubscriptionPlan extends ISubscriptionPlan {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   stripePriceId: string | null;

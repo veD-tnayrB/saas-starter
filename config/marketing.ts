@@ -1,6 +1,6 @@
-import { MarketingConfig } from "types";
+import { IMarketingConfig } from "types";
 
-export const marketingConfig: MarketingConfig = {
+export const marketingConfig: IMarketingConfig = {
   mainNav: [
     {
       title: "Pricing",

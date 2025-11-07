@@ -29,27 +29,19 @@ export interface IAppRoleUpdateData {
  */
 export async function findAllRoles(): Promise<IAppRole[]> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-      description: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAppRole>`
+      SELECT 
+        id,
+        name,
+        priority,
+        description,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM app_roles
       ORDER BY priority ASC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      priority: row.priority,
-      description: row.description,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding all roles:", error);
     throw new Error("Failed to find roles");
@@ -61,15 +53,14 @@ export async function findAllRoles(): Promise<IAppRole[]> {
  */
 export async function findRoleById(roleId: string): Promise<IAppRole | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-      description: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAppRole>`
+      SELECT 
+        id,
+        name,
+        priority,
+        description,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM app_roles
       WHERE id = ${roleId}
       LIMIT 1
@@ -78,14 +69,7 @@ export async function findRoleById(roleId: string): Promise<IAppRole | null> {
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      priority: row.priority,
-      description: row.description,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding role by ID:", error);
     throw new Error("Failed to find role");
@@ -97,15 +81,14 @@ export async function findRoleById(roleId: string): Promise<IAppRole | null> {
  */
 export async function findRoleByName(name: string): Promise<IAppRole | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-      description: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAppRole>`
+      SELECT 
+        id,
+        name,
+        priority,
+        description,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM app_roles
       WHERE name = ${name}
       LIMIT 1
@@ -114,14 +97,7 @@ export async function findRoleByName(name: string): Promise<IAppRole | null> {
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      priority: row.priority,
-      description: row.description,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding role by name:", error);
     throw new Error("Failed to find role");
@@ -135,30 +111,22 @@ export async function createRole(data: IAppRoleCreateData): Promise<IAppRole> {
   try {
     const id = randomUUID();
 
-    const result = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-      description: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAppRole>`
       INSERT INTO app_roles (id, name, priority, description, created_at, updated_at)
       VALUES (${id}, ${data.name}, ${data.priority}, ${data.description ?? null}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING *
+      RETURNING 
+        id,
+        name,
+        priority,
+        description,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Failed to create role");
 
-    return {
-      id: row.id,
-      name: row.name,
-      priority: row.priority,
-      description: row.description,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error creating role:", error);
     throw new Error("Failed to create role");
@@ -184,31 +152,23 @@ export async function updateRole(
       setParts.push(`description = ${sql.lit(data.description ?? null)}`);
     }
 
-    const result = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-      description: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAppRole>`
       UPDATE app_roles
       SET ${sql.raw(setParts.join(", "))}
       WHERE id = ${roleId}
-      RETURNING *
+      RETURNING 
+        id,
+        name,
+        priority,
+        description,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Role not found");
 
-    return {
-      id: row.id,
-      name: row.name,
-      priority: row.priority,
-      description: row.description,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error updating role:", error);
     throw new Error("Failed to update role");

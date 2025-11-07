@@ -1,6 +1,6 @@
-import { DocsConfig } from "types";
+import { IDocsConfig } from "types";
 
-export const docsConfig: DocsConfig = {
+export const docsConfig: IDocsConfig = {
   mainNav: [
     {
       title: "Documentation",

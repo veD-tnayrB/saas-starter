@@ -7,6 +7,7 @@ import { sql } from "kysely";
 import { getServerSession } from "next-auth";
 
 import type {
+  IAuthUser,
   ISessionCreateData,
   ISessionUpdateData,
   ISessionValidationResult,
@@ -25,29 +26,29 @@ export async function findSessionById(
   try {
     const result = await sql<{
       id: string;
-      session_token: string;
-      user_id: string;
+      sessionToken: string;
+      userId: string;
       expires: Date;
-      user_id_2: string;
-      user_name: string | null;
-      user_email: string | null;
-      user_email_verified: Date | null;
-      user_image: string | null;
-      user_created_at: Date;
-      user_updated_at: Date;
+      userId2: string;
+      userName: string | null;
+      userEmail: string | null;
+      userEmailVerified: Date | null;
+      userImage: string | null;
+      userCreatedAt: Date;
+      userUpdatedAt: Date;
     }>`
       SELECT 
         s.id,
-        s.session_token,
-        s.user_id,
+        s.session_token AS sessionToken,
+        s.user_id AS userId,
         s.expires,
-        u.id as user_id_2,
-        u.name as user_name,
-        u.email as user_email,
-        u.email_verified as user_email_verified,
-        u.image as user_image,
-        u.created_at as user_created_at,
-        u.updated_at as user_updated_at
+        u.id AS userId2,
+        u.name AS userName,
+        u.email AS userEmail,
+        u.email_verified AS userEmailVerified,
+        u.image AS userImage,
+        u.created_at AS userCreatedAt,
+        u.updated_at AS userUpdatedAt
       FROM sessions s
       INNER JOIN users u ON u.id = s.user_id
       WHERE s.id = ${id}
@@ -59,17 +60,17 @@ export async function findSessionById(
 
     return {
       id: row.id,
-      sessionToken: row.session_token,
-      userId: row.user_id,
+      sessionToken: row.sessionToken,
+      userId: row.userId,
       expires: row.expires,
       user: {
-        id: row.user_id_2,
-        name: row.user_name,
-        email: row.user_email,
-        emailVerified: row.user_email_verified,
-        image: row.user_image,
-        createdAt: row.user_created_at,
-        updatedAt: row.user_updated_at,
+        id: row.userId2,
+        name: row.userName,
+        email: row.userEmail,
+        emailVerified: row.userEmailVerified,
+        image: row.userImage,
+        createdAt: row.userCreatedAt,
+        updatedAt: row.userUpdatedAt,
       },
     };
   } catch (error) {
@@ -89,29 +90,29 @@ export async function findSessionByToken(
   try {
     const result = await sql<{
       id: string;
-      session_token: string;
-      user_id: string;
+      sessionToken: string;
+      userId: string;
       expires: Date;
-      user_id_2: string;
-      user_name: string | null;
-      user_email: string | null;
-      user_email_verified: Date | null;
-      user_image: string | null;
-      user_created_at: Date;
-      user_updated_at: Date;
+      userId2: string;
+      userName: string | null;
+      userEmail: string | null;
+      userEmailVerified: Date | null;
+      userImage: string | null;
+      userCreatedAt: Date;
+      userUpdatedAt: Date;
     }>`
       SELECT 
         s.id,
-        s.session_token,
-        s.user_id,
+        s.session_token AS sessionToken,
+        s.user_id AS userId,
         s.expires,
-        u.id as user_id_2,
-        u.name as user_name,
-        u.email as user_email,
-        u.email_verified as user_email_verified,
-        u.image as user_image,
-        u.created_at as user_created_at,
-        u.updated_at as user_updated_at
+        u.id AS userId2,
+        u.name AS userName,
+        u.email AS userEmail,
+        u.email_verified AS userEmailVerified,
+        u.image AS userImage,
+        u.created_at AS userCreatedAt,
+        u.updated_at AS userUpdatedAt
       FROM sessions s
       INNER JOIN users u ON u.id = s.user_id
       WHERE s.session_token = ${sessionToken}
@@ -123,17 +124,17 @@ export async function findSessionByToken(
 
     return {
       id: row.id,
-      sessionToken: row.session_token,
-      userId: row.user_id,
+      sessionToken: row.sessionToken,
+      userId: row.userId,
       expires: row.expires,
       user: {
-        id: row.user_id_2,
-        name: row.user_name,
-        email: row.user_email,
-        emailVerified: row.user_email_verified,
-        image: row.user_image,
-        createdAt: row.user_created_at,
-        updatedAt: row.user_updated_at,
+        id: row.userId2,
+        name: row.userName,
+        email: row.userEmail,
+        emailVerified: row.userEmailVerified,
+        image: row.userImage,
+        createdAt: row.userCreatedAt,
+        updatedAt: row.userUpdatedAt,
       },
     };
   } catch (error) {
@@ -153,29 +154,29 @@ export async function findSessionsByUserId(
   try {
     const result = await sql<{
       id: string;
-      session_token: string;
-      user_id: string;
+      sessionToken: string;
+      userId: string;
       expires: Date;
-      user_id_2: string;
-      user_name: string | null;
-      user_email: string | null;
-      user_email_verified: Date | null;
-      user_image: string | null;
-      user_created_at: Date;
-      user_updated_at: Date;
+      userId2: string;
+      userName: string | null;
+      userEmail: string | null;
+      userEmailVerified: Date | null;
+      userImage: string | null;
+      userCreatedAt: Date;
+      userUpdatedAt: Date;
     }>`
       SELECT 
         s.id,
-        s.session_token,
-        s.user_id,
+        s.session_token AS sessionToken,
+        s.user_id AS userId,
         s.expires,
-        u.id as user_id_2,
-        u.name as user_name,
-        u.email as user_email,
-        u.email_verified as user_email_verified,
-        u.image as user_image,
-        u.created_at as user_created_at,
-        u.updated_at as user_updated_at
+        u.id AS userId2,
+        u.name AS userName,
+        u.email AS userEmail,
+        u.email_verified AS userEmailVerified,
+        u.image AS userImage,
+        u.created_at AS userCreatedAt,
+        u.updated_at AS userUpdatedAt
       FROM sessions s
       INNER JOIN users u ON u.id = s.user_id
       WHERE s.user_id = ${userId}
@@ -184,17 +185,17 @@ export async function findSessionsByUserId(
 
     return result.rows.map((row) => ({
       id: row.id,
-      sessionToken: row.session_token,
-      userId: row.user_id,
+      sessionToken: row.sessionToken,
+      userId: row.userId,
       expires: row.expires,
       user: {
-        id: row.user_id_2,
-        name: row.user_name,
-        email: row.user_email,
-        emailVerified: row.user_email_verified,
-        image: row.user_image,
-        createdAt: row.user_created_at,
-        updatedAt: row.user_updated_at,
+        id: row.userId2,
+        name: row.userName,
+        email: row.userEmail,
+        emailVerified: row.userEmailVerified,
+        image: row.userImage,
+        createdAt: row.userCreatedAt,
+        updatedAt: row.userUpdatedAt,
       },
     }));
   } catch (error) {
@@ -217,36 +218,32 @@ export async function createSession(
 
     const sessionResult = await sql<{
       id: string;
-      session_token: string;
-      user_id: string;
+      sessionToken: string;
+      userId: string;
       expires: Date;
     }>`
       INSERT INTO sessions (id, session_token, user_id, expires)
       VALUES (${id}, ${sessionToken}, ${data.userId}, ${data.expiresAt})
-      RETURNING *
+      RETURNING 
+        id,
+        session_token AS sessionToken,
+        user_id AS userId,
+        expires
     `.execute(db);
 
     const session = sessionResult.rows[0];
     if (!session) throw new Error("Failed to create session");
 
     // Fetch user data
-    const userResult = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const userResult = await sql<IAuthUser>`
       SELECT 
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM users
       WHERE id = ${data.userId}
       LIMIT 1
@@ -257,18 +254,10 @@ export async function createSession(
 
     return {
       id: session.id,
-      sessionToken: session.session_token,
-      userId: session.user_id,
+      sessionToken: session.sessionToken,
+      userId: session.userId,
       expires: session.expires,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        emailVerified: user.email_verified,
-        image: user.image,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-      },
+      user,
     };
   } catch (error) {
     console.error("Error creating session:", error);
@@ -304,39 +293,35 @@ export async function updateSession(
 
     const sessionResult = await sql<{
       id: string;
-      session_token: string;
-      user_id: string;
+      sessionToken: string;
+      userId: string;
       expires: Date;
     }>`
       UPDATE sessions
       SET ${sql.raw(setParts.join(", "))}
       WHERE id = ${id}
-      RETURNING *
+      RETURNING 
+        id,
+        session_token AS sessionToken,
+        user_id AS userId,
+        expires
     `.execute(db);
 
     const session = sessionResult.rows[0];
     if (!session) throw new Error("Session not found");
 
     // Fetch user data
-    const userResult = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const userResult = await sql<IAuthUser>`
       SELECT 
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM users
-      WHERE id = ${session.user_id}
+      WHERE id = ${session.userId}
       LIMIT 1
     `.execute(db);
 
@@ -345,18 +330,10 @@ export async function updateSession(
 
     return {
       id: session.id,
-      sessionToken: session.session_token,
-      userId: session.user_id,
+      sessionToken: session.sessionToken,
+      userId: session.userId,
       expires: session.expires,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        emailVerified: user.email_verified,
-        image: user.image,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-      },
+      user,
     };
   } catch (error) {
     console.error("Error updating session:", error);

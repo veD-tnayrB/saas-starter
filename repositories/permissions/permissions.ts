@@ -111,27 +111,19 @@ export async function getPlanActionPermissions(
   planId: string,
 ): Promise<IPlanActionPermission[]> {
   try {
-    const result = await sql<{
-      id: string;
-      plan_id: string;
-      action_id: string;
-      enabled: boolean;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IPlanActionPermission>`
+      SELECT 
+        id,
+        plan_id AS planId,
+        action_id AS actionId,
+        enabled,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM plan_action_permissions
       WHERE plan_id = ${planId}
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      planId: row.plan_id,
-      actionId: row.action_id,
-      enabled: row.enabled,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error getting plan action permissions:", error);
     throw new Error("Failed to get plan action permissions");
@@ -147,43 +139,33 @@ export async function getRoleActionPermissions(
 ): Promise<IRoleActionPermission[]> {
   try {
     const result = roleId
-      ? await sql<{
-          id: string;
-          plan_id: string;
-          role_id: string;
-          action_id: string;
-          allowed: boolean;
-          created_at: Date;
-          updated_at: Date;
-        }>`
-            SELECT *
+      ? await sql<IRoleActionPermission>`
+            SELECT 
+              id,
+              plan_id AS planId,
+              role_id AS roleId,
+              action_id AS actionId,
+              allowed,
+              created_at AS createdAt,
+              updated_at AS updatedAt
             FROM role_action_permissions
             WHERE plan_id = ${planId}
               AND role_id = ${roleId}
           `.execute(db)
-      : await sql<{
-          id: string;
-          plan_id: string;
-          role_id: string;
-          action_id: string;
-          allowed: boolean;
-          created_at: Date;
-          updated_at: Date;
-        }>`
-            SELECT *
+      : await sql<IRoleActionPermission>`
+            SELECT 
+              id,
+              plan_id AS planId,
+              role_id AS roleId,
+              action_id AS actionId,
+              allowed,
+              created_at AS createdAt,
+              updated_at AS updatedAt
             FROM role_action_permissions
             WHERE plan_id = ${planId}
           `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      planId: row.plan_id,
-      roleId: row.role_id,
-      actionId: row.action_id,
-      allowed: row.allowed,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error getting role action permissions:", error);
     throw new Error("Failed to get role action permissions");
@@ -212,44 +194,29 @@ export async function upsertPlanActionPermission(
 
     if (existing) {
       // Update
-      const result = await sql<{
-        id: string;
-        plan_id: string;
-        action_id: string;
-        enabled: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>`
+      const result = await sql<IPlanActionPermission>`
         UPDATE plan_action_permissions
         SET 
           enabled = ${data.enabled ?? true},
           updated_at = CURRENT_TIMESTAMP
         WHERE id = ${existing.id}
-        RETURNING *
+        RETURNING 
+          id,
+          plan_id AS planId,
+          action_id AS actionId,
+          enabled,
+          created_at AS createdAt,
+          updated_at AS updatedAt
       `.execute(db);
 
       const row = result.rows[0];
       if (!row) throw new Error("Failed to update plan action permission");
 
-      return {
-        id: row.id,
-        planId: row.plan_id,
-        actionId: row.action_id,
-        enabled: row.enabled,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      };
+      return row;
     } else {
       // Create
       const id = randomUUID();
-      const result = await sql<{
-        id: string;
-        plan_id: string;
-        action_id: string;
-        enabled: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>`
+      const result = await sql<IPlanActionPermission>`
         INSERT INTO plan_action_permissions (
           id,
           plan_id,
@@ -266,20 +233,19 @@ export async function upsertPlanActionPermission(
           CURRENT_TIMESTAMP,
           CURRENT_TIMESTAMP
         )
-        RETURNING *
+        RETURNING 
+          id,
+          plan_id AS planId,
+          action_id AS actionId,
+          enabled,
+          created_at AS createdAt,
+          updated_at AS updatedAt
       `.execute(db);
 
       const row = result.rows[0];
       if (!row) throw new Error("Failed to create plan action permission");
 
-      return {
-        id: row.id,
-        planId: row.plan_id,
-        actionId: row.action_id,
-        enabled: row.enabled,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      };
+      return row;
     }
   } catch (error) {
     console.error("Error upserting plan action permission:", error);
@@ -310,47 +276,30 @@ export async function upsertRoleActionPermission(
 
     if (existing) {
       // Update
-      const result = await sql<{
-        id: string;
-        plan_id: string;
-        role_id: string;
-        action_id: string;
-        allowed: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>`
+      const result = await sql<IRoleActionPermission>`
         UPDATE role_action_permissions
         SET 
           allowed = ${data.allowed ?? true},
           updated_at = CURRENT_TIMESTAMP
         WHERE id = ${existing.id}
-        RETURNING *
+        RETURNING 
+          id,
+          plan_id AS planId,
+          role_id AS roleId,
+          action_id AS actionId,
+          allowed,
+          created_at AS createdAt,
+          updated_at AS updatedAt
       `.execute(db);
 
       const row = result.rows[0];
       if (!row) throw new Error("Failed to update role action permission");
 
-      return {
-        id: row.id,
-        planId: row.plan_id,
-        roleId: row.role_id,
-        actionId: row.action_id,
-        allowed: row.allowed,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      };
+      return row;
     } else {
       // Create
       const id = randomUUID();
-      const result = await sql<{
-        id: string;
-        plan_id: string;
-        role_id: string;
-        action_id: string;
-        allowed: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>`
+      const result = await sql<IRoleActionPermission>`
         INSERT INTO role_action_permissions (
           id,
           plan_id,
@@ -369,21 +318,20 @@ export async function upsertRoleActionPermission(
           CURRENT_TIMESTAMP,
           CURRENT_TIMESTAMP
         )
-        RETURNING *
+        RETURNING 
+          id,
+          plan_id AS planId,
+          role_id AS roleId,
+          action_id AS actionId,
+          allowed,
+          created_at AS createdAt,
+          updated_at AS updatedAt
       `.execute(db);
 
       const row = result.rows[0];
       if (!row) throw new Error("Failed to create role action permission");
 
-      return {
-        id: row.id,
-        planId: row.plan_id,
-        roleId: row.role_id,
-        actionId: row.action_id,
-        allowed: row.allowed,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      };
+      return row;
     }
   } catch (error) {
     console.error("Error upserting role action permission:", error);

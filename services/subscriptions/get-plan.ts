@@ -2,7 +2,7 @@ import { retrieveSubscription } from "@/clients/stripe";
 import { findProjectById } from "@/repositories/projects/project";
 import { findUserSubscription } from "@/repositories/subscriptions";
 
-import { UserSubscriptionPlan } from "@/types/subscriptions";
+import { IUserSubscriptionPlan } from "@/types/subscriptions";
 
 import {
   determinePlanInterval,
@@ -18,7 +18,7 @@ import {
  */
 export async function getProjectSubscriptionPlan(
   projectId: string,
-): Promise<UserSubscriptionPlan> {
+): Promise<IUserSubscriptionPlan> {
   if (!projectId) {
     throw new Error("Missing projectId parameter");
   }
@@ -135,7 +135,7 @@ export async function getProjectSubscriptionPlan(
  */
 export async function getUserSubscriptionPlan(
   userId: string,
-): Promise<UserSubscriptionPlan> {
+): Promise<IUserSubscriptionPlan> {
   if (!userId) {
     throw new Error("Missing userId parameter");
   }

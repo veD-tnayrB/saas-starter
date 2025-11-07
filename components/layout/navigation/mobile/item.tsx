@@ -2,14 +2,14 @@
 
 import { Fragment } from "react";
 import Link from "next/link";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Icons } from "@/components/shared/icons";
 
 interface IMobileNavigationItemProps {
-  item: SidebarNavItem["items"][number];
+  item: ISidebarNavItem["items"][number];
   path: string;
   onItemClick: () => void;
 }

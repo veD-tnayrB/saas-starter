@@ -11,7 +11,7 @@ import { absoluteUrl } from "@/lib/utils";
  * Create Stripe checkout session
  */
 async function createCheckoutSession(
-  data: CheckoutSessionData,
+  data: ICheckoutSessionData,
 ): Promise<Stripe.Checkout.Session> {
   try {
     const session = await stripe.checkout.sessions.create({
@@ -71,7 +71,7 @@ export interface BillingResult {
 /**
  * Checkout session data
  */
-export interface CheckoutSessionData {
+export interface ICheckoutSessionData {
   priceId: string;
   userId: string;
   userEmail: string;
@@ -82,7 +82,7 @@ export interface CheckoutSessionData {
 /**
  * Billing portal session data
  */
-export interface BillingPortalData {
+export interface IBillingPortalData {
   userId: string;
   userEmail: string;
   stripeCustomerId: string;
@@ -98,7 +98,7 @@ export class BillingService {
    * @returns Billing result with Stripe URL
    */
   async createCheckoutSession(
-    data: CheckoutSessionData,
+    data: ICheckoutSessionData,
   ): Promise<BillingResult> {
     try {
       const { priceId, userId, userEmail } = data;
@@ -135,7 +135,7 @@ export class BillingService {
    * @returns Billing result with Stripe URL
    */
   async createBillingPortalSession(
-    data: BillingPortalData,
+    data: IBillingPortalData,
   ): Promise<BillingResult> {
     try {
       const { userId, userEmail, stripeCustomerId } = data;
@@ -183,7 +183,7 @@ export class BillingService {
         throw new Error("User not found");
       }
 
-      const checkoutData: CheckoutSessionData = {
+      const checkoutData: ICheckoutSessionData = {
         priceId,
         userId,
         userEmail: user.email!,
@@ -221,7 +221,7 @@ export class BillingService {
         throw new Error("User does not have a Stripe customer ID");
       }
 
-      const portalData: BillingPortalData = {
+      const portalData: IBillingPortalData = {
         userId,
         userEmail: user.email!,
         stripeCustomerId: subscriptionPlan.stripeCustomerId,

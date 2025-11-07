@@ -1,6 +1,6 @@
 import { Icons } from "@/components/shared/icons";
 
-export type SiteConfig = {
+export interface ISiteConfig {
   name: string;
   description: string;
   url: string;
@@ -10,9 +10,9 @@ export type SiteConfig = {
     twitter: string;
     github: string;
   };
-};
+}
 
-export type NavItem = {
+export interface INavItem {
   title: string;
   href: string;
   badge?: number;
@@ -20,28 +20,28 @@ export type NavItem = {
   external?: boolean;
   authorizeOnly?: "ADMIN" | "OWNER"; // Platform admin (project owner/admin) or Owner only
   icon?: keyof typeof Icons;
-};
+}
 
-export type MainNavItem = NavItem;
+export interface IMainNavItem extends INavItem {}
 
-export type MarketingConfig = {
-  mainNav: MainNavItem[];
-};
+export interface IMarketingConfig {
+  mainNav: IMainNavItem[];
+}
 
-export type SidebarNavItem = {
+export interface ISidebarNavItem {
   title: string;
-  items: NavItem[];
+  items: INavItem[];
   authorizeOnly?: "ADMIN"; // Platform admin (project owner/admin)
   icon?: keyof typeof Icons;
-};
+}
 
-export type DocsConfig = {
-  mainNav: MainNavItem[];
-  sidebarNav: SidebarNavItem[];
-};
+export interface IDocsConfig {
+  mainNav: IMainNavItem[];
+  sidebarNav: ISidebarNavItem[];
+}
 
 // subcriptions
-export type SubscriptionPlan = {
+export interface ISubscriptionPlan {
   title: string;
   description: string;
   benefits: string[];
@@ -54,9 +54,9 @@ export type SubscriptionPlan = {
     monthly: string | null;
     yearly: string | null;
   };
-};
+}
 
-export type UserSubscriptionPlan = SubscriptionPlan & {
+export interface IUserSubscriptionPlan extends ISubscriptionPlan {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   stripePriceId: string | null;
@@ -64,38 +64,40 @@ export type UserSubscriptionPlan = SubscriptionPlan & {
   isPaid: boolean;
   interval: "month" | "year" | null;
   isCanceled?: boolean;
-};
+}
 
 // compare plans
-export type ColumnType = string | boolean | null;
-export type PlansRow = { feature: string; tooltip?: string } & {
-  [key in (typeof plansColumns)[number]]: ColumnType;
-};
+export type IColumnType = string | boolean | null;
+export interface IPlansRow {
+  feature: string;
+  tooltip?: string;
+  [key in (typeof plansColumns)[number]]: IColumnType;
+}
 
 // landing sections
-export type InfoList = {
+export interface IInfoList {
   icon: keyof typeof Icons;
   title: string;
   description: string;
-};
+}
 
-export type InfoLdg = {
+export interface IInfoLdg {
   title: string;
   image: string;
   description: string;
-  list: InfoList[];
-};
+  list: IInfoList[];
+}
 
-export type FeatureLdg = {
+export interface IFeatureLdg {
   title: string;
   description: string;
   link: string;
   icon: keyof typeof Icons;
-};
+}
 
-export type TestimonialType = {
+export interface ITestimonialType {
   name: string;
   job: string;
   image: string;
   review: string;
-};
+}

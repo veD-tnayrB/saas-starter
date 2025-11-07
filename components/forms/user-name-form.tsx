@@ -58,6 +58,16 @@ export function UserNameForm({ user }: UserNameFormProps) {
     });
   });
 
+  const buttonVariant = updated ? "default" : "disable";
+  const buttonContent = isPending ? (
+    <Icons.spinner className="size-4 animate-spin" />
+  ) : (
+    <p>
+      Save
+      <span className="hidden sm:inline-flex">&nbsp;Changes</span>
+    </p>
+  );
+
   return (
     <form onSubmit={onSubmit}>
       <SectionColumns
@@ -77,18 +87,11 @@ export function UserNameForm({ user }: UserNameFormProps) {
           />
           <Button
             type="submit"
-            variant={updated ? "default" : "disable"}
+            variant={buttonVariant}
             disabled={isPending || !updated}
             className="w-[67px] shrink-0 px-0 sm:w-[130px]"
           >
-            {isPending ? (
-              <Icons.spinner className="size-4 animate-spin" />
-            ) : (
-              <p>
-                Save
-                <span className="hidden sm:inline-flex">&nbsp;Changes</span>
-              </p>
-            )}
+            {buttonContent}
           </Button>
         </div>
         <div className="flex flex-col justify-between p-1">

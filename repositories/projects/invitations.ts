@@ -43,29 +43,29 @@ export async function findInvitationByToken(
   try {
     const result = await sql<{
       id: string;
-      project_id: string;
+      projectId: string;
       email: string;
-      role_id: string;
-      invited_by_id: string;
+      roleId: string;
+      invitedById: string;
       token: string;
-      created_at: Date;
-      expires_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
+      createdAt: Date;
+      expiresAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
     }>`
       SELECT 
         pi.id,
-        pi.project_id,
+        pi.project_id AS projectId,
         pi.email,
-        pi.role_id,
-        pi.invited_by_id,
+        pi.role_id AS roleId,
+        pi.invited_by_id AS invitedById,
         pi.token,
-        pi.created_at,
-        pi.expires_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority
+        pi.created_at AS createdAt,
+        pi.expires_at AS expiresAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.token = ${token}
@@ -77,18 +77,18 @@ export async function findInvitationByToken(
 
     return {
       id: row.id,
-      projectId: row.project_id,
+      projectId: row.projectId,
       email: row.email,
-      roleId: row.role_id,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      invitedById: row.invited_by_id,
+      invitedById: row.invitedById,
       token: row.token,
-      createdAt: row.created_at,
-      expiresAt: row.expires_at,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
     };
   } catch (error) {
     console.error("Error finding invitation by token:", error);
@@ -108,29 +108,29 @@ export async function findInvitationByEmailAndProject(
 
     const result = await sql<{
       id: string;
-      project_id: string;
+      projectId: string;
       email: string;
-      role_id: string;
-      invited_by_id: string;
+      roleId: string;
+      invitedById: string;
       token: string;
-      created_at: Date;
-      expires_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
+      createdAt: Date;
+      expiresAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
     }>`
       SELECT 
         pi.id,
-        pi.project_id,
+        pi.project_id AS projectId,
         pi.email,
-        pi.role_id,
-        pi.invited_by_id,
+        pi.role_id AS roleId,
+        pi.invited_by_id AS invitedById,
         pi.token,
-        pi.created_at,
-        pi.expires_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority
+        pi.created_at AS createdAt,
+        pi.expires_at AS expiresAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.email = ${email}
@@ -145,18 +145,18 @@ export async function findInvitationByEmailAndProject(
 
     return {
       id: row.id,
-      projectId: row.project_id,
+      projectId: row.projectId,
       email: row.email,
-      roleId: row.role_id,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      invitedById: row.invited_by_id,
+      invitedById: row.invitedById,
       token: row.token,
-      createdAt: row.created_at,
-      expiresAt: row.expires_at,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
     };
   } catch (error) {
     console.error("Error finding invitation by email and project:", error);
@@ -175,29 +175,29 @@ export async function findProjectInvitations(
 
     const result = await sql<{
       id: string;
-      project_id: string;
+      projectId: string;
       email: string;
-      role_id: string;
-      invited_by_id: string;
+      roleId: string;
+      invitedById: string;
       token: string;
-      created_at: Date;
-      expires_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
+      createdAt: Date;
+      expiresAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
     }>`
       SELECT 
         pi.id,
-        pi.project_id,
+        pi.project_id AS projectId,
         pi.email,
-        pi.role_id,
-        pi.invited_by_id,
+        pi.role_id AS roleId,
+        pi.invited_by_id AS invitedById,
         pi.token,
-        pi.created_at,
-        pi.expires_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority
+        pi.created_at AS createdAt,
+        pi.expires_at AS expiresAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.project_id = ${projectId}
@@ -207,18 +207,18 @@ export async function findProjectInvitations(
 
     return result.rows.map((row) => ({
       id: row.id,
-      projectId: row.project_id,
+      projectId: row.projectId,
       email: row.email,
-      roleId: row.role_id,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      invitedById: row.invited_by_id,
+      invitedById: row.invitedById,
       token: row.token,
-      createdAt: row.created_at,
-      expiresAt: row.expires_at,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
     }));
   } catch (error) {
     console.error("Error finding project invitations:", error);
@@ -237,29 +237,29 @@ export async function findPendingInvitationsByEmail(
 
     const result = await sql<{
       id: string;
-      project_id: string;
+      projectId: string;
       email: string;
-      role_id: string;
-      invited_by_id: string;
+      roleId: string;
+      invitedById: string;
       token: string;
-      created_at: Date;
-      expires_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
+      createdAt: Date;
+      expiresAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
     }>`
       SELECT 
         pi.id,
-        pi.project_id,
+        pi.project_id AS projectId,
         pi.email,
-        pi.role_id,
-        pi.invited_by_id,
+        pi.role_id AS roleId,
+        pi.invited_by_id AS invitedById,
         pi.token,
-        pi.created_at,
-        pi.expires_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority
+        pi.created_at AS createdAt,
+        pi.expires_at AS expiresAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.email = ${email}
@@ -269,18 +269,18 @@ export async function findPendingInvitationsByEmail(
 
     return result.rows.map((row) => ({
       id: row.id,
-      projectId: row.project_id,
+      projectId: row.projectId,
       email: row.email,
-      roleId: row.role_id,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      invitedById: row.invited_by_id,
+      invitedById: row.invitedById,
       token: row.token,
-      createdAt: row.created_at,
-      expiresAt: row.expires_at,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
     }));
   } catch (error) {
     console.error("Error finding pending invitations by email:", error);
@@ -299,13 +299,13 @@ export async function createProjectInvitation(
 
     const invitationResult = await sql<{
       id: string;
-      project_id: string;
+      projectId: string;
       email: string;
-      role_id: string;
-      invited_by_id: string;
+      roleId: string;
+      invitedById: string;
       token: string;
-      created_at: Date;
-      expires_at: Date;
+      createdAt: Date;
+      expiresAt: Date;
     }>`
       INSERT INTO project_invitations (
         id,
@@ -327,7 +327,15 @@ export async function createProjectInvitation(
         CURRENT_TIMESTAMP,
         ${data.expiresAt}
       )
-      RETURNING *
+      RETURNING 
+        id,
+        project_id AS projectId,
+        email,
+        role_id AS roleId,
+        invited_by_id AS invitedById,
+        token,
+        created_at AS createdAt,
+        expires_at AS expiresAt
     `.execute(db);
 
     const invitation = invitationResult.rows[0];
@@ -350,18 +358,18 @@ export async function createProjectInvitation(
 
     return {
       id: invitation.id,
-      projectId: invitation.project_id,
+      projectId: invitation.projectId,
       email: invitation.email,
-      roleId: invitation.role_id,
+      roleId: invitation.roleId,
       role: {
         id: role.id,
         name: role.name,
         priority: role.priority,
       },
-      invitedById: invitation.invited_by_id,
+      invitedById: invitation.invitedById,
       token: invitation.token,
-      createdAt: invitation.created_at,
-      expiresAt: invitation.expires_at,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
     };
   } catch (error) {
     console.error("Error creating project invitation:", error);

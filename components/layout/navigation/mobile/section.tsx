@@ -1,13 +1,13 @@
 "use client";
 
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { canAccessNavigationItem } from "@/lib/navigation-auth";
 
 import { MobileNavigationItem } from "./item";
 
 interface IMobileNavigationSectionProps {
-  section: SidebarNavItem;
+  section: ISidebarNavItem;
   path: string;
   onItemClick: () => void;
   currentProjectId: string | null;

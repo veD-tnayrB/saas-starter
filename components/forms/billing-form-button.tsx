@@ -2,14 +2,14 @@
 
 import { useTransition } from "react";
 import { generateUserStripe } from "@/actions/generate-user-stripe";
-import { SubscriptionPlan, UserSubscriptionPlan } from "@/types";
+import { ISubscriptionPlan, IUserSubscriptionPlan } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/shared/icons";
 
-interface BillingFormButtonProps {
-  offer: SubscriptionPlan;
-  subscriptionPlan: UserSubscriptionPlan;
+interface IBillingFormButtonProps {
+  offer: ISubscriptionPlan;
+  subscriptionPlan: IUserSubscriptionPlan;
   year: boolean;
 }
 
@@ -17,7 +17,7 @@ export function BillingFormButton({
   year,
   offer,
   subscriptionPlan,
-}: BillingFormButtonProps) {
+}: IBillingFormButtonProps) {
   let [isPending, startTransition] = useTransition();
   const generateUserStripeSession = generateUserStripe.bind(
     null,
@@ -31,21 +31,25 @@ export function BillingFormButton({
     subscriptionPlan.stripePriceId ===
     offer.stripeIds[year ? "yearly" : "monthly"];
 
+  const buttonVariant = userOffer ? "default" : "outline";
+  const buttonText = userOffer ? "Manage Subscription" : "Upgrade";
+  const buttonContent = isPending ? (
+    <>
+      <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> Loading...
+    </>
+  ) : (
+    buttonText
+  );
+
   return (
     <Button
-      variant={userOffer ? "default" : "outline"}
+      variant={buttonVariant}
       rounded="full"
       className="w-full"
       disabled={isPending}
       onClick={stripeSessionAction}
     >
-      {isPending ? (
-        <>
-          <Icons.spinner className="mr-2 size-4 animate-spin" /> Loading...
-        </>
-      ) : (
-        <>{userOffer ? "Manage Subscription" : "Upgrade"}</>
-      )}
+      {buttonContent}
     </Button>
   );
 }

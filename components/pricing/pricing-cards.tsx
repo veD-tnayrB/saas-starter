@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useState } from "react";
-import { UserSubscriptionPlan } from "@/types";
+import { IUserSubscriptionPlan } from "@/types";
 
 import { pricingData } from "@/config/subscriptions";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -12,7 +12,7 @@ import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 interface IPricingCardsProps {
   userId?: string;
-  subscriptionPlan?: UserSubscriptionPlan;
+  subscriptionPlan?: IUserSubscriptionPlan;
 }
 
 export function PricingCards({ userId, subscriptionPlan }: IPricingCardsProps) {

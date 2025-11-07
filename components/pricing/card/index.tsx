@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { UserSubscriptionPlan } from "@/types";
+import { IUserSubscriptionPlan } from "@/types";
 
-import { SubscriptionPlan } from "@/types/index";
+import { ISubscriptionPlan } from "@/types/index";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { BillingFormButton } from "@/components/forms/billing-form-button";
@@ -12,10 +12,10 @@ import { BenefitItem } from "./benefit-item";
 import { LimitationItem } from "./limitation-item";
 
 interface IPricingCardProps {
-  offer: SubscriptionPlan;
+  offer: ISubscriptionPlan;
   isYearly: boolean;
   userId?: string;
-  subscriptionPlan?: UserSubscriptionPlan;
+  subscriptionPlan?: IUserSubscriptionPlan;
   onSignIn: () => void;
 }
 

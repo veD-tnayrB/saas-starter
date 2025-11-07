@@ -50,6 +50,7 @@ export function RoleDialog({
   const dialogDescription = editingRole
     ? "Update the role details."
     : "Create a new role for the application.";
+  const submitButtonText = editingRole ? "Update" : "Create";
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     onFormDataChange({ ...formData, name: e.target.value });
@@ -119,7 +120,7 @@ export function RoleDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {editingRole ? "Update" : "Create"}
+              {submitButtonText}
             </Button>
           </div>
         </form>
@@ -127,5 +128,3 @@ export function RoleDialog({
     </Dialog>
   );
 }
-
-

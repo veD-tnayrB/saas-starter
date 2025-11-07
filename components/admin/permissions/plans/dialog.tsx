@@ -60,6 +60,7 @@ export function PlanDialog({
   const dialogDescription = editingPlan
     ? "Update the plan details."
     : "Create a new subscription plan.";
+  const submitButtonText = editingPlan ? "Update" : "Create";
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     onFormDataChange({ ...formData, name: e.target.value });
@@ -172,7 +173,7 @@ export function PlanDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {editingPlan ? "Update" : "Create"}
+              {submitButtonText}
             </Button>
           </div>
         </form>
@@ -180,5 +181,3 @@ export function PlanDialog({
     </Dialog>
   );
 }
-
-

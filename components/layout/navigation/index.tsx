@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { NavigationSection } from "./section";
 
 interface INavigationSectionsProps {
-  links: SidebarNavItem[];
+  links: ISidebarNavItem[];
   isSidebarExpanded: boolean;
   path: string;
 }

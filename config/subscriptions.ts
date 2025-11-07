@@ -1,7 +1,7 @@
-import { PlansRow, SubscriptionPlan } from "types";
+import { IPlansRow, ISubscriptionPlan } from "types";
 import { env } from "@/env.mjs";
 
-export const pricingData: SubscriptionPlan[] = [
+export const pricingData: ISubscriptionPlan[] = [
   {
     title: "Starter",
     description: "For Beginners",
@@ -77,7 +77,7 @@ export const plansColumns = [
   "enterprise",
 ] as const;
 
-export const comparePlans: PlansRow[] = [
+export const comparePlans: IPlansRow[] = [
   {
     feature: "Access to Analytics",
     starter: true,

@@ -19,23 +19,15 @@ import { db } from "@/lib/db";
  */
 export async function findUserById(id: string): Promise<IAuthUser | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAuthUser>`
       SELECT 
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM users
       WHERE id = ${id}
       LIMIT 1
@@ -44,15 +36,7 @@ export async function findUserById(id: string): Promise<IAuthUser | null> {
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding user by ID:", error);
     throw new Error("Failed to find user by ID");
@@ -68,23 +52,15 @@ export async function findUserByEmail(
   email: string,
 ): Promise<IAuthUser | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAuthUser>`
       SELECT 
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM users
       WHERE email = ${email}
       LIMIT 1
@@ -93,15 +69,7 @@ export async function findUserByEmail(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding user by email:", error);
     throw new Error("Failed to find user by email");
@@ -118,15 +86,7 @@ export async function createUser(data: IUserCreateData): Promise<IAuthUser> {
     // Generate a UUID for the user ID
     const id = randomUUID();
 
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAuthUser>`
       INSERT INTO users (id, name, email, email_verified, image, created_at, updated_at)
       VALUES (
         ${id},
@@ -141,24 +101,16 @@ export async function createUser(data: IUserCreateData): Promise<IAuthUser> {
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Failed to create user");
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error creating user:", error);
     throw new Error("Failed to create user");
@@ -176,56 +128,43 @@ export async function updateUser(
   data: IUserUpdateData,
 ): Promise<IAuthUser> {
   try {
-    // Build SET clause parts conditionally
-    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    // Build SET clause parts conditionally using sql fragments with parameters
+    const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
 
     if (data.name !== undefined) {
-      setParts.push(`name = ${sql.lit(data.name ?? null)}`);
+      setParts.push(sql`name = ${data.name ?? null}`);
     }
     if (data.email !== undefined) {
-      setParts.push(`email = ${sql.lit(data.email ?? null)}`);
+      setParts.push(sql`email = ${data.email ?? null}`);
     }
     if (data.emailVerified !== undefined) {
-      setParts.push(`email_verified = ${sql.lit(data.emailVerified ?? null)}`);
+      setParts.push(sql`email_verified = ${data.emailVerified ?? null}`);
     }
     if (data.image !== undefined) {
-      setParts.push(`image = ${sql.lit(data.image ?? null)}`);
+      setParts.push(sql`image = ${data.image ?? null}`);
     }
 
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    // Combine all SET parts
+    const setClause = sql.join(setParts, sql`, `);
+
+    const result = await sql<IAuthUser>`
       UPDATE users
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${id}
       RETURNING 
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("User not found");
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error updating user:", error);
     throw new Error("Failed to update user");
@@ -262,23 +201,15 @@ export async function findUserByProvider(
   providerAccountId: string,
 ): Promise<IAuthUser | null> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAuthUser>`
       SELECT 
         u.id,
         u.name,
         u.email,
-        u.email_verified,
+        u.email_verified AS emailVerified,
         u.image,
-        u.created_at,
-        u.updated_at
+        u.created_at AS createdAt,
+        u.updated_at AS updatedAt
       FROM users u
       INNER JOIN accounts a ON a.user_id = u.id
       WHERE a.provider = ${provider}
@@ -289,15 +220,7 @@ export async function findUserByProvider(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding user by provider:", error);
     throw new Error("Failed to find user by provider");
@@ -315,15 +238,7 @@ export async function updateUserVerification(
   emailVerified: Date,
 ): Promise<IAuthUser> {
   try {
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAuthUser>`
       UPDATE users
       SET 
         email_verified = ${emailVerified},
@@ -333,24 +248,16 @@ export async function updateUserVerification(
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("User not found");
 
-    return {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error updating user verification:", error);
     throw new Error("Failed to update user verification");
@@ -435,37 +342,21 @@ export async function searchUsers(
       whereClause = `WHERE ${conditions.join(" AND ")}`;
     }
 
-    const result = await sql<{
-      id: string;
-      name: string | null;
-      email: string | null;
-      email_verified: Date | null;
-      image: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAuthUser>`
       SELECT 
         id,
         name,
         email,
-        email_verified,
+        email_verified AS emailVerified,
         image,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM users
       ${sql.raw(whereClause)}
       ORDER BY created_at DESC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      emailVerified: row.email_verified,
-      image: row.image,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error searching users:", error);
     throw new Error("Failed to search users");
@@ -534,11 +425,11 @@ export async function getUserBasicInfoByEmail(email: string): Promise<{
   try {
     const result = await sql<{
       name: string | null;
-      email_verified: Date | null;
+      emailVerified: Date | null;
     }>`
       SELECT 
         name,
-        email_verified
+        email_verified AS emailVerified
       FROM users
       WHERE email = ${email}
       LIMIT 1
@@ -547,10 +438,7 @@ export async function getUserBasicInfoByEmail(email: string): Promise<{
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      name: row.name,
-      emailVerified: row.email_verified,
-    };
+    return row;
   } catch (error) {
     console.error("Error getting user basic info by email:", error);
     return null;
@@ -568,13 +456,13 @@ export async function getUserActivity(
   try {
     const userResult = await sql<{
       id: string;
-      created_at: Date;
-      updated_at: Date;
+      createdAt: Date;
+      updatedAt: Date;
     }>`
       SELECT 
         id,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM users
       WHERE id = ${id}
       LIMIT 1
@@ -584,9 +472,9 @@ export async function getUserActivity(
     if (!user) return null;
 
     const accountsResult = await sql<{
-      created_at: Date;
+      createdAt: Date;
     }>`
-      SELECT created_at
+      SELECT created_at AS createdAt
       FROM accounts
       WHERE user_id = ${id}
       ORDER BY created_at DESC
@@ -594,9 +482,9 @@ export async function getUserActivity(
 
     return {
       userId: user.id,
-      lastLoginAt: accountsResult.rows[0]?.created_at || null,
+      lastLoginAt: accountsResult.rows[0]?.createdAt || null,
       loginCount: accountsResult.rows.length,
-      lastActivityAt: user.updated_at,
+      lastActivityAt: user.updatedAt,
     };
   } catch (error) {
     console.error("Error getting user activity:", error);

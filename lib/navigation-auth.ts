@@ -1,4 +1,4 @@
-import type { NavItem } from "@/types";
+import type { INavItem } from "@/types";
 
 /**
  * Authorization types for navigation items
@@ -9,7 +9,7 @@ export type NavigationAuthType = "ADMIN" | "OWNER";
  * Check if navigation item should be visible based on authorization
  */
 export function canAccessNavigationItem(
-  item: NavItem,
+  item: INavItem,
   userIsAdmin: boolean,
   userIsCurrentProjectOwner: boolean,
 ): boolean {
@@ -30,10 +30,10 @@ export function canAccessNavigationItem(
  * Filter navigation items based on user permissions
  */
 export function filterNavigationItems(
-  items: NavItem[],
+  items: INavItem[],
   userIsAdmin: boolean,
   userIsCurrentProjectOwner: boolean,
-): NavItem[] {
+): INavItem[] {
   return items.filter((item) =>
     canAccessNavigationItem(item, userIsAdmin, userIsCurrentProjectOwner),
   );

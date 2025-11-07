@@ -63,6 +63,7 @@ export function ActionDialog({
   const dialogDescription = editingAction
     ? "Update the action details."
     : "Create a new action for the application.";
+  const submitButtonText = editingAction ? "Update" : "Create";
 
   function handleSlugChange(e: React.ChangeEvent<HTMLInputElement>) {
     onFormDataChange({ ...formData, slug: e.target.value });
@@ -154,7 +155,7 @@ export function ActionDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {editingAction ? "Update" : "Create"}
+              {submitButtonText}
             </Button>
           </div>
         </form>

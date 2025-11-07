@@ -1,6 +1,6 @@
-import { SidebarNavItem } from "types";
+import { ISidebarNavItem } from "types";
 
-export const sidebarLinks: SidebarNavItem[] = [
+export const sidebarLinks: ISidebarNavItem[] = [
   {
     title: "MENU",
     items: [

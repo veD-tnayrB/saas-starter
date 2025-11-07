@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 import { PanelLeftClose, PanelRightClose } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { ProjectSwitcher } from "@/components/dashboard/project/switcher";
 import { NavigationSections } from "@/components/layout/navigation";
 
 interface IDashboardSidebarProps {
-  links: SidebarNavItem[];
+  links: ISidebarNavItem[];
 }
 
 export function DashboardSidebar({ links }: IDashboardSidebarProps) {
@@ -68,7 +68,7 @@ export function DashboardSidebar({ links }: IDashboardSidebarProps) {
           >
             <div className="flex h-full max-h-screen flex-1 flex-col gap-2">
               <div className="flex h-14 items-center p-4 lg:h-[60px]">
-                {isSidebarExpanded ? <ProjectSwitcher /> : null}
+                {isSidebarExpanded && <ProjectSwitcher />}
 
                 <Button
                   variant="ghost"

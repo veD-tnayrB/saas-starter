@@ -21,14 +21,15 @@ interface IPlansTableRowProps {
 }
 
 export function PlansTableRow({ plan, onEdit }: IPlansTableRowProps) {
+  const badgeVariant = plan.isActive ? "default" : "secondary";
+  const badgeText = plan.isActive ? "Active" : "Inactive";
+
   return (
     <TableRow>
       <TableCell className="font-medium">{plan.name}</TableCell>
       <TableCell>{plan.displayName}</TableCell>
       <TableCell>
-        <Badge variant={plan.isActive ? "default" : "secondary"}>
-          {plan.isActive ? "Active" : "Inactive"}
-        </Badge>
+        <Badge variant={badgeVariant}>{badgeText}</Badge>
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
         <div>Monthly: {plan.stripePriceIdMonthly || "-"}</div>
@@ -42,5 +43,3 @@ export function PlansTableRow({ plan, onEdit }: IPlansTableRowProps) {
     </TableRow>
   );
 }
-
-

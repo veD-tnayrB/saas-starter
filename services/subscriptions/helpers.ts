@@ -1,7 +1,7 @@
 import {
-  SubscriptionPlan,
-  UserSubscriptionPlan,
-  UserSubscriptionRecord,
+  ISubscriptionPlan,
+  IUserSubscriptionPlan,
+  IUserSubscriptionRecord,
 } from "@/types/subscriptions";
 import { pricingData } from "@/config/subscriptions";
 
@@ -37,7 +37,7 @@ export function determinePlanInterval(
 /**
  * Find plan configuration by price ID
  */
-export function findPlanByPriceId(priceId: string): SubscriptionPlan | null {
+export function findPlanByPriceId(priceId: string): ISubscriptionPlan | null {
   return (
     pricingData.find((plan) => plan.stripeIds.monthly === priceId) ||
     pricingData.find((plan) => plan.stripeIds.yearly === priceId) ||
@@ -49,12 +49,12 @@ export function findPlanByPriceId(priceId: string): SubscriptionPlan | null {
  * Format subscription plan data for user consumption
  */
 export function formatSubscriptionPlan(
-  user: UserSubscriptionRecord,
-  plan: SubscriptionPlan,
+  user: IUserSubscriptionRecord,
+  plan: ISubscriptionPlan,
   isPaid: boolean,
   interval: "month" | "year" | null,
   isCanceled: boolean,
-): UserSubscriptionPlan {
+): IUserSubscriptionPlan {
   return {
     ...plan,
     stripeCustomerId: user.stripeCustomerId,
@@ -91,6 +91,6 @@ export function calculateGracePeriod(periodEnd: Date | null): number {
 /**
  * Get default plan (Starter plan)
  */
-export function getDefaultPlan(): SubscriptionPlan {
+export function getDefaultPlan(): ISubscriptionPlan {
   return pricingData[0]; // Starter plan
 }

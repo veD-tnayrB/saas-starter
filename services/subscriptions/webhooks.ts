@@ -12,8 +12,8 @@ import Stripe from "stripe";
 
 import { env } from "@/env.mjs";
 import {
-  SubscriptionData,
-  SubscriptionServiceResponse,
+  ISubscriptionData,
+  ISubscriptionServiceResponse,
 } from "@/types/subscriptions";
 import { siteConfig } from "@/config/site";
 
@@ -24,7 +24,7 @@ import { determinePlanInterval, findPlanByPriceId } from "./helpers";
  */
 export async function handleWebhookEvent(
   event: Stripe.Event,
-): Promise<SubscriptionServiceResponse> {
+): Promise<ISubscriptionServiceResponse> {
   try {
     switch (event.type) {
       case "checkout.session.completed":
@@ -143,7 +143,7 @@ export async function handleCheckoutCompleted(
     );
 
     // Prepare subscription data
-    const subscriptionData: SubscriptionData = {
+    const subscriptionData: ISubscriptionData = {
       subscriptionId: subscription.id,
       customerId: subscription.customer as string,
       priceId: subscription.items.data[0].price.id,

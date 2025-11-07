@@ -54,36 +54,36 @@ export async function findProjectById(id: string): Promise<IProject | null> {
     const result = await sql<{
       id: string;
       name: string;
-      owner_id: string;
-      created_at: Date;
-      updated_at: Date;
-      subscription_plan_id: string | null;
-      plan_id: string | null;
-      plan_name: string | null;
-      plan_display_name: string | null;
-      plan_description: string | null;
-      plan_stripe_price_id_monthly: string | null;
-      plan_stripe_price_id_yearly: string | null;
-      plan_is_active: boolean | null;
-      plan_created_at: Date | null;
-      plan_updated_at: Date | null;
+      ownerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      subscriptionPlanId: string | null;
+      planId: string | null;
+      planName: string | null;
+      planDisplayName: string | null;
+      planDescription: string | null;
+      planStripePriceIdMonthly: string | null;
+      planStripePriceIdYearly: string | null;
+      planIsActive: boolean | null;
+      planCreatedAt: Date | null;
+      planUpdatedAt: Date | null;
     }>`
       SELECT
         p.id,
         p.name,
-        p.owner_id,
-        p.created_at,
-        p.updated_at,
-        p.subscription_plan_id,
-        sp.id as plan_id,
-        sp.name as plan_name,
-        sp.display_name as plan_display_name,
-        sp.description as plan_description,
-        sp.stripe_price_id_monthly as plan_stripe_price_id_monthly,
-        sp.stripe_price_id_yearly as plan_stripe_price_id_yearly,
-        sp.is_active as plan_is_active,
-        sp.created_at as plan_created_at,
-        sp.updated_at as plan_updated_at
+        p.owner_id AS ownerId,
+        p.created_at AS createdAt,
+        p.updated_at AS updatedAt,
+        p.subscription_plan_id AS subscriptionPlanId,
+        sp.id AS planId,
+        sp.name AS planName,
+        sp.display_name AS planDisplayName,
+        sp.description AS planDescription,
+        sp.stripe_price_id_monthly AS planStripePriceIdMonthly,
+        sp.stripe_price_id_yearly AS planStripePriceIdYearly,
+        sp.is_active AS planIsActive,
+        sp.created_at AS planCreatedAt,
+        sp.updated_at AS planUpdatedAt
       FROM projects p
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
       WHERE p.id = ${id}
@@ -96,21 +96,21 @@ export async function findProjectById(id: string): Promise<IProject | null> {
     return {
       id: row.id,
       name: row.name,
-      ownerId: row.owner_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      subscriptionPlanId: row.subscription_plan_id ?? undefined,
-      subscriptionPlan: row.plan_id
+      ownerId: row.ownerId,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      subscriptionPlanId: row.subscriptionPlanId ?? undefined,
+      subscriptionPlan: row.planId
         ? {
-            id: row.plan_id,
-            name: row.plan_name!,
-            displayName: row.plan_display_name!,
-            description: row.plan_description,
-            stripePriceIdMonthly: row.plan_stripe_price_id_monthly,
-            stripePriceIdYearly: row.plan_stripe_price_id_yearly,
-            isActive: row.plan_is_active ?? false,
-            createdAt: row.plan_created_at!,
-            updatedAt: row.plan_updated_at!,
+            id: row.planId,
+            name: row.planName!,
+            displayName: row.planDisplayName!,
+            description: row.planDescription,
+            stripePriceIdMonthly: row.planStripePriceIdMonthly,
+            stripePriceIdYearly: row.planStripePriceIdYearly,
+            isActive: row.planIsActive ?? false,
+            createdAt: row.planCreatedAt!,
+            updatedAt: row.planUpdatedAt!,
           }
         : undefined,
     };
@@ -130,36 +130,36 @@ export async function findProjectsByOwner(
     const result = await sql<{
       id: string;
       name: string;
-      owner_id: string;
-      created_at: Date;
-      updated_at: Date;
-      subscription_plan_id: string | null;
-      plan_id: string | null;
-      plan_name: string | null;
-      plan_display_name: string | null;
-      plan_description: string | null;
-      plan_stripe_price_id_monthly: string | null;
-      plan_stripe_price_id_yearly: string | null;
-      plan_is_active: boolean | null;
-      plan_created_at: Date | null;
-      plan_updated_at: Date | null;
+      ownerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      subscriptionPlanId: string | null;
+      planId: string | null;
+      planName: string | null;
+      planDisplayName: string | null;
+      planDescription: string | null;
+      planStripePriceIdMonthly: string | null;
+      planStripePriceIdYearly: string | null;
+      planIsActive: boolean | null;
+      planCreatedAt: Date | null;
+      planUpdatedAt: Date | null;
     }>`
       SELECT 
         p.id,
         p.name,
-        p.owner_id,
-        p.created_at,
-        p.updated_at,
-        p.subscription_plan_id,
-        sp.id as plan_id,
-        sp.name as plan_name,
-        sp.display_name as plan_display_name,
-        sp.description as plan_description,
-        sp.stripe_price_id_monthly as plan_stripe_price_id_monthly,
-        sp.stripe_price_id_yearly as plan_stripe_price_id_yearly,
-        sp.is_active as plan_is_active,
-        sp.created_at as plan_created_at,
-        sp.updated_at as plan_updated_at
+        p.owner_id AS ownerId,
+        p.created_at AS createdAt,
+        p.updated_at AS updatedAt,
+        p.subscription_plan_id AS subscriptionPlanId,
+        sp.id AS planId,
+        sp.name AS planName,
+        sp.display_name AS planDisplayName,
+        sp.description AS planDescription,
+        sp.stripe_price_id_monthly AS planStripePriceIdMonthly,
+        sp.stripe_price_id_yearly AS planStripePriceIdYearly,
+        sp.is_active AS planIsActive,
+        sp.created_at AS planCreatedAt,
+        sp.updated_at AS planUpdatedAt
       FROM projects p
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
       WHERE p.owner_id = ${ownerId}
@@ -169,21 +169,21 @@ export async function findProjectsByOwner(
     return result.rows.map((row) => ({
       id: row.id,
       name: row.name,
-      ownerId: row.owner_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      subscriptionPlanId: row.subscription_plan_id ?? undefined,
-      subscriptionPlan: row.plan_id
+      ownerId: row.ownerId,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      subscriptionPlanId: row.subscriptionPlanId ?? undefined,
+      subscriptionPlan: row.planId
         ? {
-            id: row.plan_id,
-            name: row.plan_name!,
-            displayName: row.plan_display_name!,
-            description: row.plan_description,
-            stripePriceIdMonthly: row.plan_stripe_price_id_monthly,
-            stripePriceIdYearly: row.plan_stripe_price_id_yearly,
-            isActive: row.plan_is_active ?? false,
-            createdAt: row.plan_created_at!,
-            updatedAt: row.plan_updated_at!,
+            id: row.planId,
+            name: row.planName!,
+            displayName: row.planDisplayName!,
+            description: row.planDescription,
+            stripePriceIdMonthly: row.planStripePriceIdMonthly,
+            stripePriceIdYearly: row.planStripePriceIdYearly,
+            isActive: row.planIsActive ?? false,
+            createdAt: row.planCreatedAt!,
+            updatedAt: row.planUpdatedAt!,
           }
         : undefined,
     }));
@@ -221,36 +221,36 @@ export async function findProjectsByUserId(
     const result = await sql<{
       id: string;
       name: string;
-      owner_id: string;
-      created_at: Date;
-      updated_at: Date;
-      subscription_plan_id: string | null;
-      plan_id: string | null;
-      plan_name: string | null;
-      plan_display_name: string | null;
-      plan_description: string | null;
-      plan_stripe_price_id_monthly: string | null;
-      plan_stripe_price_id_yearly: string | null;
-      plan_is_active: boolean | null;
-      plan_created_at: Date | null;
-      plan_updated_at: Date | null;
+      ownerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      subscriptionPlanId: string | null;
+      planId: string | null;
+      planName: string | null;
+      planDisplayName: string | null;
+      planDescription: string | null;
+      planStripePriceIdMonthly: string | null;
+      planStripePriceIdYearly: string | null;
+      planIsActive: boolean | null;
+      planCreatedAt: Date | null;
+      planUpdatedAt: Date | null;
     }>`
       SELECT 
         p.id,
         p.name,
-        p.owner_id,
-        p.created_at,
-        p.updated_at,
-        p.subscription_plan_id,
-        sp.id as plan_id,
-        sp.name as plan_name,
-        sp.display_name as plan_display_name,
-        sp.description as plan_description,
-        sp.stripe_price_id_monthly as plan_stripe_price_id_monthly,
-        sp.stripe_price_id_yearly as plan_stripe_price_id_yearly,
-        sp.is_active as plan_is_active,
-        sp.created_at as plan_created_at,
-        sp.updated_at as plan_updated_at
+        p.owner_id AS ownerId,
+        p.created_at AS createdAt,
+        p.updated_at AS updatedAt,
+        p.subscription_plan_id AS subscriptionPlanId,
+        sp.id AS planId,
+        sp.name AS planName,
+        sp.display_name AS planDisplayName,
+        sp.description AS planDescription,
+        sp.stripe_price_id_monthly AS planStripePriceIdMonthly,
+        sp.stripe_price_id_yearly AS planStripePriceIdYearly,
+        sp.is_active AS planIsActive,
+        sp.created_at AS planCreatedAt,
+        sp.updated_at AS planUpdatedAt
       FROM projects p
       INNER JOIN project_members pm ON pm.project_id = p.id
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
@@ -261,21 +261,21 @@ export async function findProjectsByUserId(
     return result.rows.map((row) => ({
       id: row.id,
       name: row.name,
-      ownerId: row.owner_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      subscriptionPlanId: row.subscription_plan_id ?? undefined,
-      subscriptionPlan: row.plan_id
+      ownerId: row.ownerId,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      subscriptionPlanId: row.subscriptionPlanId ?? undefined,
+      subscriptionPlan: row.planId
         ? {
-            id: row.plan_id,
-            name: row.plan_name!,
-            displayName: row.plan_display_name!,
-            description: row.plan_description,
-            stripePriceIdMonthly: row.plan_stripe_price_id_monthly,
-            stripePriceIdYearly: row.plan_stripe_price_id_yearly,
-            isActive: row.plan_is_active ?? false,
-            createdAt: row.plan_created_at!,
-            updatedAt: row.plan_updated_at!,
+            id: row.planId,
+            name: row.planName!,
+            displayName: row.planDisplayName!,
+            description: row.planDescription,
+            stripePriceIdMonthly: row.planStripePriceIdMonthly,
+            stripePriceIdYearly: row.planStripePriceIdYearly,
+            isActive: row.planIsActive ?? false,
+            createdAt: row.planCreatedAt!,
+            updatedAt: row.planUpdatedAt!,
           }
         : undefined,
     }));
@@ -320,29 +320,20 @@ export async function createProject(
     const result = await sql<{
       id: string;
       name: string;
-      owner_id: string;
-      created_at: Date;
-      updated_at: Date;
-      subscription_plan_id: string | null;
-      plan_id: string | null;
-      plan_name: string | null;
-      plan_display_name: string | null;
-      plan_description: string | null;
-      plan_stripe_price_id_monthly: string | null;
-      plan_stripe_price_id_yearly: string | null;
-      plan_is_active: boolean | null;
-      plan_created_at: Date | null;
-      plan_updated_at: Date | null;
+      ownerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      subscriptionPlanId: string | null;
     }>`
       INSERT INTO projects (id, name, owner_id, created_at, updated_at)
       VALUES (${id}, ${data.name}, ${data.ownerId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING 
         id,
         name,
-        owner_id,
-        created_at,
-        updated_at,
-        subscription_plan_id
+        owner_id AS ownerId,
+        created_at AS createdAt,
+        updated_at AS updatedAt,
+        subscription_plan_id AS subscriptionPlanId
     `.execute(db);
 
     const project = result.rows[0];
@@ -350,47 +341,36 @@ export async function createProject(
 
     // Fetch subscription plan if exists
     let subscriptionPlan: ISubscriptionPlan | undefined;
-    if (project.subscription_plan_id) {
-      const planResult = await sql<{
-        id: string;
-        name: string;
-        display_name: string;
-        description: string | null;
-        stripe_price_id_monthly: string | null;
-        stripe_price_id_yearly: string | null;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>`
-        SELECT *
+    if (project.subscriptionPlanId) {
+      const planResult = await sql<ISubscriptionPlan>`
+        SELECT 
+          id,
+          name,
+          display_name AS displayName,
+          description,
+          stripe_price_id_monthly AS stripePriceIdMonthly,
+          stripe_price_id_yearly AS stripePriceIdYearly,
+          is_active AS isActive,
+          created_at AS createdAt,
+          updated_at AS updatedAt
         FROM subscription_plans
-        WHERE id = ${project.subscription_plan_id}
+        WHERE id = ${project.subscriptionPlanId}
         LIMIT 1
       `.execute(db);
 
       const plan = planResult.rows[0];
       if (plan) {
-        subscriptionPlan = {
-          id: plan.id,
-          name: plan.name,
-          displayName: plan.display_name,
-          description: plan.description,
-          stripePriceIdMonthly: plan.stripe_price_id_monthly,
-          stripePriceIdYearly: plan.stripe_price_id_yearly,
-          isActive: plan.is_active,
-          createdAt: plan.created_at,
-          updatedAt: plan.updated_at,
-        };
+        subscriptionPlan = plan;
       }
     }
 
     return {
       id: project.id,
       name: project.name,
-      ownerId: project.owner_id,
-      createdAt: project.created_at,
-      updatedAt: project.updated_at,
-      subscriptionPlanId: project.subscription_plan_id ?? undefined,
+      ownerId: project.ownerId,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      subscriptionPlanId: project.subscriptionPlanId ?? undefined,
       subscriptionPlan,
     };
   } catch (error) {
@@ -415,20 +395,20 @@ export async function createProjectWithOwner(
       const projectResult = await sql<{
         id: string;
         name: string;
-        owner_id: string;
-        created_at: Date;
-        updated_at: Date;
-        subscription_plan_id: string | null;
+        ownerId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        subscriptionPlanId: string | null;
       }>`
         INSERT INTO projects (id, name, owner_id, created_at, updated_at)
         VALUES (${projectId}, ${data.name}, ${data.ownerId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING
           id,
           name,
-          owner_id,
-          created_at,
-          updated_at,
-          subscription_plan_id
+          owner_id AS ownerId,
+          created_at AS createdAt,
+          updated_at AS updatedAt,
+          subscription_plan_id AS subscriptionPlanId
       `.execute(trx);
 
       const project = projectResult.rows[0];
@@ -442,47 +422,36 @@ export async function createProjectWithOwner(
 
       // Fetch subscription plan if exists
       let subscriptionPlan: ISubscriptionPlan | undefined;
-      if (project.subscription_plan_id) {
-        const planResult = await sql<{
-          id: string;
-          name: string;
-          display_name: string;
-          description: string | null;
-          stripe_price_id_monthly: string | null;
-          stripe_price_id_yearly: string | null;
-          is_active: boolean;
-          created_at: Date;
-          updated_at: Date;
-        }>`
-          SELECT *
+      if (project.subscriptionPlanId) {
+        const planResult = await sql<ISubscriptionPlan>`
+          SELECT 
+            id,
+            name,
+            display_name AS displayName,
+            description,
+            stripe_price_id_monthly AS stripePriceIdMonthly,
+            stripe_price_id_yearly AS stripePriceIdYearly,
+            is_active AS isActive,
+            created_at AS createdAt,
+            updated_at AS updatedAt
           FROM subscription_plans
-          WHERE id = ${project.subscription_plan_id}
+          WHERE id = ${project.subscriptionPlanId}
           LIMIT 1
         `.execute(trx);
 
         const plan = planResult.rows[0];
         if (plan) {
-          subscriptionPlan = {
-            id: plan.id,
-            name: plan.name,
-            displayName: plan.display_name,
-            description: plan.description,
-            stripePriceIdMonthly: plan.stripe_price_id_monthly,
-            stripePriceIdYearly: plan.stripe_price_id_yearly,
-            isActive: plan.is_active,
-            createdAt: plan.created_at,
-            updatedAt: plan.updated_at,
-          };
+          subscriptionPlan = plan;
         }
       }
 
       return {
         id: project.id,
         name: project.name,
-        ownerId: project.owner_id,
-        createdAt: project.created_at,
-        updatedAt: project.updated_at,
-        subscriptionPlanId: project.subscription_plan_id ?? undefined,
+        ownerId: project.ownerId,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+        subscriptionPlanId: project.subscriptionPlanId ?? undefined,
         subscriptionPlan,
       };
     });
@@ -510,15 +479,21 @@ export async function updateProject(
     const result = await sql<{
       id: string;
       name: string;
-      owner_id: string;
-      created_at: Date;
-      updated_at: Date;
-      subscription_plan_id: string | null;
+      ownerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      subscriptionPlanId: string | null;
     }>`
       UPDATE projects
       SET ${sql.raw(setParts.join(", "))}
       WHERE id = ${id}
-      RETURNING *
+      RETURNING 
+        id,
+        name,
+        owner_id AS ownerId,
+        created_at AS createdAt,
+        updated_at AS updatedAt,
+        subscription_plan_id AS subscriptionPlanId
     `.execute(db);
 
     const project = result.rows[0];
@@ -526,47 +501,36 @@ export async function updateProject(
 
     // Fetch subscription plan if exists
     let subscriptionPlan: ISubscriptionPlan | undefined;
-    if (project.subscription_plan_id) {
-      const planResult = await sql<{
-        id: string;
-        name: string;
-        display_name: string;
-        description: string | null;
-        stripe_price_id_monthly: string | null;
-        stripe_price_id_yearly: string | null;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>`
-        SELECT *
+    if (project.subscriptionPlanId) {
+      const planResult = await sql<ISubscriptionPlan>`
+        SELECT 
+          id,
+          name,
+          display_name AS displayName,
+          description,
+          stripe_price_id_monthly AS stripePriceIdMonthly,
+          stripe_price_id_yearly AS stripePriceIdYearly,
+          is_active AS isActive,
+          created_at AS createdAt,
+          updated_at AS updatedAt
         FROM subscription_plans
-        WHERE id = ${project.subscription_plan_id}
+        WHERE id = ${project.subscriptionPlanId}
         LIMIT 1
       `.execute(db);
 
       const plan = planResult.rows[0];
       if (plan) {
-        subscriptionPlan = {
-          id: plan.id,
-          name: plan.name,
-          displayName: plan.display_name,
-          description: plan.description,
-          stripePriceIdMonthly: plan.stripe_price_id_monthly,
-          stripePriceIdYearly: plan.stripe_price_id_yearly,
-          isActive: plan.is_active,
-          createdAt: plan.created_at,
-          updatedAt: plan.updated_at,
-        };
+        subscriptionPlan = plan;
       }
     }
 
     return {
       id: project.id,
       name: project.name,
-      ownerId: project.owner_id,
-      createdAt: project.created_at,
-      updatedAt: project.updated_at,
-      subscriptionPlanId: project.subscription_plan_id ?? undefined,
+      ownerId: project.ownerId,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      subscriptionPlanId: project.subscriptionPlanId ?? undefined,
       subscriptionPlan,
     };
   } catch (error) {

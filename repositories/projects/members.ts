@@ -46,25 +46,25 @@ export async function findProjectMember(
   try {
     const result = await sql<{
       id: string;
-      project_id: string;
-      user_id: string;
-      role_id: string;
-      created_at: Date;
-      updated_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
+      projectId: string;
+      userId: string;
+      roleId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
     }>`
       SELECT 
         pm.id,
-        pm.project_id,
-        pm.user_id,
-        pm.role_id,
-        pm.created_at,
-        pm.updated_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority
+        pm.project_id AS projectId,
+        pm.user_id AS userId,
+        pm.role_id AS roleId,
+        pm.created_at AS createdAt,
+        pm.updated_at AS updatedAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.project_id = ${projectId}
@@ -77,16 +77,16 @@ export async function findProjectMember(
 
     return {
       id: row.id,
-      projectId: row.project_id,
-      userId: row.user_id,
-      roleId: row.role_id,
+      projectId: row.projectId,
+      userId: row.userId,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     };
   } catch (error) {
     console.error("Error finding project member:", error);
@@ -110,33 +110,33 @@ export async function findProjectMembers(projectId: string): Promise<
   try {
     const result = await sql<{
       id: string;
-      project_id: string;
-      user_id: string;
-      role_id: string;
-      created_at: Date;
-      updated_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
-      user_id_2: string;
-      user_name: string | null;
-      user_email: string | null;
-      user_image: string | null;
+      projectId: string;
+      userId: string;
+      roleId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
+      userId2: string;
+      userName: string | null;
+      userEmail: string | null;
+      userImage: string | null;
     }>`
       SELECT 
         pm.id,
-        pm.project_id,
-        pm.user_id,
-        pm.role_id,
-        pm.created_at,
-        pm.updated_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority,
-        u.id as user_id_2,
-        u.name as user_name,
-        u.email as user_email,
-        u.image as user_image
+        pm.project_id AS projectId,
+        pm.user_id AS userId,
+        pm.role_id AS roleId,
+        pm.created_at AS createdAt,
+        pm.updated_at AS updatedAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority,
+        u.id AS userId2,
+        u.name AS userName,
+        u.email AS userEmail,
+        u.image AS userImage
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       INNER JOIN users u ON u.id = pm.user_id
@@ -146,21 +146,21 @@ export async function findProjectMembers(projectId: string): Promise<
 
     return result.rows.map((row) => ({
       id: row.id,
-      projectId: row.project_id,
-      userId: row.user_id,
-      roleId: row.role_id,
+      projectId: row.projectId,
+      userId: row.userId,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
       user: {
-        id: row.user_id_2,
-        name: row.user_name,
-        email: row.user_email,
-        image: row.user_image,
+        id: row.userId2,
+        name: row.userName,
+        email: row.userEmail,
+        image: row.userImage,
       },
     }));
   } catch (error) {
@@ -178,25 +178,25 @@ export async function findUserProjectMemberships(
   try {
     const result = await sql<{
       id: string;
-      project_id: string;
-      user_id: string;
-      role_id: string;
-      created_at: Date;
-      updated_at: Date;
-      role_id_2: string;
-      role_name: string;
-      role_priority: number;
+      projectId: string;
+      userId: string;
+      roleId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      roleId2: string;
+      roleName: string;
+      rolePriority: number;
     }>`
       SELECT 
         pm.id,
-        pm.project_id,
-        pm.user_id,
-        pm.role_id,
-        pm.created_at,
-        pm.updated_at,
-        ar.id as role_id_2,
-        ar.name as role_name,
-        ar.priority as role_priority
+        pm.project_id AS projectId,
+        pm.user_id AS userId,
+        pm.role_id AS roleId,
+        pm.created_at AS createdAt,
+        pm.updated_at AS updatedAt,
+        ar.id AS roleId2,
+        ar.name AS roleName,
+        ar.priority AS rolePriority
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.user_id = ${userId}
@@ -205,16 +205,16 @@ export async function findUserProjectMemberships(
 
     return result.rows.map((row) => ({
       id: row.id,
-      projectId: row.project_id,
-      userId: row.user_id,
-      roleId: row.role_id,
+      projectId: row.projectId,
+      userId: row.userId,
+      roleId: row.roleId,
       role: {
-        id: row.role_id_2,
-        name: row.role_name,
-        priority: row.role_priority,
+        id: row.roleId2,
+        name: row.roleName,
+        priority: row.rolePriority,
       },
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     }));
   } catch (error) {
     console.error("Error finding user project memberships:", error);
@@ -250,15 +250,21 @@ export async function createProjectMember(
 
     const memberResult = await sql<{
       id: string;
-      project_id: string;
-      user_id: string;
-      role_id: string;
-      created_at: Date;
-      updated_at: Date;
+      projectId: string;
+      userId: string;
+      roleId: string;
+      createdAt: Date;
+      updatedAt: Date;
     }>`
       INSERT INTO project_members (id, project_id, user_id, role_id, created_at, updated_at)
       VALUES (${id}, ${data.projectId}, ${data.userId}, ${data.roleId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING *
+      RETURNING 
+        id,
+        project_id AS projectId,
+        user_id AS userId,
+        role_id AS roleId,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const member = memberResult.rows[0];
@@ -281,16 +287,16 @@ export async function createProjectMember(
 
     return {
       id: member.id,
-      projectId: member.project_id,
-      userId: member.user_id,
-      roleId: member.role_id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
       role: {
         id: role.id,
         name: role.name,
         priority: role.priority,
       },
-      createdAt: member.created_at,
-      updatedAt: member.updated_at,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
     };
   } catch (error) {
     console.error("Error creating project member:", error);
@@ -316,11 +322,11 @@ export async function updateProjectMember(
 
     const memberResult = await sql<{
       id: string;
-      project_id: string;
-      user_id: string;
-      role_id: string;
-      created_at: Date;
-      updated_at: Date;
+      projectId: string;
+      userId: string;
+      roleId: string;
+      createdAt: Date;
+      updatedAt: Date;
     }>`
       UPDATE project_members
       SET 
@@ -328,7 +334,13 @@ export async function updateProjectMember(
         updated_at = CURRENT_TIMESTAMP
       WHERE project_id = ${projectId}
         AND user_id = ${userId}
-      RETURNING *
+      RETURNING 
+        id,
+        project_id AS projectId,
+        user_id AS userId,
+        role_id AS roleId,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const member = memberResult.rows[0];
@@ -351,16 +363,16 @@ export async function updateProjectMember(
 
     return {
       id: member.id,
-      projectId: member.project_id,
-      userId: member.user_id,
-      roleId: member.role_id,
+      projectId: member.projectId,
+      userId: member.userId,
+      roleId: member.roleId,
       role: {
         id: role.id,
         name: role.name,
         priority: role.priority,
       },
-      createdAt: member.created_at,
-      updatedAt: member.updated_at,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
     };
   } catch (error) {
     console.error("Error updating project member:", error);

@@ -60,6 +60,40 @@ Performance Optimization
 - Use dynamic loading for non-critical components.
 - Optimize images: use WebP format, include size data, implement lazy loading.
 
+Database Queries and Repository Pattern
+
+- **Always use SQL aliases to convert snake_case columns to camelCase in SELECT queries.** This allows reusing existing TypeScript interfaces directly without creating temporary interfaces, improving type safety and reducing code duplication.
+- When querying the database, use `AS` aliases to map database column names (snake_case) to TypeScript property names (camelCase) in the SELECT clause.
+- Example: Instead of selecting `email_verified` and manually mapping it to `emailVerified`, use `email_verified AS emailVerified` in the SQL query.
+- The query result type should use the existing interface (e.g., `IAuthUser`) directly, not a temporary interface with snake_case properties.
+- Return the query result directly without manual property mapping when aliases are used correctly.
+- This pattern must be applied to ALL repository functions that perform SELECT queries.
+
+Example:
+
+```typescript
+// ❌ BAD: Using temporary interface and manual mapping
+const result = await sql<{
+  email_verified: Date | null;
+  created_at: Date;
+}>`
+  SELECT email_verified, created_at FROM users
+`.execute(db);
+return {
+  emailVerified: row.email_verified,
+  createdAt: row.created_at,
+};
+
+// ✅ GOOD: Using aliases and existing interface
+const result = await sql<IAuthUser>`
+  SELECT
+    email_verified AS emailVerified,
+    created_at AS createdAt
+  FROM users
+`.execute(db);
+return result.rows[0];
+```
+
 Key Conventions
 
 - Use 'nuqs' for URL search parameter state management.

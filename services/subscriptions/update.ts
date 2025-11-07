@@ -5,8 +5,8 @@ import {
 } from "@/repositories/subscriptions";
 
 import {
-  SubscriptionServiceResponse,
-  UpdateSubscriptionData,
+  ISubscriptionServiceResponse,
+  IUpdateSubscriptionData,
 } from "@/types/subscriptions";
 
 import { findPlanByPriceId, validatePriceId } from "./helpers";
@@ -17,7 +17,7 @@ import { findPlanByPriceId, validatePriceId } from "./helpers";
 export async function updateSubscription(
   subscriptionId: string,
   priceId: string,
-): Promise<SubscriptionServiceResponse> {
+): Promise<ISubscriptionServiceResponse> {
   try {
     // Validate inputs
     if (!subscriptionId || !priceId) {
@@ -54,7 +54,7 @@ export async function updateSubscription(
     }
 
     // Update subscription in Stripe
-    const updateData: UpdateSubscriptionData = {
+    const updateData: IUpdateSubscriptionData = {
       priceId,
       prorationBehavior: "create_prorations",
     };

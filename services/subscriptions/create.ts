@@ -2,8 +2,8 @@ import { createCheckoutSession } from "@/clients/stripe";
 import { findUserSubscription } from "@/repositories/subscriptions";
 
 import {
-  CheckoutSessionData,
-  SubscriptionServiceResponse,
+  ICheckoutSessionData,
+  ISubscriptionServiceResponse,
 } from "@/types/subscriptions";
 
 import { findPlanByPriceId, validatePriceId } from "./helpers";
@@ -15,7 +15,7 @@ export async function createSubscription(
   userId: string,
   priceId: string,
   userEmail: string,
-): Promise<SubscriptionServiceResponse<{ url: string }>> {
+): Promise<ISubscriptionServiceResponse<{ url: string }>> {
   try {
     // Validate inputs
     if (!userId || !priceId || !userEmail) {
@@ -61,7 +61,7 @@ export async function createSubscription(
     }
 
     // Create checkout session data
-    const checkoutData: CheckoutSessionData = {
+    const checkoutData: ICheckoutSessionData = {
       priceId,
       customerEmail: userEmail,
       successUrl: `${process.env.NEXTAUTH_URL}/pricing`,

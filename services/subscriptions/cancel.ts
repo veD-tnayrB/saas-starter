@@ -4,14 +4,14 @@ import {
   findUserByStripeSubscriptionId,
 } from "@/repositories/subscriptions";
 
-import { SubscriptionServiceResponse } from "@/types/subscriptions";
+import { ISubscriptionServiceResponse } from "@/types/subscriptions";
 
 /**
  * Cancel subscription
  */
 export async function cancelSubscription(
   subscriptionId: string,
-): Promise<SubscriptionServiceResponse> {
+): Promise<ISubscriptionServiceResponse> {
   try {
     // Validate inputs
     if (!subscriptionId) {

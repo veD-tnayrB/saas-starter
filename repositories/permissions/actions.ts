@@ -32,29 +32,20 @@ export interface IActionUpdateData {
  */
 export async function findAllActions(): Promise<IAction[]> {
   try {
-    const result = await sql<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      category: string;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAction>`
+      SELECT 
+        id,
+        slug,
+        name,
+        description,
+        category,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM actions
       ORDER BY category ASC, name ASC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description,
-      category: row.category,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding all actions:", error);
     throw new Error("Failed to find actions");
@@ -68,16 +59,15 @@ export async function findActionById(
   actionId: string,
 ): Promise<IAction | null> {
   try {
-    const result = await sql<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      category: string;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAction>`
+      SELECT 
+        id,
+        slug,
+        name,
+        description,
+        category,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM actions
       WHERE id = ${actionId}
       LIMIT 1
@@ -86,15 +76,7 @@ export async function findActionById(
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description,
-      category: row.category,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding action by ID:", error);
     throw new Error("Failed to find action");
@@ -106,16 +88,15 @@ export async function findActionById(
  */
 export async function findActionBySlug(slug: string): Promise<IAction | null> {
   try {
-    const result = await sql<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      category: string;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAction>`
+      SELECT 
+        id,
+        slug,
+        name,
+        description,
+        category,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM actions
       WHERE slug = ${slug}
       LIMIT 1
@@ -124,15 +105,7 @@ export async function findActionBySlug(slug: string): Promise<IAction | null> {
     const row = result.rows[0];
     if (!row) return null;
 
-    return {
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description,
-      category: row.category,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error finding action by slug:", error);
     throw new Error("Failed to find action");
@@ -146,30 +119,21 @@ export async function findActionsByCategory(
   category: string,
 ): Promise<IAction[]> {
   try {
-    const result = await sql<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      category: string;
-      created_at: Date;
-      updated_at: Date;
-    }>`
-      SELECT *
+    const result = await sql<IAction>`
+      SELECT 
+        id,
+        slug,
+        name,
+        description,
+        category,
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM actions
       WHERE category = ${category}
       ORDER BY name ASC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description,
-      category: row.category,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows;
   } catch (error) {
     console.error("Error finding actions by category:", error);
     throw new Error("Failed to find actions");
@@ -183,32 +147,23 @@ export async function createAction(data: IActionCreateData): Promise<IAction> {
   try {
     const id = randomUUID();
 
-    const result = await sql<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      category: string;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAction>`
       INSERT INTO actions (id, slug, name, description, category, created_at, updated_at)
       VALUES (${id}, ${data.slug}, ${data.name}, ${data.description ?? null}, ${data.category}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING *
+      RETURNING 
+        id,
+        slug,
+        name,
+        description,
+        category,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Failed to create action");
 
-    return {
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description,
-      category: row.category,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error creating action:", error);
     throw new Error("Failed to create action");
@@ -237,33 +192,24 @@ export async function updateAction(
       setParts.push(`category = ${sql.lit(data.category)}`);
     }
 
-    const result = await sql<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      category: string;
-      created_at: Date;
-      updated_at: Date;
-    }>`
+    const result = await sql<IAction>`
       UPDATE actions
       SET ${sql.raw(setParts.join(", "))}
       WHERE id = ${actionId}
-      RETURNING *
+      RETURNING 
+        id,
+        slug,
+        name,
+        description,
+        category,
+        created_at AS createdAt,
+        updated_at AS updatedAt
     `.execute(db);
 
     const row = result.rows[0];
     if (!row) throw new Error("Action not found");
 
-    return {
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description,
-      category: row.category,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return row;
   } catch (error) {
     console.error("Error updating action:", error);
     throw new Error("Failed to update action");

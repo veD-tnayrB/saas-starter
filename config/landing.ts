@@ -1,6 +1,6 @@
-import { FeatureLdg, InfoLdg, TestimonialType } from "types";
+import { IFeatureLdg, IInfoLdg, ITestimonialType } from "types";
 
-export const infos: InfoLdg[] = [
+export const infos: IInfoLdg[] = [
   {
     title: "Empower your projects",
     description:
@@ -52,7 +52,7 @@ export const infos: InfoLdg[] = [
   },
 ];
 
-export const features: FeatureLdg[] = [
+export const features: IFeatureLdg[] = [
   {
     title: "Multi-Project Support",
     description:
@@ -97,7 +97,7 @@ export const features: FeatureLdg[] = [
   },
 ];
 
-export const testimonials: TestimonialType[] = [
+export const testimonials: ITestimonialType[] = [
   {
     name: "John Doe",
     job: "Full Stack Developer",

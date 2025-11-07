@@ -2,7 +2,7 @@
 
 import { Fragment } from "react";
 import Link from "next/link";
-import { SidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import {
 import { Icons } from "@/components/shared/icons";
 
 interface INavigationItemProps {
-  item: SidebarNavItem["items"][number];
+  item: ISidebarNavItem["items"][number];
   isSidebarExpanded: boolean;
   path: string;
 }
@@ -76,9 +76,7 @@ export function NavigationItem({
     </Tooltip>
   );
 
-  return (
-    <Fragment key={`link-fragment-${item.title}`}>
-      {isSidebarExpanded ? expandedContent : collapsedContent}
-    </Fragment>
-  );
+  const content = isSidebarExpanded ? expandedContent : collapsedContent;
+
+  return <Fragment key={`link-fragment-${item.title}`}>{content}</Fragment>;
 }

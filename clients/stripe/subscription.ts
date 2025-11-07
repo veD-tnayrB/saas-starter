@@ -1,8 +1,8 @@
 import Stripe from "stripe";
 
 import {
-  CheckoutSessionData,
-  UpdateSubscriptionData,
+  ICheckoutSessionData,
+  IUpdateSubscriptionData,
 } from "@/types/subscriptions";
 
 import { stripe } from "./client";
@@ -11,7 +11,7 @@ import { stripe } from "./client";
  * Create Stripe checkout session
  */
 export async function createCheckoutSession(
-  data: CheckoutSessionData,
+  data: ICheckoutSessionData,
 ): Promise<Stripe.Checkout.Session> {
   try {
     const session = await stripe.checkout.sessions.create({
@@ -77,7 +77,7 @@ export async function retrieveSubscription(
  */
 export async function updateSubscription(
   subscriptionId: string,
-  data: UpdateSubscriptionData,
+  data: IUpdateSubscriptionData,
 ): Promise<Stripe.Subscription> {
   try {
     const updateData: Stripe.SubscriptionUpdateParams = {};
