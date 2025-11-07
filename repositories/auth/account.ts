@@ -22,10 +22,10 @@ export async function findAccountByProvider(
     const result = await sql<IProviderAccount>`
       SELECT 
         id,
-        user_id AS userId,
+        user_id AS "userId",
         type,
         provider,
-        provider_account_id AS providerAccountId,
+        provider_account_id AS "providerAccountId",
         refresh_token,
         access_token,
         expires_at,
@@ -33,8 +33,8 @@ export async function findAccountByProvider(
         scope,
         id_token,
         session_state,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM accounts
       WHERE provider = ${provider}
         AND provider_account_id = ${providerAccountId}
@@ -63,10 +63,10 @@ export async function findAccountsByUserId(
     const result = await sql<IProviderAccount>`
       SELECT 
         id,
-        user_id AS userId,
+        user_id AS "userId",
         type,
         provider,
-        provider_account_id AS providerAccountId,
+        provider_account_id AS "providerAccountId",
         refresh_token,
         access_token,
         expires_at,
@@ -74,8 +74,8 @@ export async function findAccountsByUserId(
         scope,
         id_token,
         session_state,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM accounts
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
@@ -100,10 +100,10 @@ export async function findAccountById(
     const result = await sql<IProviderAccount>`
       SELECT 
         id,
-        user_id AS userId,
+        user_id AS "userId",
         type,
         provider,
-        provider_account_id AS providerAccountId,
+        provider_account_id AS "providerAccountId",
         refresh_token,
         access_token,
         expires_at,
@@ -111,8 +111,8 @@ export async function findAccountById(
         scope,
         id_token,
         session_state,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM accounts
       WHERE id = ${id}
       LIMIT 1
@@ -184,10 +184,10 @@ export async function createAccount(data: {
       )
       RETURNING 
         id,
-        user_id AS userId,
+        user_id AS "userId",
         type,
         provider,
-        provider_account_id AS providerAccountId,
+        provider_account_id AS "providerAccountId",
         refresh_token,
         access_token,
         expires_at,
@@ -195,8 +195,8 @@ export async function createAccount(data: {
         scope,
         id_token,
         session_state,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -262,10 +262,10 @@ export async function updateAccount(
       WHERE id = ${id}
       RETURNING 
         id,
-        user_id AS userId,
+        user_id AS "userId",
         type,
         provider,
-        provider_account_id AS providerAccountId,
+        provider_account_id AS "providerAccountId",
         refresh_token,
         access_token,
         expires_at,
@@ -273,8 +273,8 @@ export async function updateAccount(
         scope,
         id_token,
         session_state,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -470,10 +470,10 @@ export async function findAccountsWithExpiredTokens(): Promise<
     const result = await sql<IProviderAccount>`
       SELECT 
         id,
-        user_id AS userId,
+        user_id AS "userId",
         type,
         provider,
-        provider_account_id AS providerAccountId,
+        provider_account_id AS "providerAccountId",
         refresh_token,
         access_token,
         expires_at,
@@ -481,8 +481,8 @@ export async function findAccountsWithExpiredTokens(): Promise<
         scope,
         id_token,
         session_state,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM accounts
       WHERE expires_at < ${currentTimestamp}
         AND access_token IS NOT NULL

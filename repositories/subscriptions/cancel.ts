@@ -19,11 +19,11 @@ export async function cancelUserSubscription(
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${userId}
       RETURNING 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
     `.execute(db);
 
     const row = result.rows[0];
@@ -48,11 +48,11 @@ export async function updateSubscriptionCancellation(
     // but mark it as canceled. The actual cancellation logic is handled by Stripe.
     const result = await sql<IUserSubscriptionRecord>`
       SELECT 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
       FROM users
       WHERE stripe_subscription_id = ${subscriptionId}
       LIMIT 1

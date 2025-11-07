@@ -39,16 +39,16 @@ export async function findSessionById(
     }>`
       SELECT 
         s.id,
-        s.session_token AS sessionToken,
-        s.user_id AS userId,
+        s.session_token AS "sessionToken",
+        s.user_id AS "userId",
         s.expires,
-        u.id AS userId2,
-        u.name AS userName,
-        u.email AS userEmail,
-        u.email_verified AS userEmailVerified,
-        u.image AS userImage,
-        u.created_at AS userCreatedAt,
-        u.updated_at AS userUpdatedAt
+        u.id AS "userId2",
+        u.name AS "userName",
+        u.email AS "userEmail",
+        u.email_verified AS "userEmailVerified",
+        u.image AS "userImage",
+        u.created_at AS "userCreatedAt",
+        u.updated_at AS "userUpdatedAt"
       FROM sessions s
       INNER JOIN users u ON u.id = s.user_id
       WHERE s.id = ${id}
@@ -103,16 +103,16 @@ export async function findSessionByToken(
     }>`
       SELECT 
         s.id,
-        s.session_token AS sessionToken,
-        s.user_id AS userId,
+        s.session_token AS "sessionToken",
+        s.user_id AS "userId",
         s.expires,
-        u.id AS userId2,
-        u.name AS userName,
-        u.email AS userEmail,
-        u.email_verified AS userEmailVerified,
-        u.image AS userImage,
-        u.created_at AS userCreatedAt,
-        u.updated_at AS userUpdatedAt
+        u.id AS "userId2",
+        u.name AS "userName",
+        u.email AS "userEmail",
+        u.email_verified AS "userEmailVerified",
+        u.image AS "userImage",
+        u.created_at AS "userCreatedAt",
+        u.updated_at AS "userUpdatedAt"
       FROM sessions s
       INNER JOIN users u ON u.id = s.user_id
       WHERE s.session_token = ${sessionToken}
@@ -167,16 +167,16 @@ export async function findSessionsByUserId(
     }>`
       SELECT 
         s.id,
-        s.session_token AS sessionToken,
-        s.user_id AS userId,
+        s.session_token AS "sessionToken",
+        s.user_id AS "userId",
         s.expires,
-        u.id AS userId2,
-        u.name AS userName,
-        u.email AS userEmail,
-        u.email_verified AS userEmailVerified,
-        u.image AS userImage,
-        u.created_at AS userCreatedAt,
-        u.updated_at AS userUpdatedAt
+        u.id AS "userId2",
+        u.name AS "userName",
+        u.email AS "userEmail",
+        u.email_verified AS "userEmailVerified",
+        u.image AS "userImage",
+        u.created_at AS "userCreatedAt",
+        u.updated_at AS "userUpdatedAt"
       FROM sessions s
       INNER JOIN users u ON u.id = s.user_id
       WHERE s.user_id = ${userId}
@@ -226,8 +226,8 @@ export async function createSession(
       VALUES (${id}, ${sessionToken}, ${data.userId}, ${data.expiresAt})
       RETURNING 
         id,
-        session_token AS sessionToken,
-        user_id AS userId,
+        session_token AS "sessionToken",
+        user_id AS "userId",
         expires
     `.execute(db);
 
@@ -240,10 +240,10 @@ export async function createSession(
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM users
       WHERE id = ${data.userId}
       LIMIT 1
@@ -306,8 +306,8 @@ export async function updateSession(
       WHERE id = ${id}
       RETURNING 
         id,
-        session_token AS sessionToken,
-        user_id AS userId,
+        session_token AS "sessionToken",
+        user_id AS "userId",
         expires
     `.execute(db);
 
@@ -320,10 +320,10 @@ export async function updateSession(
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM users
       WHERE id = ${session.userId}
       LIMIT 1

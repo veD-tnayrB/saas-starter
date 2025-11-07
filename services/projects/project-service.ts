@@ -103,6 +103,7 @@ export class ProjectService {
 
   /**
    * Create personal project for a new user
+   * Ensures the user is added as OWNER member
    */
   async createPersonalProject(
     userId: string,
@@ -110,10 +111,47 @@ export class ProjectService {
   ): Promise<IProject> {
     const projectName = userName ? `${userName}'s Project` : "My Project";
 
-    return this.createProject({
+    const project = await this.createProject({
       name: projectName,
       ownerId: userId,
     });
+
+    // Verify that the owner was added as a member with OWNER role
+    const userRole = await memberService.getUserRole(project.id, userId);
+    if (!userRole || userRole !== PROJECT_ROLES.OWNER) {
+      console.error(
+        `Failed to verify OWNER role for user ${userId} in project ${project.id}. Role: ${userRole}`,
+      );
+      // Try to add or update the owner as a member if it wasn't created correctly
+      try {
+        const existingMember = await memberService.isProjectMember(
+          project.id,
+          userId,
+        );
+        if (existingMember) {
+          // Update existing member to OWNER role
+          await memberService.updateMemberRole(
+            project.id,
+            userId,
+            PROJECT_ROLES.OWNER,
+          );
+        } else {
+          // Add as new member with OWNER role
+          await memberService.addMember(
+            project.id,
+            userId,
+            PROJECT_ROLES.OWNER,
+          );
+        }
+      } catch (error) {
+        console.error("Error ensuring owner has OWNER role:", error);
+        throw new Error(
+          "Project created but failed to assign OWNER role to user",
+        );
+      }
+    }
+
+    return project;
   }
 
   /**

@@ -12,11 +12,11 @@ export async function findUserSubscription(
   try {
     const result = await sql<IUserSubscriptionRecord>`
       SELECT 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
       FROM users
       WHERE id = ${userId}
       LIMIT 1
@@ -41,11 +41,11 @@ export async function findUserByStripeCustomerId(
   try {
     const result = await sql<IUserSubscriptionRecord>`
       SELECT 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
       FROM users
       WHERE stripe_customer_id = ${customerId}
       LIMIT 1
@@ -70,11 +70,11 @@ export async function findUserByStripeSubscriptionId(
   try {
     const result = await sql<IUserSubscriptionRecord>`
       SELECT 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
       FROM users
       WHERE stripe_subscription_id = ${subscriptionId}
       LIMIT 1

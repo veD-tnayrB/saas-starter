@@ -71,19 +71,19 @@ export async function findProjectById(id: string): Promise<IProject | null> {
       SELECT
         p.id,
         p.name,
-        p.owner_id AS ownerId,
-        p.created_at AS createdAt,
-        p.updated_at AS updatedAt,
-        p.subscription_plan_id AS subscriptionPlanId,
-        sp.id AS planId,
-        sp.name AS planName,
-        sp.display_name AS planDisplayName,
-        sp.description AS planDescription,
-        sp.stripe_price_id_monthly AS planStripePriceIdMonthly,
-        sp.stripe_price_id_yearly AS planStripePriceIdYearly,
-        sp.is_active AS planIsActive,
-        sp.created_at AS planCreatedAt,
-        sp.updated_at AS planUpdatedAt
+        p.owner_id AS "ownerId",
+        p.created_at AS "createdAt",
+        p.updated_at AS "updatedAt",
+        p.subscription_plan_id AS "subscriptionPlanId",
+        sp.id AS "planId",
+        sp.name AS "planName",
+        sp.display_name AS "planDisplayName",
+        sp.description AS "planDescription",
+        sp.stripe_price_id_monthly AS "planStripePriceIdMonthly",
+        sp.stripe_price_id_yearly AS "planStripePriceIdYearly",
+        sp.is_active AS "planIsActive",
+        sp.created_at AS "planCreatedAt",
+        sp.updated_at AS "planUpdatedAt"
       FROM projects p
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
       WHERE p.id = ${id}
@@ -147,19 +147,19 @@ export async function findProjectsByOwner(
       SELECT 
         p.id,
         p.name,
-        p.owner_id AS ownerId,
-        p.created_at AS createdAt,
-        p.updated_at AS updatedAt,
-        p.subscription_plan_id AS subscriptionPlanId,
-        sp.id AS planId,
-        sp.name AS planName,
-        sp.display_name AS planDisplayName,
-        sp.description AS planDescription,
-        sp.stripe_price_id_monthly AS planStripePriceIdMonthly,
-        sp.stripe_price_id_yearly AS planStripePriceIdYearly,
-        sp.is_active AS planIsActive,
-        sp.created_at AS planCreatedAt,
-        sp.updated_at AS planUpdatedAt
+        p.owner_id AS "ownerId",
+        p.created_at AS "createdAt",
+        p.updated_at AS "updatedAt",
+        p.subscription_plan_id AS "subscriptionPlanId",
+        sp.id AS "planId",
+        sp.name AS "planName",
+        sp.display_name AS "planDisplayName",
+        sp.description AS "planDescription",
+        sp.stripe_price_id_monthly AS "planStripePriceIdMonthly",
+        sp.stripe_price_id_yearly AS "planStripePriceIdYearly",
+        sp.is_active AS "planIsActive",
+        sp.created_at AS "planCreatedAt",
+        sp.updated_at AS "planUpdatedAt"
       FROM projects p
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
       WHERE p.owner_id = ${ownerId}
@@ -199,7 +199,7 @@ export async function findProjectsByOwner(
 export async function countProjectsByOwner(ownerId: string): Promise<number> {
   try {
     const result = await sql<{ count: string }>`
-      SELECT COUNT(*)::text as count
+      SELECT COUNT(*)::text AS "count"
       FROM projects
       WHERE owner_id = ${ownerId}
     `.execute(db);
@@ -238,19 +238,19 @@ export async function findProjectsByUserId(
       SELECT 
         p.id,
         p.name,
-        p.owner_id AS ownerId,
-        p.created_at AS createdAt,
-        p.updated_at AS updatedAt,
-        p.subscription_plan_id AS subscriptionPlanId,
-        sp.id AS planId,
-        sp.name AS planName,
-        sp.display_name AS planDisplayName,
-        sp.description AS planDescription,
-        sp.stripe_price_id_monthly AS planStripePriceIdMonthly,
-        sp.stripe_price_id_yearly AS planStripePriceIdYearly,
-        sp.is_active AS planIsActive,
-        sp.created_at AS planCreatedAt,
-        sp.updated_at AS planUpdatedAt
+        p.owner_id AS "ownerId",
+        p.created_at AS "createdAt",
+        p.updated_at AS "updatedAt",
+        p.subscription_plan_id AS "subscriptionPlanId",
+        sp.id AS "planId",
+        sp.name AS "planName",
+        sp.display_name AS "planDisplayName",
+        sp.description AS "planDescription",
+        sp.stripe_price_id_monthly AS "planStripePriceIdMonthly",
+        sp.stripe_price_id_yearly AS "planStripePriceIdYearly",
+        sp.is_active AS "planIsActive",
+        sp.created_at AS "planCreatedAt",
+        sp.updated_at AS "planUpdatedAt"
       FROM projects p
       INNER JOIN project_members pm ON pm.project_id = p.id
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
@@ -330,10 +330,10 @@ export async function createProject(
       RETURNING 
         id,
         name,
-        owner_id AS ownerId,
-        created_at AS createdAt,
-        updated_at AS updatedAt,
-        subscription_plan_id AS subscriptionPlanId
+        owner_id AS "ownerId",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt",
+        subscription_plan_id AS "subscriptionPlanId"
     `.execute(db);
 
     const project = result.rows[0];
@@ -346,13 +346,13 @@ export async function createProject(
         SELECT 
           id,
           name,
-          display_name AS displayName,
+          display_name AS "displayName",
           description,
-          stripe_price_id_monthly AS stripePriceIdMonthly,
-          stripe_price_id_yearly AS stripePriceIdYearly,
-          is_active AS isActive,
-          created_at AS createdAt,
-          updated_at AS updatedAt
+          stripe_price_id_monthly AS "stripePriceIdMonthly",
+          stripe_price_id_yearly AS "stripePriceIdYearly",
+          is_active AS "isActive",
+          created_at AS "createdAt",
+          updated_at AS "updatedAt"
         FROM subscription_plans
         WHERE id = ${project.subscriptionPlanId}
         LIMIT 1
@@ -405,20 +405,35 @@ export async function createProjectWithOwner(
         RETURNING
           id,
           name,
-          owner_id AS ownerId,
-          created_at AS createdAt,
-          updated_at AS updatedAt,
-          subscription_plan_id AS subscriptionPlanId
+          owner_id AS "ownerId",
+          created_at AS "createdAt",
+          updated_at AS "updatedAt",
+          subscription_plan_id AS "subscriptionPlanId"
       `.execute(trx);
 
       const project = projectResult.rows[0];
       if (!project) throw new Error("Failed to create project");
 
-      // Add owner as member
-      await sql`
+      // Add owner as member with OWNER role (critical for new user registration)
+      const memberResult = await sql<{
+        id: string;
+        projectId: string;
+        userId: string;
+        roleId: string;
+      }>`
         INSERT INTO project_members (id, project_id, user_id, role_id, created_at, updated_at)
         VALUES (${memberId}, ${project.id}, ${data.ownerId}, ${ownerRoleId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        RETURNING 
+          id,
+          project_id AS "projectId",
+          user_id AS "userId",
+          role_id AS "roleId"
       `.execute(trx);
+
+      // Verify member was created
+      if (!memberResult.rows[0]) {
+        throw new Error("Failed to create project member with OWNER role");
+      }
 
       // Fetch subscription plan if exists
       let subscriptionPlan: ISubscriptionPlan | undefined;
@@ -427,13 +442,13 @@ export async function createProjectWithOwner(
           SELECT 
             id,
             name,
-            display_name AS displayName,
+            display_name AS "displayName",
             description,
-            stripe_price_id_monthly AS stripePriceIdMonthly,
-            stripe_price_id_yearly AS stripePriceIdYearly,
-            is_active AS isActive,
-            created_at AS createdAt,
-            updated_at AS updatedAt
+            stripe_price_id_monthly AS "stripePriceIdMonthly",
+            stripe_price_id_yearly AS "stripePriceIdYearly",
+            is_active AS "isActive",
+            created_at AS "createdAt",
+            updated_at AS "updatedAt"
           FROM subscription_plans
           WHERE id = ${project.subscriptionPlanId}
           LIMIT 1
@@ -494,10 +509,10 @@ export async function updateProject(
       RETURNING 
         id,
         name,
-        owner_id AS ownerId,
-        created_at AS createdAt,
-        updated_at AS updatedAt,
-        subscription_plan_id AS subscriptionPlanId
+        owner_id AS "ownerId",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt",
+        subscription_plan_id AS "subscriptionPlanId"
     `.execute(db);
 
     const project = result.rows[0];
@@ -510,13 +525,13 @@ export async function updateProject(
         SELECT 
           id,
           name,
-          display_name AS displayName,
+          display_name AS "displayName",
           description,
-          stripe_price_id_monthly AS stripePriceIdMonthly,
-          stripe_price_id_yearly AS stripePriceIdYearly,
-          is_active AS isActive,
-          created_at AS createdAt,
-          updated_at AS updatedAt
+          stripe_price_id_monthly AS "stripePriceIdMonthly",
+          stripe_price_id_yearly AS "stripePriceIdYearly",
+          is_active AS "isActive",
+          created_at AS "createdAt",
+          updated_at AS "updatedAt"
         FROM subscription_plans
         WHERE id = ${project.subscriptionPlanId}
         LIMIT 1

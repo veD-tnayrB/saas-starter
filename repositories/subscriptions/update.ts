@@ -29,11 +29,11 @@ export async function updateUserSubscription(
       SET ${setClause}
       WHERE id = ${userId}
       RETURNING 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
     `.execute(db);
 
     const row = result.rows[0];
@@ -61,11 +61,11 @@ export async function updateSubscriptionPeriod(
         updated_at = CURRENT_TIMESTAMP
       WHERE stripe_subscription_id = ${subscriptionId}
       RETURNING 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
     `.execute(db);
 
     const row = result.rows[0];
@@ -93,11 +93,11 @@ export async function updateSubscriptionPrice(
         updated_at = CURRENT_TIMESTAMP
       WHERE stripe_subscription_id = ${subscriptionId}
       RETURNING 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
     `.execute(db);
 
     const row = result.rows[0];

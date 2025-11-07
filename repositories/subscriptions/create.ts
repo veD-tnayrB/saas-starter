@@ -32,11 +32,11 @@ export async function createUserSubscription(
       SET ${setClause}
       WHERE id = ${data.userId}
       RETURNING 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
     `.execute(db);
 
     const row = result.rows[0];
@@ -67,11 +67,11 @@ export async function updateUserOnSubscriptionCreate(
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${userId}
       RETURNING 
-        id AS userId,
-        stripe_customer_id AS stripeCustomerId,
-        stripe_subscription_id AS stripeSubscriptionId,
-        stripe_price_id AS stripePriceId,
-        stripe_current_period_end AS stripeCurrentPeriodEnd
+        id AS "userId",
+        stripe_customer_id AS "stripeCustomerId",
+        stripe_subscription_id AS "stripeSubscriptionId",
+        stripe_price_id AS "stripePriceId",
+        stripe_current_period_end AS "stripeCurrentPeriodEnd"
     `.execute(db);
 
     const row = result.rows[0];

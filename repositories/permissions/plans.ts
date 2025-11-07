@@ -42,13 +42,13 @@ export async function findAllPlans(): Promise<ISubscriptionPlan[]> {
       SELECT 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM subscription_plans
       ORDER BY name ASC
     `.execute(db);
@@ -69,13 +69,13 @@ export async function findActivePlans(): Promise<ISubscriptionPlan[]> {
       SELECT 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM subscription_plans
       WHERE is_active = true
       ORDER BY name ASC
@@ -99,13 +99,13 @@ export async function findPlanById(
       SELECT 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM subscription_plans
       WHERE id = ${planId}
       LIMIT 1
@@ -132,13 +132,13 @@ export async function findPlanByName(
       SELECT 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM subscription_plans
       WHERE name = ${name}
       LIMIT 1
@@ -165,13 +165,13 @@ export async function findPlanByStripePriceId(
       SELECT 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM subscription_plans
       WHERE stripe_price_id_monthly = ${priceId}
          OR stripe_price_id_yearly = ${priceId}
@@ -198,7 +198,7 @@ export async function getProjectSubscriptionPlan(
     const projectResult = await sql<{
       subscriptionPlanId: string | null;
     }>`
-      SELECT subscription_plan_id AS subscriptionPlanId
+      SELECT subscription_plan_id AS "subscriptionPlanId"
       FROM projects
       WHERE id = ${projectId}
       LIMIT 1
@@ -249,13 +249,13 @@ export async function createPlan(
       RETURNING 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -311,13 +311,13 @@ export async function updatePlan(
       RETURNING 
         id,
         name,
-        display_name AS displayName,
+        display_name AS "displayName",
         description,
-        stripe_price_id_monthly AS stripePriceIdMonthly,
-        stripe_price_id_yearly AS stripePriceIdYearly,
-        is_active AS isActive,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        stripe_price_id_monthly AS "stripePriceIdMonthly",
+        stripe_price_id_yearly AS "stripePriceIdYearly",
+        is_active AS "isActive",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];

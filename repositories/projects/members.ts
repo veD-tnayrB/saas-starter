@@ -57,14 +57,14 @@ export async function findProjectMember(
     }>`
       SELECT 
         pm.id,
-        pm.project_id AS projectId,
-        pm.user_id AS userId,
-        pm.role_id AS roleId,
-        pm.created_at AS createdAt,
-        pm.updated_at AS updatedAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority
+        pm.project_id AS "projectId",
+        pm.user_id AS "userId",
+        pm.role_id AS "roleId",
+        pm.created_at AS "createdAt",
+        pm.updated_at AS "updatedAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.project_id = ${projectId}
@@ -125,18 +125,18 @@ export async function findProjectMembers(projectId: string): Promise<
     }>`
       SELECT 
         pm.id,
-        pm.project_id AS projectId,
-        pm.user_id AS userId,
-        pm.role_id AS roleId,
-        pm.created_at AS createdAt,
-        pm.updated_at AS updatedAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority,
-        u.id AS userId2,
-        u.name AS userName,
-        u.email AS userEmail,
-        u.image AS userImage
+        pm.project_id AS "projectId",
+        pm.user_id AS "userId",
+        pm.role_id AS "roleId",
+        pm.created_at AS "createdAt",
+        pm.updated_at AS "updatedAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority",
+        u.id AS "userId2",
+        u.name AS "userName",
+        u.email AS "userEmail",
+        u.image AS "userImage"
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       INNER JOIN users u ON u.id = pm.user_id
@@ -189,14 +189,14 @@ export async function findUserProjectMemberships(
     }>`
       SELECT 
         pm.id,
-        pm.project_id AS projectId,
-        pm.user_id AS userId,
-        pm.role_id AS roleId,
-        pm.created_at AS createdAt,
-        pm.updated_at AS updatedAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority
+        pm.project_id AS "projectId",
+        pm.user_id AS "userId",
+        pm.role_id AS "roleId",
+        pm.created_at AS "createdAt",
+        pm.updated_at AS "updatedAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.user_id = ${userId}
@@ -260,11 +260,11 @@ export async function createProjectMember(
       VALUES (${id}, ${data.projectId}, ${data.userId}, ${data.roleId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING 
         id,
-        project_id AS projectId,
-        user_id AS userId,
-        role_id AS roleId,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        project_id AS "projectId",
+        user_id AS "userId",
+        role_id AS "roleId",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const member = memberResult.rows[0];
@@ -336,11 +336,11 @@ export async function updateProjectMember(
         AND user_id = ${userId}
       RETURNING 
         id,
-        project_id AS projectId,
-        user_id AS userId,
-        role_id AS roleId,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        project_id AS "projectId",
+        user_id AS "userId",
+        role_id AS "roleId",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const member = memberResult.rows[0];

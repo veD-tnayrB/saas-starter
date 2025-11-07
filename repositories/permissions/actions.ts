@@ -39,8 +39,8 @@ export async function findAllActions(): Promise<IAction[]> {
         name,
         description,
         category,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM actions
       ORDER BY category ASC, name ASC
     `.execute(db);
@@ -66,8 +66,8 @@ export async function findActionById(
         name,
         description,
         category,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM actions
       WHERE id = ${actionId}
       LIMIT 1
@@ -95,8 +95,8 @@ export async function findActionBySlug(slug: string): Promise<IAction | null> {
         name,
         description,
         category,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM actions
       WHERE slug = ${slug}
       LIMIT 1
@@ -126,8 +126,8 @@ export async function findActionsByCategory(
         name,
         description,
         category,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM actions
       WHERE category = ${category}
       ORDER BY name ASC
@@ -156,8 +156,8 @@ export async function createAction(data: IActionCreateData): Promise<IAction> {
         name,
         description,
         category,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -206,8 +206,8 @@ export async function updateAction(
         name,
         description,
         category,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];

@@ -42,6 +42,7 @@ export async function GET(
       projectId,
       session.user.id,
     );
+    console.log("user role: ", userRole);
     if (!userRole) {
       return NextResponse.json(
         { error: "Project not found or access denied" },

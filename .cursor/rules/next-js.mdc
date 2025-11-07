@@ -64,10 +64,12 @@ Database Queries and Repository Pattern
 
 - **Always use SQL aliases to convert snake_case columns to camelCase in SELECT queries.** This allows reusing existing TypeScript interfaces directly without creating temporary interfaces, improving type safety and reducing code duplication.
 - When querying the database, use `AS` aliases to map database column names (snake_case) to TypeScript property names (camelCase) in the SELECT clause.
-- Example: Instead of selecting `email_verified` and manually mapping it to `emailVerified`, use `email_verified AS emailVerified` in the SQL query.
+- **CRITICAL: For PostgreSQL, aliases with camelCase MUST be wrapped in double quotes to preserve case-sensitivity.** Use `AS "projectId"` instead of `AS projectId` (PostgreSQL converts unquoted identifiers to lowercase by default).
+- **MANDATORY RULE: ALL SQL aliases in SELECT, RETURNING, and other clauses MUST use double quotes for camelCase identifiers.** Without quotes, PostgreSQL will return lowercase column names (e.g., `projectid` instead of `projectId`), causing `undefined` property access errors in TypeScript.
+- Example: Instead of selecting `email_verified` and manually mapping it to `emailVerified`, use `email_verified AS "emailVerified"` in the SQL query.
 - The query result type should use the existing interface (e.g., `IAuthUser`) directly, not a temporary interface with snake_case properties.
 - Return the query result directly without manual property mapping when aliases are used correctly.
-- This pattern must be applied to ALL repository functions that perform SELECT queries.
+- This pattern must be applied to ALL repository functions that perform SELECT queries, RETURNING clauses, and any other SQL that uses aliases.
 
 - **ALL database queries MUST be properly sanitized using Kysely's standard parameter binding to prevent SQL injection attacks.** This is a critical security requirement that must be enforced in ALL repository functions.
 - **NEVER use string concatenation with `sql.raw()` for user input or dynamic values.** Always use Kysely's template literal syntax with parameter interpolation.
@@ -75,7 +77,7 @@ Database Queries and Repository Pattern
 - Use `sql.raw()` ONLY for static SQL keywords (e.g., column names, table names, SQL operators) that are controlled by the codebase, NEVER for user-provided data.
 - All dynamic values (user input, IDs, dates, etc.) MUST be passed as interpolated parameters using `${value}` syntax within `sql` template literals.
 
-Example:
+SQL Alias Examples:
 
 ```typescript
 // ❌ BAD: Using temporary interface and manual mapping
@@ -90,14 +92,23 @@ return {
   createdAt: row.created_at,
 };
 
-// ✅ GOOD: Using aliases and existing interface
+// ❌ BAD: Aliases without double quotes (PostgreSQL will convert to lowercase)
 const result = await sql<IAuthUser>`
   SELECT
-    email_verified AS emailVerified,
-    created_at AS createdAt
+    email_verified AS emailVerified,  // ❌ Will return as 'emailverified' (lowercase)
+    created_at AS createdAt            // ❌ Will return as 'createdat' (lowercase)
   FROM users
 `.execute(db);
-return result.rows[0];
+// Error: row.emailVerified is undefined because PostgreSQL returns 'emailverified'
+
+// ✅ GOOD: Using aliases with double quotes (PostgreSQL requirement) and existing interface
+const result = await sql<IAuthUser>`
+  SELECT
+    email_verified AS "emailVerified",  // ✅ Preserves camelCase
+    created_at AS "createdAt"           // ✅ Preserves camelCase
+  FROM users
+`.execute(db);
+return result.rows[0];  // ✅ Properties are correctly accessible as emailVerified, createdAt
 ```
 
 SQL Injection Prevention Examples:
@@ -130,7 +141,7 @@ const result = await sql`
   WHERE id = ${userId} // ✅ Parameter is sanitized
 `.execute(db);
 
-// ✅ GOOD: Direct parameter interpolation (recommended)
+// ✅ GOOD: Direct parameter interpolation (recommended) with quoted aliases for PostgreSQL
 const result = await sql<IUserSubscriptionRecord>`
   UPDATE users
   SET
@@ -138,8 +149,8 @@ const result = await sql<IUserSubscriptionRecord>`
     updated_at = CURRENT_TIMESTAMP
   WHERE id = ${userId} // ✅ Sanitized automatically
   RETURNING
-    id AS userId,
-    stripe_price_id AS stripePriceId
+    id AS "userId",
+    stripe_price_id AS "stripePriceId"
 `.execute(db);
 ```
 

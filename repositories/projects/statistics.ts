@@ -40,8 +40,8 @@ export async function getProjectMembersByRole(
       count: string;
     }>`
       SELECT 
-        ar.name AS roleName,
-        COUNT(*)::text AS count
+        ar.name AS "roleName",
+        COUNT(*)::text AS "count"
       FROM project_members pm
       INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.project_id = ${projectId}
@@ -121,7 +121,7 @@ export async function getProjectMemberGrowth(
     const membersResult = await sql<{
       createdAt: Date;
     }>`
-      SELECT created_at AS createdAt
+      SELECT created_at AS "createdAt"
       FROM project_members
       WHERE project_id = ${projectId}
         AND created_at >= ${thirtyDaysAgo}

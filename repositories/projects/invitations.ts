@@ -56,16 +56,16 @@ export async function findInvitationByToken(
     }>`
       SELECT 
         pi.id,
-        pi.project_id AS projectId,
+        pi.project_id AS "projectId",
         pi.email,
-        pi.role_id AS roleId,
-        pi.invited_by_id AS invitedById,
+        pi.role_id AS "roleId",
+        pi.invited_by_id AS "invitedById",
         pi.token,
-        pi.created_at AS createdAt,
-        pi.expires_at AS expiresAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority
+        pi.created_at AS "createdAt",
+        pi.expires_at AS "expiresAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.token = ${token}
@@ -121,16 +121,16 @@ export async function findInvitationByEmailAndProject(
     }>`
       SELECT 
         pi.id,
-        pi.project_id AS projectId,
+        pi.project_id AS "projectId",
         pi.email,
-        pi.role_id AS roleId,
-        pi.invited_by_id AS invitedById,
+        pi.role_id AS "roleId",
+        pi.invited_by_id AS "invitedById",
         pi.token,
-        pi.created_at AS createdAt,
-        pi.expires_at AS expiresAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority
+        pi.created_at AS "createdAt",
+        pi.expires_at AS "expiresAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.email = ${email}
@@ -188,16 +188,16 @@ export async function findProjectInvitations(
     }>`
       SELECT 
         pi.id,
-        pi.project_id AS projectId,
+        pi.project_id AS "projectId",
         pi.email,
-        pi.role_id AS roleId,
-        pi.invited_by_id AS invitedById,
+        pi.role_id AS "roleId",
+        pi.invited_by_id AS "invitedById",
         pi.token,
-        pi.created_at AS createdAt,
-        pi.expires_at AS expiresAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority
+        pi.created_at AS "createdAt",
+        pi.expires_at AS "expiresAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.project_id = ${projectId}
@@ -250,16 +250,16 @@ export async function findPendingInvitationsByEmail(
     }>`
       SELECT 
         pi.id,
-        pi.project_id AS projectId,
+        pi.project_id AS "projectId",
         pi.email,
-        pi.role_id AS roleId,
-        pi.invited_by_id AS invitedById,
+        pi.role_id AS "roleId",
+        pi.invited_by_id AS "invitedById",
         pi.token,
-        pi.created_at AS createdAt,
-        pi.expires_at AS expiresAt,
-        ar.id AS roleId2,
-        ar.name AS roleName,
-        ar.priority AS rolePriority
+        pi.created_at AS "createdAt",
+        pi.expires_at AS "expiresAt",
+        ar.id AS "roleId2",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
       FROM project_invitations pi
       INNER JOIN app_roles ar ON ar.id = pi.role_id
       WHERE pi.email = ${email}
@@ -329,13 +329,13 @@ export async function createProjectInvitation(
       )
       RETURNING 
         id,
-        project_id AS projectId,
+        project_id AS "projectId",
         email,
-        role_id AS roleId,
-        invited_by_id AS invitedById,
+        role_id AS "roleId",
+        invited_by_id AS "invitedById",
         token,
-        created_at AS createdAt,
-        expires_at AS expiresAt
+        created_at AS "createdAt",
+        expires_at AS "expiresAt"
     `.execute(db);
 
     const invitation = invitationResult.rows[0];

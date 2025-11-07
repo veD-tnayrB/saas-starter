@@ -114,11 +114,11 @@ export async function getPlanActionPermissions(
     const result = await sql<IPlanActionPermission>`
       SELECT 
         id,
-        plan_id AS planId,
-        action_id AS actionId,
+        plan_id AS "planId",
+        action_id AS "actionId",
         enabled,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM plan_action_permissions
       WHERE plan_id = ${planId}
     `.execute(db);
@@ -142,12 +142,12 @@ export async function getRoleActionPermissions(
       ? await sql<IRoleActionPermission>`
             SELECT 
               id,
-              plan_id AS planId,
-              role_id AS roleId,
-              action_id AS actionId,
+              plan_id AS "planId",
+              role_id AS "roleId",
+              action_id AS "actionId",
               allowed,
-              created_at AS createdAt,
-              updated_at AS updatedAt
+              created_at AS "createdAt",
+              updated_at AS "updatedAt"
             FROM role_action_permissions
             WHERE plan_id = ${planId}
               AND role_id = ${roleId}
@@ -155,12 +155,12 @@ export async function getRoleActionPermissions(
       : await sql<IRoleActionPermission>`
             SELECT 
               id,
-              plan_id AS planId,
-              role_id AS roleId,
-              action_id AS actionId,
+              plan_id AS "planId",
+              role_id AS "roleId",
+              action_id AS "actionId",
               allowed,
-              created_at AS createdAt,
-              updated_at AS updatedAt
+              created_at AS "createdAt",
+              updated_at AS "updatedAt"
             FROM role_action_permissions
             WHERE plan_id = ${planId}
           `.execute(db);
@@ -202,11 +202,11 @@ export async function upsertPlanActionPermission(
         WHERE id = ${existing.id}
         RETURNING 
           id,
-          plan_id AS planId,
-          action_id AS actionId,
+          plan_id AS "planId",
+          action_id AS "actionId",
           enabled,
-          created_at AS createdAt,
-          updated_at AS updatedAt
+          created_at AS "createdAt",
+          updated_at AS "updatedAt"
       `.execute(db);
 
       const row = result.rows[0];
@@ -235,11 +235,11 @@ export async function upsertPlanActionPermission(
         )
         RETURNING 
           id,
-          plan_id AS planId,
-          action_id AS actionId,
+          plan_id AS "planId",
+          action_id AS "actionId",
           enabled,
-          created_at AS createdAt,
-          updated_at AS updatedAt
+          created_at AS "createdAt",
+          updated_at AS "updatedAt"
       `.execute(db);
 
       const row = result.rows[0];
@@ -284,12 +284,12 @@ export async function upsertRoleActionPermission(
         WHERE id = ${existing.id}
         RETURNING 
           id,
-          plan_id AS planId,
-          role_id AS roleId,
-          action_id AS actionId,
+          plan_id AS "planId",
+          role_id AS "roleId",
+          action_id AS "actionId",
           allowed,
-          created_at AS createdAt,
-          updated_at AS updatedAt
+          created_at AS "createdAt",
+          updated_at AS "updatedAt"
       `.execute(db);
 
       const row = result.rows[0];
@@ -320,12 +320,12 @@ export async function upsertRoleActionPermission(
         )
         RETURNING 
           id,
-          plan_id AS planId,
-          role_id AS roleId,
-          action_id AS actionId,
+          plan_id AS "planId",
+          role_id AS "roleId",
+          action_id AS "actionId",
           allowed,
-          created_at AS createdAt,
-          updated_at AS updatedAt
+          created_at AS "createdAt",
+          updated_at AS "updatedAt"
       `.execute(db);
 
       const row = result.rows[0];

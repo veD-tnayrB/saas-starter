@@ -35,8 +35,8 @@ export async function findAllRoles(): Promise<IAppRole[]> {
         name,
         priority,
         description,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM app_roles
       ORDER BY priority ASC
     `.execute(db);
@@ -59,8 +59,8 @@ export async function findRoleById(roleId: string): Promise<IAppRole | null> {
         name,
         priority,
         description,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM app_roles
       WHERE id = ${roleId}
       LIMIT 1
@@ -87,8 +87,8 @@ export async function findRoleByName(name: string): Promise<IAppRole | null> {
         name,
         priority,
         description,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM app_roles
       WHERE name = ${name}
       LIMIT 1
@@ -119,8 +119,8 @@ export async function createRole(data: IAppRoleCreateData): Promise<IAppRole> {
         name,
         priority,
         description,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -165,8 +165,8 @@ export async function updateRole(
         name,
         priority,
         description,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];

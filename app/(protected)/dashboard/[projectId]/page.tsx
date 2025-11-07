@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
 import {
+  findAllUserProjects,
   getProjectInvitationStats,
   getProjectMemberCount,
   getProjectMemberGrowth,
@@ -15,6 +16,7 @@ import { InvitationsChart } from "@/components/dashboard/invitations-chart";
 import { MemberGrowthChart } from "@/components/dashboard/member-growth-chart";
 import { ProjectMembers } from "@/components/dashboard/members";
 import { MembersByRoleChart } from "@/components/dashboard/members-by-role-chart";
+import { ProjectNotFound } from "@/components/dashboard/project-not-found";
 import { ProjectStatsCard } from "@/components/dashboard/project-stats-card";
 
 interface IDashboardPageProps {
@@ -35,12 +37,18 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   // Get project and verify access
   const project = await projectService.getProjectById(projectId);
   if (!project) {
-    redirect("/dashboard/settings");
+    // Get user's projects to redirect to first one
+    const userProjects = await findAllUserProjects(user.id);
+    const firstProjectId = userProjects[0]?.id ?? null;
+    return <ProjectNotFound firstProjectId={firstProjectId} />;
   }
 
   const userRole = await memberService.getUserRole(projectId, user.id);
   if (!userRole) {
-    redirect("/dashboard/settings");
+    // Get user's projects to redirect to first one
+    const userProjects = await findAllUserProjects(user.id);
+    const firstProjectId = userProjects[0]?.id ?? null;
+    return <ProjectNotFound firstProjectId={firstProjectId} />;
   }
 
   // Get project members

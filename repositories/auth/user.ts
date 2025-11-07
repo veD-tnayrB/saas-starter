@@ -24,10 +24,10 @@ export async function findUserById(id: string): Promise<IAuthUser | null> {
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM users
       WHERE id = ${id}
       LIMIT 1
@@ -57,10 +57,10 @@ export async function findUserByEmail(
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM users
       WHERE email = ${email}
       LIMIT 1
@@ -101,10 +101,10 @@ export async function createUser(data: IUserCreateData): Promise<IAuthUser> {
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -155,10 +155,10 @@ export async function updateUser(
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -206,10 +206,10 @@ export async function findUserByProvider(
         u.id,
         u.name,
         u.email,
-        u.email_verified AS emailVerified,
+        u.email_verified AS "emailVerified",
         u.image,
-        u.created_at AS createdAt,
-        u.updated_at AS updatedAt
+        u.created_at AS "createdAt",
+        u.updated_at AS "updatedAt"
       FROM users u
       INNER JOIN accounts a ON a.user_id = u.id
       WHERE a.provider = ${provider}
@@ -248,10 +248,10 @@ export async function updateUserVerification(
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
     `.execute(db);
 
     const row = result.rows[0];
@@ -348,10 +348,10 @@ export async function searchUsers(
         id,
         name,
         email,
-        email_verified AS emailVerified,
+        email_verified AS "emailVerified",
         image,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM users
       ${whereClause ?? sql.raw("")}
       ORDER BY created_at DESC
@@ -375,16 +375,16 @@ export async function getUserStats(): Promise<IUserStats> {
     const [totalUsersResult, verifiedUsersResult, recentSignupsResult] =
       await Promise.all([
         sql<{ count: string }>`
-          SELECT COUNT(*)::text as count
+          SELECT COUNT(*)::text AS "count"
           FROM users
         `.execute(db),
         sql<{ count: string }>`
-          SELECT COUNT(*)::text as count
+          SELECT COUNT(*)::text AS "count"
           FROM users
           WHERE email_verified IS NOT NULL
         `.execute(db),
         sql<{ count: string }>`
-          SELECT COUNT(*)::text as count
+          SELECT COUNT(*)::text AS "count"
           FROM users
           WHERE created_at >= ${thirtyDaysAgo}
         `.execute(db),
@@ -430,7 +430,7 @@ export async function getUserBasicInfoByEmail(email: string): Promise<{
     }>`
       SELECT 
         name,
-        email_verified AS emailVerified
+        email_verified AS "emailVerified"
       FROM users
       WHERE email = ${email}
       LIMIT 1
@@ -462,8 +462,8 @@ export async function getUserActivity(
     }>`
       SELECT 
         id,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
       FROM users
       WHERE id = ${id}
       LIMIT 1
@@ -475,7 +475,7 @@ export async function getUserActivity(
     const accountsResult = await sql<{
       createdAt: Date;
     }>`
-      SELECT created_at AS createdAt
+      SELECT created_at AS "createdAt"
       FROM accounts
       WHERE user_id = ${id}
       ORDER BY created_at DESC
