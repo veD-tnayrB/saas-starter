@@ -21,11 +21,16 @@ export function setNextAuthConfig(config: any) {
  * Note: This cache is per-request only. Use revalidatePath() after updating user data.
  */
 export const getSession = cache(async (): Promise<Session | null> => {
-  // If config is not set, dynamically import it (first call only)
-  if (!nextAuthConfig) {
-    const authModule = await import("@/auth");
-    nextAuthConfig = authModule.default;
+  // Use config if already set (normal case - set by auth.ts during initialization)
+  if (nextAuthConfig) {
+    return getServerSession(nextAuthConfig);
   }
+
+  // Fallback: dynamically import config only if not set (rare edge case)
+  // This avoids circular dependency: auth.ts imports lib/session, lib/session may need auth config
+  // In practice, auth.ts always calls setNextAuthConfig() before this is used
+  const authModule = await import("@/auth");
+  nextAuthConfig = authModule.default;
   return getServerSession(nextAuthConfig);
 });
 

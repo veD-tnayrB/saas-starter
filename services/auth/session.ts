@@ -6,6 +6,7 @@ import {
   validateSession,
 } from "@/repositories/auth";
 import { isPlatformAdmin } from "@/services/auth/platform-admin";
+import { userService } from "@/services/auth/user";
 import type { User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
@@ -288,8 +289,6 @@ export class SessionManagementService {
       // If trigger is "update", fetch the latest user data from database
       if (trigger === "update" && token.sub) {
         try {
-          // Import user service to get fresh user data
-          const { userService } = await import("./user");
           const freshUser = await userService.getUserById(token.sub);
 
           if (freshUser) {
