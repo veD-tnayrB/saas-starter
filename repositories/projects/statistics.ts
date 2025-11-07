@@ -70,13 +70,28 @@ export async function getProjectMembersByRole(
 
 /**
  * Get invitation statistics for a project
+ * @param projectId - The project ID to get statistics for (must be valid UUID)
  */
 export async function getProjectInvitationStats(
   projectId: string,
 ): Promise<IProjectInvitationStats> {
   try {
+    // Validate projectId is provided and not empty
+    if (
+      !projectId ||
+      typeof projectId !== "string" ||
+      projectId.trim() === ""
+    ) {
+      console.error(
+        "Invalid projectId provided to getProjectInvitationStats:",
+        projectId,
+      );
+      throw new Error("Invalid project ID");
+    }
+
     const now = new Date();
 
+    // Execute queries with explicit project_id filtering
     const [pendingResult, expiredResult, totalResult] = await Promise.all([
       sql<{ count: string }>`
         SELECT COUNT(*)::text as count
@@ -97,13 +112,21 @@ export async function getProjectInvitationStats(
       `.execute(db),
     ]);
 
+    const pending = parseInt(pendingResult.rows[0]?.count || "0", 10);
+    const expired = parseInt(expiredResult.rows[0]?.count || "0", 10);
+    const total = parseInt(totalResult.rows[0]?.count || "0", 10);
+
     return {
-      pending: parseInt(pendingResult.rows[0]?.count || "0", 10),
-      expired: parseInt(expiredResult.rows[0]?.count || "0", 10),
-      total: parseInt(totalResult.rows[0]?.count || "0", 10),
+      pending,
+      expired,
+      total,
     };
   } catch (error) {
-    console.error("Error getting project invitation stats:", error);
+    console.error(
+      "Error getting project invitation stats for projectId:",
+      projectId,
+      error,
+    );
     throw new Error("Failed to get project invitation stats");
   }
 }

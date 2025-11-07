@@ -100,7 +100,11 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         className={cn(buttonVariants({ variant: "outline" }))}
         onClick={() => {
           setIsGoogleLoading(true);
-          signIn("google");
+          const callbackUrl =
+            searchParams?.get("callbackUrl") ||
+            searchParams?.get("from") ||
+            "/dashboard";
+          signIn("google", { callbackUrl });
         }}
         disabled={isLoading || isGoogleLoading}
       >

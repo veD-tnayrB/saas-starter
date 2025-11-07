@@ -12,6 +12,7 @@ import { memberService, projectService } from "@/services/projects";
 import { canManageProject, hasPermissionLevel } from "@/lib/project-roles";
 import { constructMetadata } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { InvitationAcceptedToast } from "@/components/dashboard/invitation-accepted-toast";
 import { InvitationsChart } from "@/components/dashboard/invitations-chart";
 import { MemberGrowthChart } from "@/components/dashboard/member-growth-chart";
 import { ProjectMembers } from "@/components/dashboard/members";
@@ -28,11 +29,22 @@ export const metadata = constructMetadata({
   description: "View project statistics and manage your team.",
 });
 
+// Force dynamic rendering to prevent caching issues between different users/projects
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DashboardPage({ params }: IDashboardPageProps) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const { projectId } = await params;
+
+  // Validate projectId is provided
+  if (!projectId || typeof projectId !== "string" || projectId.trim() === "") {
+    const userProjects = await findAllUserProjects(user.id);
+    const firstProjectId = userProjects[0]?.id ?? null;
+    return <ProjectNotFound firstProjectId={firstProjectId} />;
+  }
 
   // Get project and verify access
   const project = await projectService.getProjectById(projectId);
@@ -43,9 +55,12 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
     return <ProjectNotFound firstProjectId={firstProjectId} />;
   }
 
+  // Verify user has access by checking their role directly
+  // This is more reliable than checking findAllUserProjects, especially
+  // after accepting an invitation where the membership was just created
   const userRole = await memberService.getUserRole(projectId, user.id);
   if (!userRole) {
-    // Get user's projects to redirect to first one
+    // User is not a member of this project - redirect to their first project
     const userProjects = await findAllUserProjects(user.id);
     const firstProjectId = userProjects[0]?.id ?? null;
     return <ProjectNotFound firstProjectId={firstProjectId} />;
@@ -54,7 +69,7 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   // Get project members
   const members = await memberService.getProjectMembers(projectId);
 
-  // Get project statistics
+  // Get project statistics - all queries use the validated projectId
   const [membersByRole, invitationStats, memberGrowth, totalMembers] =
     await Promise.all([
       getProjectMembersByRole(projectId),
@@ -74,6 +89,7 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
 
   return (
     <>
+      <InvitationAcceptedToast />
       <DashboardHeader
         heading={project.name}
         text={`Role: ${userRole} — View project statistics and manage your team.`}

@@ -50,43 +50,49 @@ export const ProjectInvitationEmail = ({
 
             {/* Main content */}
             <Section className="mb-6 rounded-lg bg-[#1A1A1A] p-8">
-              <Text className="mb-4 text-2xl font-bold text-[#F5F5F5]">
+              <Text className="mb-4 text-2xl font-bold text-white">
                 You've been invited!
               </Text>
-              <Text className="mb-4 text-base leading-relaxed text-[#F5F5F5]">
-                <strong className="text-[#C0C0C0]">{inviterName}</strong> has
-                invited you to join their project
+              <Text className="mb-4 text-base leading-relaxed text-white">
+                <strong className="font-semibold text-[#E5E5E5]">
+                  {inviterName}
+                </strong>{" "}
+                has invited you to join their project
               </Text>
-              <Text className="mb-6 text-2xl font-semibold text-[#C0C0C0]">
+              <Text className="mb-6 text-2xl font-semibold text-white">
                 {projectName}
               </Text>
 
               {/* Role badge */}
-              <Section className="mb-6 inline-block rounded-full border border-[#2C2C2C] bg-[#1A1A1A] px-4 py-2">
-                <Text className="m-0 text-sm font-medium text-[#C0C0C0]">
+              <Section className="mb-8 inline-block rounded-full border border-[#3C3C3C] bg-[#252525] px-4 py-2">
+                <Text className="m-0 text-sm font-medium text-[#E5E5E5]">
                   Role: {roleDisplay[role]}
                 </Text>
               </Section>
 
-              {/* CTA Button */}
+              {/* CTA Button - Prominent and visible */}
               <Section className="my-8 text-center">
                 <Button
-                  className="inline-block rounded-full bg-gradient-to-r from-[#6B6B6B] to-[#A0A0A0] px-8 py-3 text-base font-semibold text-[#0D0D0D] no-underline shadow-lg"
                   href={acceptUrl}
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    color: "#0D0D0D",
+                    padding: "16px 40px",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    textDecoration: "none",
+                    display: "inline-block",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   Join Project
                 </Button>
               </Section>
 
-              {/* Alternative link */}
-              <Text className="mb-4 text-sm text-[#A0A0A0]">
-                Or copy and paste this link into your browser:
-              </Text>
-              <Text className="mb-6 break-all text-sm text-[#737373]">
-                {acceptUrl}
-              </Text>
-
-              <Text className="text-sm text-[#A0A0A0]">
+              <Text className="mt-8 text-center text-sm text-[#B0B0B0]">
                 This invitation expires in 7 days.
               </Text>
             </Section>
