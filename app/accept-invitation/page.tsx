@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import NextAuth from "@/auth";
 import { invitationService } from "@/services/projects";
-import { getServerSession } from "next-auth";
+
+import { getCurrentUserId } from "@/lib/session";
 
 interface AcceptInvitationPageProps {
   searchParams: Promise<{ token?: string }>;
@@ -10,7 +10,7 @@ interface AcceptInvitationPageProps {
 export default async function AcceptInvitationPage({
   searchParams,
 }: AcceptInvitationPageProps) {
-  const session = await getServerSession(NextAuth);
+  const userId = await getCurrentUserId();
   const { token } = await searchParams;
 
   if (!token) {
@@ -18,7 +18,7 @@ export default async function AcceptInvitationPage({
   }
 
   // If user is not logged in, redirect to login
-  if (!session?.user?.id) {
+  if (!userId) {
     redirect(
       `/login?callbackUrl=${encodeURIComponent(`/accept-invitation?token=${token}`)}`,
     );
@@ -26,10 +26,7 @@ export default async function AcceptInvitationPage({
 
   try {
     // Accept invitation
-    const result = await invitationService.acceptInvitation(
-      token,
-      session.user.id,
-    );
+    const result = await invitationService.acceptInvitation(token, userId);
 
     // Redirect to project dashboard
     redirect(`/dashboard/${result.projectId}`);

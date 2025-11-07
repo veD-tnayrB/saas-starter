@@ -5,8 +5,9 @@
  * Only accessible in development OR if user is ADMIN/OWNER of any project.
  */
 
-import { getCurrentUser } from "@/repositories/auth/session";
 import { countAdminMemberships } from "@/repositories/projects";
+
+import { getCurrentUser } from "@/lib/session";
 
 /**
  * Check if current user can access admin pages
@@ -31,4 +32,3 @@ export async function canAccessAdminPages(): Promise<boolean> {
     return false;
   }
 }
-

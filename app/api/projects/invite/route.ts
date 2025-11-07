@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import NextAuth from "@/auth";
 import { invitationService, memberService } from "@/services/projects";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
 import { canInviteMembers } from "@/lib/project-roles";
+import { getCurrentUserId } from "@/lib/session";
 
 const inviteSchema = z.object({
   projectId: z.string().min(1),
@@ -14,9 +13,9 @@ const inviteSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(NextAuth);
+    const userId = await getCurrentUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -33,10 +32,7 @@ export async function POST(req: Request) {
     const { projectId, email, role } = parsed.data;
 
     // Check if user has permission to invite (ADMIN or OWNER)
-    const userRole = await memberService.getUserRole(
-      projectId,
-      session.user.id,
-    );
+    const userRole = await memberService.getUserRole(projectId, userId);
     if (!canInviteMembers(userRole)) {
       return NextResponse.json(
         { error: "You don't have permission to invite members" },
@@ -49,7 +45,7 @@ export async function POST(req: Request) {
       projectId,
       email,
       role,
-      session.user.id,
+      userId,
     );
 
     return NextResponse.json(

@@ -1,9 +1,10 @@
 import { sessionManagementService } from "@/services/auth";
 import { projectService } from "@/services/projects";
-import NextAuth, { getServerSession, type DefaultSession } from "next-auth";
+import NextAuth, { type DefaultSession } from "next-auth";
 
 import authConfig from "@/config/auth";
 import { KyselyAdapter } from "@/lib/adapters/kysely-adapter";
+import { getSession, setNextAuthConfig } from "@/lib/session";
 
 // More info: https://next-auth.js.org/getting-started/typescript#module-augmentation
 declare module "next-auth" {
@@ -32,6 +33,8 @@ const nextAuthConfig = {
       const result = await sessionManagementService.handleJWTCallback(
         token,
         user,
+        trigger,
+        session,
       );
       return result || token;
     },
@@ -53,10 +56,13 @@ const nextAuthConfig = {
 
 const handler = NextAuth(nextAuthConfig);
 
+// Set the config in lib/session to enable caching
+setNextAuthConfig(nextAuthConfig);
+
 export { handler as GET, handler as POST };
 export default nextAuthConfig;
 
-// Export auth function for use in server components and API routes
+// Export auth function for use in server components and API routes (cached)
 export const auth = async () => {
-  return getServerSession(nextAuthConfig);
+  return getSession();
 };

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import NextAuth from "@/auth";
 import { projectService } from "@/services/projects";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
+
+import { getCurrentUserId } from "@/lib/session";
 
 /**
  * Schema for creating a project
@@ -28,13 +28,13 @@ const createProjectSchema = z.object({
  */
 export async function GET() {
   try {
-    const session = await getServerSession(NextAuth);
+    const userId = await getCurrentUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const projects = await projectService.getUserProjects(session.user.id);
+    const projects = await projectService.getUserProjects(userId);
 
     return NextResponse.json({ projects }, { status: 200 });
   } catch (error) {
@@ -52,9 +52,9 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(NextAuth);
+    const userId = await getCurrentUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     // Create project with optional initial members
     const project = await projectService.createProject({
       name,
-      ownerId: session.user.id,
+      ownerId: userId,
       members: members as Array<{ email: string; role: string }> | undefined,
     });
 

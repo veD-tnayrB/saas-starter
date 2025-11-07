@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import NextAuth from "@/auth";
 import { userAuthService } from "@/services/auth";
-import type { Session } from "next-auth";
-import { getServerSession } from "next-auth";
 
+import { getCurrentUser } from "@/lib/session";
 import { userNameSchema } from "@/lib/validations/user";
 
 export type FormData = {
@@ -20,9 +18,9 @@ export type FormData = {
  */
 export async function updateUserName(userId: string, data: FormData) {
   try {
-    const session: Session | null = await getServerSession(NextAuth);
+    const user = await getCurrentUser();
 
-    if (!session?.user || session?.user.id !== userId) {
+    if (!user || user.id !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -31,7 +29,12 @@ export async function updateUserName(userId: string, data: FormData) {
     // Update the user name using the new service layer
     await userAuthService.updateUserProfile(userId, { name });
 
-    revalidatePath("/dashboard/settings");
+    // Revalidate paths where user info is displayed
+    // Using "layout" to revalidate the entire layout tree
+    revalidatePath("/dashboard/settings", "layout");
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/", "layout"); // Revalidate root if user info is shown there
+
     return { status: "success" };
   } catch (error) {
     // console.log(error)

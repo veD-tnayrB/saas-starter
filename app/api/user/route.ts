@@ -1,25 +1,20 @@
-import NextAuth from "@/auth";
 import { userAuthService } from "@/services/auth";
-import type { Session } from "next-auth";
-import { getServerSession } from "next-auth";
+
+import { getCurrentUser } from "@/lib/session";
 
 export async function DELETE(req: Request, context: { params: Promise<{}> }) {
-  const session: Session | null = await getServerSession(NextAuth);
+  const currentUser = await getCurrentUser();
 
-  if (!session) {
+  if (!currentUser) {
     return new Response("Not authenticated", { status: 401 });
   }
 
-  const currentUser = session.user;
-  if (!currentUser) {
-    return new Response("Invalid user", { status: 401 });
+  if (!currentUser.id) {
+    return new Response("Invalid user ID", { status: 400 });
   }
 
   try {
     // Use the new service layer to delete user
-    if (!currentUser.id) {
-      return new Response("Invalid user ID", { status: 400 });
-    }
     await userAuthService.deleteUser(currentUser.id);
   } catch (error) {
     return new Response("Internal server error", { status: 500 });

@@ -37,6 +37,7 @@ export function MemberItem({
         <UserAvatar
           user={{
             name: member.user?.name || null,
+            email: member.user?.email || null,
             image: member.user?.image || null,
           }}
           className="h-10 w-10"

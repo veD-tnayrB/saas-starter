@@ -267,7 +267,12 @@ export class SessionManagementService {
   /**
    * Handle NextAuth JWT callback
    */
-  async handleJWTCallback(token: JWT, user?: User): Promise<JWT | null> {
+  async handleJWTCallback(
+    token: JWT,
+    user?: User,
+    trigger?: string,
+    session?: any,
+  ): Promise<JWT | null> {
     try {
       // If user is provided (during sign in), update token with user info
       if (user) {
@@ -278,6 +283,30 @@ export class SessionManagementService {
           email: user.email,
           picture: user.image,
         };
+      }
+
+      // If trigger is "update", fetch the latest user data from database
+      if (trigger === "update" && token.sub) {
+        try {
+          // Import user service to get fresh user data
+          const { userService } = await import("./user");
+          const freshUser = await userService.getUserById(token.sub);
+
+          if (freshUser) {
+            return {
+              ...token,
+              name: freshUser.name,
+              email: freshUser.email,
+              picture: freshUser.image,
+            };
+          }
+        } catch (error) {
+          console.error(
+            "Error fetching fresh user data in JWT callback:",
+            error,
+          );
+          // Continue with existing token data if fetch fails
+        }
       }
 
       // If token exists, return it as-is

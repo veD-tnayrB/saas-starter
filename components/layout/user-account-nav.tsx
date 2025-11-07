@@ -47,7 +47,11 @@ export function UserAccountNav() {
         <Drawer.Trigger asChild>
           <button onClick={() => setOpen(true)} className="rounded-full">
             <UserAvatar
-              user={{ name: user.name || null, image: user.image || null }}
+              user={{
+                name: user.name || null,
+                email: user.email || null,
+                image: user.image || null,
+              }}
               className="size-9 border"
             />
           </button>
@@ -112,7 +116,11 @@ export function UserAccountNav() {
       <DropdownMenuTrigger asChild>
         <button className="rounded-full">
           <UserAvatar
-            user={{ name: user.name || null, image: user.image || null }}
+            user={{
+              name: user.name || null,
+              email: user.email || null,
+              image: user.image || null,
+            }}
             className="size-8 border"
           />
         </button>

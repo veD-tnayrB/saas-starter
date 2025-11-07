@@ -1,7 +1,6 @@
 import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
-import NextAuth from "@/auth";
-import { getServerSession } from "next-auth";
 
+import { getSession } from "@/lib/session";
 import { cn, constructMetadata } from "@/lib/utils";
 
 import "@/styles/globals.css";
@@ -21,7 +20,7 @@ interface RootLayoutProps {
 export const metadata = constructMetadata();
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  const session = await getServerSession(NextAuth);
+  const session = await getSession();
   return (
     <html lang="en" suppressHydrationWarning>
       <head />

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import NextAuth from "@/auth";
 import { memberService, projectService } from "@/services/projects";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
+
+import { getCurrentUserId } from "@/lib/session";
 
 /**
  * Schema for updating a project
@@ -29,20 +29,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(NextAuth);
+    const userId = await getCurrentUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     const { id: projectId } = await params;
 
     // Check if user is a member
-    const userRole = await memberService.getUserRole(
-      projectId,
-      session.user.id,
-    );
-    console.log("user role: ", userRole);
+    const userRole = await memberService.getUserRole(projectId, userId);
     if (!userRole) {
       return NextResponse.json(
         { error: "Project not found or access denied" },
@@ -86,9 +82,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(NextAuth);
+    const userId = await getCurrentUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -118,7 +114,7 @@ export async function PUT(
             }>
           | undefined,
       },
-      session.user.id,
+      userId,
     );
 
     return NextResponse.json(
@@ -161,16 +157,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await getServerSession(NextAuth);
+    const userId = await getCurrentUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     const { id: projectId } = await params;
 
     // Delete project (service checks OWNER permission)
-    await projectService.deleteProject(projectId, session.user.id);
+    await projectService.deleteProject(projectId, userId);
 
     return NextResponse.json(
       { success: true, message: "Project deleted successfully" },

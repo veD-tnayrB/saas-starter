@@ -1,11 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import NextAuth from "@/auth";
 import { billingService } from "@/services/billing";
-import type { Session } from "next-auth";
-import { getServerSession } from "next-auth";
 
+import { getCurrentUser } from "@/lib/session";
 import { absoluteUrl } from "@/lib/utils";
 
 export type responseAction = {
@@ -24,8 +22,7 @@ export async function generateUserStripe(
   priceId: string,
 ): Promise<responseAction> {
   try {
-    const session: Session | null = await getServerSession(NextAuth);
-    const user = session?.user;
+    const user = await getCurrentUser();
 
     if (!user || !user.email || !user.id) {
       throw new Error("Unauthorized");

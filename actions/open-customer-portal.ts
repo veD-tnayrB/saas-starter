@@ -1,11 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import NextAuth from "@/auth";
 import { billingService } from "@/services/billing";
-import type { Session } from "next-auth";
-import { getServerSession } from "next-auth";
 
+import { getCurrentUser } from "@/lib/session";
 import { absoluteUrl } from "@/lib/utils";
 
 export type responseAction = {
@@ -24,9 +22,9 @@ export async function openCustomerPortal(
   userStripeId: string,
 ): Promise<responseAction> {
   try {
-    const session: Session | null = await getServerSession(NextAuth);
+    const user = await getCurrentUser();
 
-    if (!session?.user || !session?.user.email) {
+    if (!user || !user.email) {
       throw new Error("Unauthorized");
     }
 
@@ -36,8 +34,8 @@ export async function openCustomerPortal(
 
     // Use billing service to handle the operation
     const result = await billingService.createBillingPortalSession({
-      userId: session.user.id,
-      userEmail: session.user.email,
+      userId: user.id,
+      userEmail: user.email,
       stripeCustomerId: userStripeId,
     });
 
