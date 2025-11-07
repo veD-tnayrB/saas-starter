@@ -228,33 +228,37 @@ export async function updateAccount(
   },
 ): Promise<IProviderAccount> {
   try {
-    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
 
     if (data.refresh_token !== undefined) {
-      setParts.push(`refresh_token = ${sql.lit(data.refresh_token ?? null)}`);
+      setParts.push(sql`refresh_token = ${data.refresh_token ?? null}`);
     }
     if (data.access_token !== undefined) {
-      setParts.push(`access_token = ${sql.lit(data.access_token ?? null)}`);
+      setParts.push(sql`access_token = ${data.access_token ?? null}`);
     }
     if (data.expires_at !== undefined) {
-      setParts.push(`expires_at = ${sql.lit(data.expires_at ?? null)}`);
+      setParts.push(sql`expires_at = ${data.expires_at ?? null}`);
     }
     if (data.token_type !== undefined) {
-      setParts.push(`token_type = ${sql.lit(data.token_type ?? null)}`);
+      setParts.push(sql`token_type = ${data.token_type ?? null}`);
     }
     if (data.scope !== undefined) {
-      setParts.push(`scope = ${sql.lit(data.scope ?? null)}`);
+      setParts.push(sql`scope = ${data.scope ?? null}`);
     }
     if (data.id_token !== undefined) {
-      setParts.push(`id_token = ${sql.lit(data.id_token ?? null)}`);
+      setParts.push(sql`id_token = ${data.id_token ?? null}`);
     }
     if (data.session_state !== undefined) {
-      setParts.push(`session_state = ${sql.lit(data.session_state ?? null)}`);
+      setParts.push(sql`session_state = ${data.session_state ?? null}`);
     }
+
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
 
     const result = await sql<IProviderAccount>`
       UPDATE accounts
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${id}
       RETURNING 
         id,

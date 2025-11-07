@@ -69,6 +69,12 @@ Database Queries and Repository Pattern
 - Return the query result directly without manual property mapping when aliases are used correctly.
 - This pattern must be applied to ALL repository functions that perform SELECT queries.
 
+- **ALL database queries MUST be properly sanitized using Kysely's standard parameter binding to prevent SQL injection attacks.** This is a critical security requirement that must be enforced in ALL repository functions.
+- **NEVER use string concatenation with `sql.raw()` for user input or dynamic values.** Always use Kysely's template literal syntax with parameter interpolation.
+- When building dynamic queries, use `sql` template literals and `sql.join()` for combining fragments, NOT string concatenation.
+- Use `sql.raw()` ONLY for static SQL keywords (e.g., column names, table names, SQL operators) that are controlled by the codebase, NEVER for user-provided data.
+- All dynamic values (user input, IDs, dates, etc.) MUST be passed as interpolated parameters using `${value}` syntax within `sql` template literals.
+
 Example:
 
 ```typescript
@@ -92,6 +98,49 @@ const result = await sql<IAuthUser>`
   FROM users
 `.execute(db);
 return result.rows[0];
+```
+
+SQL Injection Prevention Examples:
+
+```typescript
+// ❌ BAD: Vulnerable to SQL injection - using string concatenation
+const setParts: string[] = [
+  `stripe_price_id = ${sql.lit(data.priceId)}`, // sql.lit() in string is unsafe
+];
+const result = await sql`
+  UPDATE users
+  SET ${sql.raw(setParts.join(", "))} // Dangerous: raw SQL with concatenated strings
+  WHERE id = ${userId}
+`.execute(db);
+
+// ❌ BAD: Vulnerable to SQL injection - direct string interpolation
+const result = await sql`
+  SELECT * FROM users WHERE email = '${userEmail}' // NEVER do this!
+`.execute(db);
+
+// ✅ GOOD: Properly sanitized using Kysely parameter binding
+const setParts = [
+  sql.raw("updated_at = CURRENT_TIMESTAMP"), // OK: static SQL
+  sql`stripe_price_id = ${data.priceId}`, // ✅ Parameter is sanitized
+];
+const setClause = sql.join(setParts, sql`, `);
+const result = await sql`
+  UPDATE users
+  SET ${setClause} // ✅ Safe: uses Kysely fragments
+  WHERE id = ${userId} // ✅ Parameter is sanitized
+`.execute(db);
+
+// ✅ GOOD: Direct parameter interpolation (recommended)
+const result = await sql<IUserSubscriptionRecord>`
+  UPDATE users
+  SET
+    stripe_price_id = ${data.priceId ?? null}, // ✅ Sanitized automatically
+    updated_at = CURRENT_TIMESTAMP
+  WHERE id = ${userId} // ✅ Sanitized automatically
+  RETURNING
+    id AS userId,
+    stripe_price_id AS stripePriceId
+`.execute(db);
 ```
 
 Key Conventions

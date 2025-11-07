@@ -471,10 +471,14 @@ export async function updateProject(
   data: IProjectUpdateData,
 ): Promise<IProject> {
   try {
-    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
     if (data.name !== undefined) {
-      setParts.push(`name = ${sql.lit(data.name)}`);
+      setParts.push(sql`name = ${data.name}`);
     }
+
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
 
     const result = await sql<{
       id: string;
@@ -485,7 +489,7 @@ export async function updateProject(
       subscriptionPlanId: string | null;
     }>`
       UPDATE projects
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${id}
       RETURNING 
         id,

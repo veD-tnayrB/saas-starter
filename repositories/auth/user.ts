@@ -320,26 +320,27 @@ export async function searchUsers(
   criteria: IUserSearchCriteria,
 ): Promise<IAuthUser[]> {
   try {
-    // Build WHERE clause with proper parameterization
-    let whereClause = "";
-    const conditions: string[] = [];
+    // Build WHERE clause with proper parameterization using sql fragments
+    const conditions: ReturnType<typeof sql>[] = [];
 
     if (criteria.id) {
-      conditions.push(`id = ${sql.lit(criteria.id)}`);
+      conditions.push(sql`id = ${criteria.id}`);
     }
     if (criteria.email) {
-      conditions.push(`email = ${sql.lit(criteria.email)}`);
+      conditions.push(sql`email = ${criteria.email}`);
     }
     if (criteria.isEmailVerified !== undefined) {
       if (criteria.isEmailVerified) {
-        conditions.push(`email_verified IS NOT NULL`);
+        conditions.push(sql.raw("email_verified IS NOT NULL"));
       } else {
-        conditions.push(`email_verified IS NULL`);
+        conditions.push(sql.raw("email_verified IS NULL"));
       }
     }
 
+    // Build WHERE clause safely
+    let whereClause: ReturnType<typeof sql> | undefined;
     if (conditions.length > 0) {
-      whereClause = `WHERE ${conditions.join(" AND ")}`;
+      whereClause = sql`WHERE ${sql.join(conditions, sql` AND `)}`;
     }
 
     const result = await sql<IAuthUser>`
@@ -352,7 +353,7 @@ export async function searchUsers(
         created_at AS createdAt,
         updated_at AS updatedAt
       FROM users
-      ${sql.raw(whereClause)}
+      ${whereClause ?? sql.raw("")}
       ORDER BY created_at DESC
     `.execute(db);
 

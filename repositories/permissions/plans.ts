@@ -276,33 +276,37 @@ export async function updatePlan(
   data: ISubscriptionPlanUpdateData,
 ): Promise<ISubscriptionPlan> {
   try {
-    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
     if (data.name !== undefined) {
-      setParts.push(`name = ${sql.lit(data.name)}`);
+      setParts.push(sql`name = ${data.name}`);
     }
     if (data.displayName !== undefined) {
-      setParts.push(`display_name = ${sql.lit(data.displayName)}`);
+      setParts.push(sql`display_name = ${data.displayName}`);
     }
     if (data.description !== undefined) {
-      setParts.push(`description = ${sql.lit(data.description ?? null)}`);
+      setParts.push(sql`description = ${data.description ?? null}`);
     }
     if (data.stripePriceIdMonthly !== undefined) {
       setParts.push(
-        `stripe_price_id_monthly = ${sql.lit(data.stripePriceIdMonthly ?? null)}`,
+        sql`stripe_price_id_monthly = ${data.stripePriceIdMonthly ?? null}`,
       );
     }
     if (data.stripePriceIdYearly !== undefined) {
       setParts.push(
-        `stripe_price_id_yearly = ${sql.lit(data.stripePriceIdYearly ?? null)}`,
+        sql`stripe_price_id_yearly = ${data.stripePriceIdYearly ?? null}`,
       );
     }
     if (data.isActive !== undefined) {
-      setParts.push(`is_active = ${sql.lit(data.isActive)}`);
+      setParts.push(sql`is_active = ${data.isActive}`);
     }
+
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
 
     const result = await sql<ISubscriptionPlan>`
       UPDATE subscription_plans
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${planId}
       RETURNING 
         id,

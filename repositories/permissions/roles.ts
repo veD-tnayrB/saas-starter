@@ -141,20 +141,24 @@ export async function updateRole(
   data: IAppRoleUpdateData,
 ): Promise<IAppRole> {
   try {
-    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
     if (data.name !== undefined) {
-      setParts.push(`name = ${sql.lit(data.name)}`);
+      setParts.push(sql`name = ${data.name}`);
     }
     if (data.priority !== undefined) {
-      setParts.push(`priority = ${sql.lit(data.priority)}`);
+      setParts.push(sql`priority = ${data.priority}`);
     }
     if (data.description !== undefined) {
-      setParts.push(`description = ${sql.lit(data.description ?? null)}`);
+      setParts.push(sql`description = ${data.description ?? null}`);
     }
+
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
 
     const result = await sql<IAppRole>`
       UPDATE app_roles
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${roleId}
       RETURNING 
         id,

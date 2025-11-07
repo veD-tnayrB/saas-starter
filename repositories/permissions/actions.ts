@@ -178,23 +178,27 @@ export async function updateAction(
   data: IActionUpdateData,
 ): Promise<IAction> {
   try {
-    const setParts: string[] = ["updated_at = CURRENT_TIMESTAMP"];
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
     if (data.slug !== undefined) {
-      setParts.push(`slug = ${sql.lit(data.slug)}`);
+      setParts.push(sql`slug = ${data.slug}`);
     }
     if (data.name !== undefined) {
-      setParts.push(`name = ${sql.lit(data.name)}`);
+      setParts.push(sql`name = ${data.name}`);
     }
     if (data.description !== undefined) {
-      setParts.push(`description = ${sql.lit(data.description ?? null)}`);
+      setParts.push(sql`description = ${data.description ?? null}`);
     }
     if (data.category !== undefined) {
-      setParts.push(`category = ${sql.lit(data.category)}`);
+      setParts.push(sql`category = ${data.category}`);
     }
+
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
 
     const result = await sql<IAction>`
       UPDATE actions
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${actionId}
       RETURNING 
         id,

@@ -276,12 +276,13 @@ export async function updateSession(
   data: ISessionUpdateData,
 ): Promise<ISessionWithUserData> {
   try {
-    const setParts: string[] = [];
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts: ReturnType<typeof sql>[] = [];
     if (data.expiresAt !== undefined) {
-      setParts.push(`expires = ${sql.lit(data.expiresAt)}`);
+      setParts.push(sql`expires = ${data.expiresAt}`);
     }
     if (data.sessionToken !== undefined) {
-      setParts.push(`session_token = ${sql.lit(data.sessionToken)}`);
+      setParts.push(sql`session_token = ${data.sessionToken}`);
     }
 
     if (setParts.length === 0) {
@@ -291,6 +292,9 @@ export async function updateSession(
       return existing;
     }
 
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
+
     const sessionResult = await sql<{
       id: string;
       sessionToken: string;
@@ -298,7 +302,7 @@ export async function updateSession(
       expires: Date;
     }>`
       UPDATE sessions
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${id}
       RETURNING 
         id,

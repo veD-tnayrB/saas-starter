@@ -14,20 +14,22 @@ export async function createUserSubscription(
   data: ICreateSubscriptionData,
 ): Promise<IUserSubscriptionRecord> {
   try {
-    const setParts: string[] = [
-      "updated_at = CURRENT_TIMESTAMP",
-      `stripe_price_id = ${sql.lit(data.priceId ?? null)}`,
+    // Build SET clause parts using sql fragments for proper sanitization
+    const setParts = [
+      sql.raw("updated_at = CURRENT_TIMESTAMP"),
+      sql`stripe_price_id = ${data.priceId ?? null}`,
     ];
 
     if (data.metadata?.customerId) {
-      setParts.push(
-        `stripe_customer_id = ${sql.lit(data.metadata.customerId)}`,
-      );
+      setParts.push(sql`stripe_customer_id = ${data.metadata.customerId}`);
     }
+
+    // Combine all SET parts safely
+    const setClause = sql.join(setParts, sql`, `);
 
     const result = await sql<IUserSubscriptionRecord>`
       UPDATE users
-      SET ${sql.raw(setParts.join(", "))}
+      SET ${setClause}
       WHERE id = ${data.userId}
       RETURNING 
         id AS userId,
