@@ -7,11 +7,13 @@ import { IProjectCardData, ProjectCard } from "./card";
 interface IProjectsListProps {
   projects: IProjectCardData[];
   onCreateProject?: () => void;
+  currentProjectId?: string;
 }
 
 export function ProjectsList({
   projects,
   onCreateProject,
+  currentProjectId,
 }: IProjectsListProps) {
   if (projects.length === 0) {
     return (
@@ -47,7 +49,8 @@ export function ProjectsList({
   );
 
   const projectCards = sortedProjects.map(function mapProject(project) {
-    return <ProjectCard key={project.id} {...project} />;
+    const isCurrent = currentProjectId === project.id;
+    return <ProjectCard key={project.id} {...project} isCurrent={isCurrent} />;
   });
 
   return <div className="space-y-3">{projectCards}</div>;

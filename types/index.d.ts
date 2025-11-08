@@ -67,11 +67,14 @@ export interface IUserSubscriptionPlan extends ISubscriptionPlan {
 }
 
 // compare plans
-export type IColumnType = string | boolean | null;
+export type IPlanMetric = string | boolean | null;
 export interface IPlansRow {
   feature: string;
   tooltip?: string;
-  [key in (typeof plansColumns)[number]]: IColumnType;
+  starter: IPlanMetric;
+  pro: IPlanMetric;
+  business: IPlanMetric;
+  enterprise: IPlanMetric;
 }
 
 // landing sections

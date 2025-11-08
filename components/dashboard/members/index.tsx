@@ -29,14 +29,17 @@ interface IProjectMembersProps {
   projectId: string;
   members: IProjectMember[];
   userRole: string;
+  canManageMembers: boolean;
 }
 
 export function ProjectMembers({
   projectId,
   members,
   userRole,
+  canManageMembers,
 }: IProjectMembersProps) {
-  const canInvite = userRole === "OWNER" || userRole === "ADMIN";
+  const canInvite =
+    canManageMembers && (userRole === "OWNER" || userRole === "ADMIN");
 
   function handleInviteSuccess() {
     // Refresh the page to show updated members

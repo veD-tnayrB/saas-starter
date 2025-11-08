@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { DeleteProjectButton } from "@/components/dashboard/projects/delete-button";
@@ -13,6 +13,10 @@ export interface IProjectCardData {
   isOwner: boolean;
 }
 
+interface IProjectCardProps extends IProjectCardData {
+  isCurrent?: boolean;
+}
+
 export function ProjectCard({
   id,
   name,
@@ -20,9 +24,15 @@ export function ProjectCard({
   planName,
   ownerName,
   isOwner,
-}: IProjectCardData) {
+  isCurrent = false,
+}: IProjectCardProps) {
   return (
-    <Card className="border-border bg-card/60 backdrop-blur">
+    <Card
+      className={cn(
+        "border-border bg-card/60 backdrop-blur",
+        isCurrent && "border-primary ring-1 ring-primary/40",
+      )}
+    >
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-3">

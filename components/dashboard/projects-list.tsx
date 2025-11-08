@@ -8,6 +8,7 @@ interface IProject {
 
 interface IProjectsListProps {
   projects: IProject[];
+  currentProjectId?: string;
 }
 
 export function ProjectsList({ projects }: IProjectsListProps) {
