@@ -62,9 +62,9 @@ flowchart TD
 
 ## Dependencies & Contracts
 
-- `isPlatformAdmin(userId)` – Promise<boolean>; true if user owns any project or is ADMIN in any project.
-- `isPlatformOwner(userId)` – Promise<boolean>; true if user owns at least one project.
-- `canAccessAdminPages()` – Promise<boolean>; used by server actions/pages to gate access (development override).
+- `isPlatformAdmin(userId)` – `Promise<boolean>`; true if user owns any project or is ADMIN in any project.
+- `isPlatformOwner(userId)` – `Promise<boolean>`; true if user owns at least one project.
+- `canAccessAdminPages()` – `Promise<boolean>`; used by server actions/pages to gate access (development override).
 - `countProjectsByOwner(userId)` / `countAdminMemberships(userId)` – Repository helpers returning numeric counts.
 - Server actions (plans, roles, actions, permissions) – Call `canAccessAdminPages()` before performing mutations.
 - UI components – Should expect thrown “Forbidden” errors (or handle 403 responses) when access is denied.
