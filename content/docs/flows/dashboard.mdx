@@ -1,141 +1,122 @@
 ---
 title: Dashboard Flow
-description: Protected user interface and management with role-based access control
-Last updated at: 2025-10-21
+description: End-to-end explanation of the project dashboard experience and supporting layout
+lastUpdated: 2025-11-08
 ---
 
 ## Overview
 
-Provides protected user interface for authenticated users with role-based access control. Includes main dashboard, billing management, settings, and admin panel with different features based on user roles.
+The dashboard flow renders the authenticated workspace for a selected project. It resolves the current project, validates membership, and streams independent widgets (statistics, charts, members, upgrade prompt) using React Server Components with Suspense skeletons. The protected layout also exposes the global search command, navigation, project switcher, and account controls.
 
-**Main libraries/services:**
+**Main Libraries/Services:**
 
-- Next.js App Router for page routing
-- Role-based access control (USER/ADMIN)
-- Server-side session validation
-- Protected route middleware
+- **Next.js App Router** – Protected routing, dynamic segments, and streaming via React Server Components.
+- **`lib/session.ts`** – Cached `getCurrentUser()` / `getCurrentUserId()` helpers shared across layout, API routes, and widgets.
+- **Project services (`services/projects/*`)** – Fetch project metadata, member roles, invitation statistics, and enforce permissions.
+- **Kysely repositories (`repositories/projects/*`)** – Sanitized SQL for project, member, stats, and invitation queries (aliases quoted for PostgreSQL).
+- **Shadcn UI + Radix primitives** – Layout shell (`DashboardSidebar`, `MobileSheetSidebar`), `SearchCommand`, cards, charts, and skeleton loaders.
+- **`components/dashboard/project-not-found.tsx`** – Fallback screen when the requested project is missing or inaccessible.
+- **`components/dashboard/invitation-accepted-toast.tsx`** – Suspense-wrapped client toast acknowledging invitation acceptance.
 
 ## File Map
 
-```
-📁 app/(protected)/layout.tsx - Protected route wrapper
-📁 app/(protected)/dashboard/page.tsx - Main dashboard
-📁 app/(protected)/dashboard/billing/page.tsx - Billing management
-📁 app/(protected)/settings/page.tsx - User settings
-📁 app/(protected)/dashboard/charts/page.tsx - Chart examples
-📁 app/(protected)/admin/page.tsx - Admin panel
-📁 app/(protected)/admin/orders/page.tsx - Order management
-📁 components/dashboard/ - Dashboard-specific components
-📁 lib/session.ts - Session management utilities
-```
+- `app/(protected)/layout.tsx` – Auth guard; renders sidebar, search command, and account controls, filtering navigation by role.
+- `app/(protected)/dashboard/page.tsx` – Redirects authenticated users to their first project or `/projects` when they have none.
+- `app/(protected)/dashboard/[projectId]/page.tsx` – Main dashboard entry; validates project access, renders `ProjectNotFound` fallback, and streams widgets inside Suspense.
+- `components/dashboard/sections/*.tsx` – Server components (stats, members, charts, upgrade card, projects list) fetching data per widget.
+- `components/dashboard/skeletons/*.tsx` – Matching skeleton placeholders for each widget (stats cards, charts, list, upgrade card, projects list).
+- `components/dashboard/project-stats-card.tsx` – Shared card used by the stats section.
+- `components/dashboard/project-not-found.tsx` – CTA to redirect the user to their first available project or `/dashboard`.
+- `components/dashboard/invitation-accepted-toast.tsx` – Client component that reads URL params and shows a success toast.
+- `components/dashboard/search-command.tsx` – Command palette aware of project context; disables project-scoped links when no project is available.
+- `config/dashboard.ts` & `types/index.d.ts` – Defines navigation structure and `INavItem` metadata (`requiresProjectId`, `fallbackHref`).
 
 ## Step-by-Step Flow
 
-### Dashboard Access
+### Access & Layout Bootstrapping
 
-1. User navigates to protected route
-2. `(protected)/layout.tsx` checks authentication
-3. `getCurrentUser()` validates session
-4. If unauthenticated, redirect to `/login`
-5. If authenticated, render dashboard content
-6. User role determines available features
+1. Requests under `/app/(protected)` load `layout.tsx`, which calls `getCurrentUser()`. Missing sessions trigger `redirect("/login")`.
+2. The layout determines whether the user is a platform admin, filters `sidebarLinks` with `filterNavigationItems`, and renders:
+   - `DashboardSidebar` (desktop) and `MobileSheetSidebar` (mobile) with navigation sections.
+   - `SearchCommand` client component bound to `⌘/Ctrl + K`, aware of the current/fallback project.
+   - `UserAccountNav` with avatar, settings link (`/settings`), and sign-out action.
 
-### Main Dashboard
+### Project Resolution & Authorization
 
-1. Dashboard page loads with user data
-2. User role displayed in header
-3. Empty placeholder shown (no content created yet)
-4. "Add Content" button for future functionality
-5. Role-based navigation menu available
+1. `/dashboard/page.tsx` redirects authenticated users to `/dashboard/{projectId}` using their first available project. If none exist, it goes to `/projects`.
+2. `/dashboard/[projectId]/page.tsx` unwraps the dynamic `projectId`, validates it, and fetches the current user again (cached).
+3. `projectService.getProjectById(projectId)` loads project metadata. Missing projects render `ProjectNotFound`, showing a CTA to the first project.
+4. `memberService.getUserRole(projectId, user.id)` ensures the user is a member and returns their role. Lack of membership also shows the fallback screen.
+5. The page exports `dynamic = "force-dynamic"` and `revalidate = 0` to avoid sharing cached project data between users.
 
-### Billing Dashboard
+### Streaming Widgets with Suspense
 
-1. User subscription plan fetched via `getUserSubscriptionPlan`
-2. Billing information displayed with current plan
-3. Upgrade/downgrade options based on current tier
-4. Stripe test environment warning shown
-5. Billing portal access for existing customers
+1. Once access is confirmed, the page renders `InvitationAcceptedToast` (client), `DashboardHeader`, and a grid of widgets.
+2. Each widget is an isolated server component wrapped by `<Suspense fallback={<MatchingSkeleton />}>`:
+   - `ProjectStatsSection` – Aggregated counts, invitations, team leaders, and 30-day growth.
+   - `MembersByRoleSection`, `MemberGrowthSection`, `InvitationsChartSection` – Chart data feeding shadcn chart components.
+   - `ProjectMembersSection` – Member list with role badges and management controls, respecting permission checks.
+   - `ProjectsListSection` – User-centric project overview (mirrors `/projects` page cards).
+   - `UpgradeCardSection` – Surface upgrade prompts for admins/owners.
+3. Data fetching relies on repository functions (`getProjectMemberCount`, `getProjectMemberGrowth`, etc.) that enforce camelCase aliases with quotes (`AS "memberCount"`) per `@next-js.mdc`.
+4. `ProjectStatsCard` and corresponding skeleton mirror the same padding, typography, and hover states to avoid layout shifts.
 
-### Settings Management
+### Invitation Acceptance Feedback
 
-1. User profile information displayed
-2. Name and role update forms available
-3. Account deletion option (with confirmation)
-4. Settings persisted via server actions
+1. When a user accepts an invitation, the API returns `redirect("/dashboard/{projectId}?invitation=accepted")`.
+2. `InvitationAcceptedToast` reads the `invitation` query param, raises a Sonner toast, and cleans the URL via `router.replace` to prevent repeated toasts.
 
-### Admin Panel (ADMIN role only)
+### Navigation, Search, and Project Switching
 
-1. Role validation ensures ADMIN access only
-2. Admin-specific dashboard with metrics
-3. User management capabilities
-4. Transaction and order management
-5. System-wide analytics and controls
-
-### Charts Dashboard
-
-1. Demo charts using shadcn-ui components
-2. Various chart types (area, bar, line, radial)
-3. Interactive data visualization examples
-4. Responsive grid layout for different screen sizes
+1. `NavigationSections` (client) parses the path to detect the current project ID and fetches a fallback project via `/api/projects` when none is in context.
+2. Items with `requiresProjectId` dynamically replace `[projectId]` in `href`. If no project is available, they use `fallbackHref` (e.g., `/projects`) and render as disabled in `SearchCommand`.
+3. The project switcher popover components (`components/dashboard/project/switcher/*`) listen for the custom `projects:refresh` event to stay in sync with create/edit/delete actions.
 
 ## Data Flow Diagram
 
-```
-[Protected Route] → [Session Validation] → [Role Check] → [Dashboard Render]
-     ↓
-[User Actions] → [Server Actions] → [Database Updates] → [UI Refresh]
-     ↓
-[Admin Actions] → [Admin Panel] → [System Management] → [User Updates]
-```
-
-## Role-Based Features
-
-### USER Role
-
-- Main dashboard access
-- Billing management
-- Personal settings
-- Chart examples
-- Content creation (placeholder)
-
-### ADMIN Role
-
-- All USER features
-- Admin panel access
-- User management
-- System analytics
-- Order management
-- Transaction oversight
-
-## Protected Route Structure
-
-```
-(protected)/
-├── layout.tsx (authentication wrapper)
-├── dashboard/
-│   ├── page.tsx (main dashboard)
-│   ├── billing/page.tsx (subscription management)
-│   └── charts/page.tsx (demo charts)
-├── settings/
-│   └── page.tsx (user preferences)
-└── admin/
-    ├── layout.tsx (admin role check)
-    ├── page.tsx (admin dashboard)
-    └── orders/page.tsx (order management)
+```mermaid
+flowchart TD
+  A[Authenticated request /dashboard/:projectId] --> B[(protected)/layout.tsx]
+  B --> C[getCurrentUser()]
+  C --> D[Navigation & SearchCommand]
+  B --> E[/dashboard/:projectId/page.tsx]
+  E --> F[projectService.getProjectById]
+  E --> G[memberService.getUserRole]
+  F & G --> H{Has access?}
+  H -- No --> I[ProjectNotFound]
+  H -- Yes --> J[Render Suspense widgets]
+  J --> K[ProjectStatsSection -> repositories/projects/statistics]
+  J --> L[ProjectMembersSection -> memberService.getProjectMembers]
+  J --> M[Chart sections -> Kysely stats queries]
+  J --> N[ProjectsListSection -> projectService.getUserProjects]
+  J --> O[UpgradeCardSection -> permissions service]
+  N --> P[(PostgreSQL)]
 ```
 
-## Notes and TODOs
+## Dependencies & Contracts
 
-- ✅ Role-based access control implemented
-- ✅ Protected route middleware working
-- ✅ Billing integration with subscription data
-- ✅ Admin panel with restricted access
-- ✅ Responsive dashboard layout
-- ✅ Chart examples for data visualization
-- ⚠️ Main dashboard shows empty placeholder
-- 🔄 Implement actual content creation features
-- 🔄 Add user activity tracking
-- 🔄 Implement admin user management
-- 🔄 Add dashboard analytics and metrics
-- 🔄 Create user onboarding flow
-- 🔄 Add notification system
+- `getCurrentUser()` / `getCurrentUserId()` – Cached session helpers; throw if auth fails.
+- `projectService.getProjectById(id)` – Returns project metadata or `null`; consumed before rendering widgets.
+- `memberService.getUserRole(projectId, userId)` – Validates membership and exposes role for permission checks.
+- `getProjectMemberCount`, `getProjectMemberGrowth`, `getProjectInvitationStats`, `getProjectMembersByRole` – Repository functions returning camelCase fields via double-quoted aliases.
+- `ProjectStatsSection({ projectId })` – Server component returning four stats cards with optional trend data.
+- `NavigationSections` / `SearchCommand` – Client utilities ensuring dynamic links resolve safely and remain accessible without a current project.
+- `projects:refresh` event – Broadcast mechanism to refresh project lists after mutations.
+
+## Known Limitations
+
+- Statistics queries aggregate by day; there is no pagination or filtering beyond the last 30 days.
+- Invitation and member queries are recalculated on every request (`revalidate = 0`); consider memoization or background jobs if data grows large.
+- `SearchCommand` fetches the fallback project client-side; failure gracefully disables project-scoped commands but does not show an inline error.
+- Upgrade card currently relies on admin detection; future plan tiers may require more granular feature gating.
+- Project fallback selection assumes the first available project; no notion of “last opened project” persisted yet.
+
+## Notes & TODOs
+
+- ✅ Enforced double-quoted SQL aliases and sanitized Kysely queries in all repositories.
+- ✅ Implemented Suspense + skeletons for each widget to improve perceived loading time.
+- ✅ Added `ProjectNotFound` fallback and invitation acceptance toast.
+- 🔄 Record “last visited project” to improve redirect accuracy.
+- 🔄 Cache heavy statistics (e.g., growth charts) using tag-based revalidation once frequency is known.
+- 🔄 Extend dashboard widgets with billing usage and notifications summary.
+- 🔄 Add owner/admin shortcuts (e.g., quick invite, create member) surfaced directly on the dashboard.
