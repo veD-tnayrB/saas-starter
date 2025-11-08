@@ -9,11 +9,7 @@ export const sidebarLinks: ISidebarNavItem[] = [
         icon: "dashboard",
         title: "Dashboard",
       },
-      {
-        href: "/dashboard/[projectId]/projects",
-        icon: "package",
-        title: "Projects",
-      },
+
       {
         href: "/dashboard/[projectId]/billing",
         icon: "billing",
@@ -25,7 +21,13 @@ export const sidebarLinks: ISidebarNavItem[] = [
   {
     title: "OPTIONS",
     items: [
-      { href: "/dashboard/settings", icon: "settings", title: "Settings" },
+      {
+        href: "/projects",
+        icon: "package",
+        title: "Projects",
+      },
+
+      { href: "/settings", icon: "settings", title: "Settings" },
       { href: "/", icon: "home", title: "Homepage" },
       { href: "/docs", icon: "bookOpen", title: "Documentation" },
     ],

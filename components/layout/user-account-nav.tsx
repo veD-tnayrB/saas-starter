@@ -80,7 +80,7 @@ export function UserAccountNav() {
             <ul role="list" className="mb-14 mt-1 w-full text-muted-foreground">
               <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
-                  href="/dashboard/settings"
+                  href="/settings"
                   onClick={closeDrawer}
                   className="flex w-full items-center gap-3 px-2.5 py-2"
                 >
@@ -139,10 +139,7 @@ export function UserAccountNav() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link
-            href="/dashboard/settings"
-            className="flex items-center space-x-2.5"
-          >
+          <Link href="/settings" className="flex items-center space-x-2.5">
             <Settings className="size-4" />
             <p className="text-sm">Settings</p>
           </Link>

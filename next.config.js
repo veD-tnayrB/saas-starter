@@ -22,6 +22,15 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/:projectId/projects",
+        destination: "/projects",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {},
 };
 

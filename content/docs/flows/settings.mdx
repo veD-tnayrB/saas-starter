@@ -6,7 +6,7 @@ lastUpdated: 2025-11-08
 
 ## Overview
 
-The settings flow allows authenticated users to update personal information (e.g., display name) and manage destructive actions such as account deletion. `app/(protected)/dashboard/settings/page.tsx` renders the page with form components that rely on server actions (`actions/update-user-name.ts`) and services (`services/auth/user.ts`). After profile changes, the flow revalidates cached session data and layout routes so the updated name propagates across the application.
+The settings flow allows authenticated users to update personal information (e.g., display name) and manage destructive actions such as account deletion. `app/(protected)/settings/page.tsx` renders the page with form components that rely on server actions (`actions/update-user-name.ts`) and services (`services/auth/user.ts`). After profile changes, the flow revalidates cached session data and layout routes so the updated name propagates across the application.
 
 **Main Libraries/Services:**
 
@@ -19,8 +19,8 @@ The settings flow allows authenticated users to update personal information (e.g
 
 ## File Map
 
-- `app/(protected)/dashboard/settings/page.tsx` – Server component fetching the current user and rendering forms.
-- `actions/update-user-name.ts` – Server action for name updates (`"use server"`); revalidates `/dashboard/settings`, `/dashboard`, and `/`.
+- `app/(protected)/settings/page.tsx` – Server component fetching the current user and rendering forms.
+- `actions/update-user-name.ts` – Server action for name updates (`"use server"`); revalidates `/settings`, `/dashboard`, and `/`.
 - `services/auth/user.ts` – `userAuthService.updateUserProfile` (name update) and `userAuthService.deleteUserAccount`.
 - `services/auth/session.ts` – Ensures session cache reflects updated profile via `handleJWTCallback` (`trigger === "update"`) and `handleSessionCallback`.
 - `components/forms/user-name-form.tsx` – Posts to the action, handles optimistic UI and validation states.
@@ -43,7 +43,7 @@ The settings flow allows authenticated users to update personal information (e.g
 2. The action verifies the current session (`getCurrentUser`) and checks that the caller matches the target `userId`.
 3. Input is validated via `userNameSchema.parse(data)` (Zod).
 4. `userAuthService.updateUserProfile(userId, { name })` persists the change through `UserService.updateUser` (Kysely repos).
-5. The action calls `revalidatePath("/dashboard/settings", "layout")`, `revalidatePath("/dashboard", "layout")`, and `revalidatePath("/", "layout")` to refresh cached layouts and server components that display user data.
+5. The action calls `revalidatePath("/settings", "layout")`, `revalidatePath("/dashboard", "layout")`, and `revalidatePath("/", "layout")` to refresh cached layouts and server components that display user data.
 6. The action returns `{ status: "success" }`; the form component shows feedback and optionally resets the form state.
 
 ### Session Refresh After Profile Update
@@ -71,7 +71,7 @@ flowchart TD
   D --> E[userAuthService.updateUserProfile]
   E --> F[repositories/auth/user.updateUser]
   F --> G[(PostgreSQL)]
-  D --> H[revalidatePath /dashboard/settings,/dashboard,/]
+  D --> H[revalidatePath /settings,/dashboard,/]
   H --> I[Layouts re-fetch getCurrentUser()]
   I --> J[Updated name visible across app]
 ```

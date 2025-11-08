@@ -31,7 +31,7 @@ export async function updateUserName(userId: string, data: FormData) {
 
     // Revalidate paths where user info is displayed
     // Using "layout" to revalidate the entire layout tree
-    revalidatePath("/dashboard/settings", "layout");
+    revalidatePath("/settings", "layout");
     revalidatePath("/dashboard", "layout");
     revalidatePath("/", "layout"); // Revalidate root if user info is shown there
 

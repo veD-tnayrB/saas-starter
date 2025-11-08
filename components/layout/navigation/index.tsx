@@ -21,7 +21,7 @@ export function NavigationSections({
   const matchedId = projectIdMatch?.[1] || null;
 
   // List of known routes that are NOT projectIds
-  const knownRoutes = ["settings", "billing"];
+  const knownRoutes = ["settings", "projects"];
   const currentProjectId =
     matchedId && !knownRoutes.includes(matchedId) ? matchedId : null;
 
@@ -83,6 +83,7 @@ export function NavigationSections({
 
   // Use currentProjectId if available, otherwise use fallbackProjectId
   const effectiveProjectId = currentProjectId || fallbackProjectId;
+  const hasExplicitProject = Boolean(currentProjectId);
 
   const sections = links.map((section, index) => {
     const isLastSection = index === links.length - 1;
@@ -93,7 +94,8 @@ export function NavigationSections({
           section={section}
           isSidebarExpanded={isSidebarExpanded}
           path={path}
-          currentProjectId={effectiveProjectId}
+          projectId={effectiveProjectId}
+          hasExplicitProject={hasExplicitProject}
           isCurrentProjectOwner={isCurrentProjectOwner}
         />
       </div>

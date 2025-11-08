@@ -10,7 +10,8 @@ interface INavigationSectionProps {
   section: ISidebarNavItem;
   isSidebarExpanded: boolean;
   path: string;
-  currentProjectId: string | null;
+  projectId: string | null;
+  hasExplicitProject: boolean;
   isCurrentProjectOwner: boolean;
 }
 
@@ -18,7 +19,8 @@ export function NavigationSection({
   section,
   isSidebarExpanded,
   path,
-  currentProjectId,
+  projectId,
+  hasExplicitProject,
   isCurrentProjectOwner,
 }: INavigationSectionProps) {
   const sectionTitle = isSidebarExpanded ? (
@@ -39,17 +41,27 @@ export function NavigationSection({
       return canAccessNavigationItem(item, true, isCurrentProjectOwner);
     })
     .map((item) => {
-      // Replace [projectId] placeholder with actual projectId (or fallback)
-      const href = item.href.includes("[projectId]")
-        ? item.href.replace("[projectId]", currentProjectId || "")
-        : item.href;
+      let href = item.href;
+      let isFallback = false;
+
+      if (typeof item.href === "string" && item.href.includes("[projectId]")) {
+        if (projectId) {
+          href = item.href.replace("[projectId]", projectId);
+          isFallback = !hasExplicitProject;
+        } else {
+          href = "/projects";
+          isFallback = true;
+        }
+      }
 
       return (
         <NavigationItem
           key={item.title}
-          item={{ ...item, href }}
+          item={item}
           isSidebarExpanded={isSidebarExpanded}
           path={path}
+          href={href}
+          isFallback={isFallback}
         />
       );
     });

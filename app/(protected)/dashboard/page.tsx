@@ -9,7 +9,7 @@ export default async function DashboardRedirectPage() {
   const projects = await findAllUserProjects(user.id);
 
   if (projects.length === 0) {
-    redirect("/dashboard/settings");
+    redirect("/projects");
   }
 
   // Redirect to first project

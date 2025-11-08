@@ -16,21 +16,45 @@ import {
 } from "@/components/ui/command";
 import { Icons } from "@/components/shared/icons";
 
-function resolveProjectHref(href: string, currentPath: string): string {
-  if (!href || !href.includes("[projectId]")) return href;
-  const match = currentPath.match(/\/dashboard\/([^/]+)/);
-  const projectId = match?.[1];
-  if (!projectId || projectId.includes("[")) {
-    return "/dashboard";
-  }
-  return href.replace("[projectId]", projectId);
-}
-
 export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
   const [open, setOpen] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const [fallbackProjectId, setFallbackProjectId] = React.useState<
+    string | null
+  >(null);
+
+  const projectIdMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const matchedId = projectIdMatch?.[1] || null;
+  const staticSegments = new Set(["settings", "projects"]);
+  const currentProjectId =
+    matchedId && !staticSegments.has(matchedId) ? matchedId : null;
+
+  React.useEffect(() => {
+    async function loadFallbackProject() {
+      if (currentProjectId) {
+        setFallbackProjectId(null);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/projects");
+        if (response.ok) {
+          const data = await response.json();
+          const firstProject = data.projects?.[0];
+          if (firstProject?.id) {
+            setFallbackProjectId(firstProject.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching fallback project:", error);
+        setFallbackProjectId(null);
+      }
+    }
+
+    loadFallbackProject();
+  }, [currentProjectId]);
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -100,14 +124,24 @@ export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
             <CommandGroup key={section.title} heading={section.title}>
               {section.items.map((item) => {
                 const Icon = Icons[item.icon || "arrowRight"];
-                const destination = resolveProjectHref(
-                  item.href as string,
-                  pathname,
-                );
+                const projectId = currentProjectId || fallbackProjectId;
+                const requiresProject =
+                  typeof item.href === "string" &&
+                  item.href.includes("[projectId]");
+                const destination =
+                  requiresProject && projectId
+                    ? (item.href as string).replace("[projectId]", projectId)
+                    : requiresProject
+                      ? "/projects"
+                      : (item.href as string);
+                const isDisabled = requiresProject && !projectId;
+
                 return (
                   <CommandItem
                     key={item.title}
+                    disabled={isDisabled}
                     onSelect={() => {
+                      if (isDisabled) return;
                       runCommand(() => router.push(destination));
                     }}
                   >

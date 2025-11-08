@@ -17,32 +17,27 @@ interface INavigationItemProps {
   item: ISidebarNavItem["items"][number];
   isSidebarExpanded: boolean;
   path: string;
-}
-
-function resolveProjectHref(href: string, currentPath: string): string {
-  if (!href || !href.includes("[projectId]")) return href;
-  const match = currentPath.match(/\/dashboard\/([^/]+)/);
-  const projectId = match?.[1];
-  if (!projectId || projectId.includes("[")) {
-    return "/dashboard";
-  }
-  return href.replace("[projectId]", projectId);
+  href: string;
+  isFallback: boolean;
 }
 
 export function NavigationItem({
   item,
   isSidebarExpanded,
   path,
+  href,
+  isFallback,
 }: INavigationItemProps) {
   const Icon = Icons[item.icon || "arrowRight"];
-  const resolvedHref = resolveProjectHref(item.href, path);
+  const resolvedHref = href;
   const normalizedPath = path.endsWith("/") ? path.slice(0, -1) : path;
   const normalizedHref = resolvedHref.endsWith("/")
     ? resolvedHref.slice(0, -1)
     : resolvedHref;
   const isActive =
-    normalizedPath === normalizedHref ||
-    normalizedPath.startsWith(`${normalizedHref}/`);
+    !isFallback &&
+    (normalizedPath === normalizedHref ||
+      normalizedPath.startsWith(`${normalizedHref}/`));
   const iconClass = isActive ? "text-foreground" : "text-foreground/70";
   const linkClass = cn(
     "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-muted",
