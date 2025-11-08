@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, type ComponentPropsWithoutRef } from "react";
 import { ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -10,7 +10,8 @@ interface IProject {
   color: string;
 }
 
-interface IProjectSwitcherButtonProps {
+interface IProjectSwitcherButtonProps
+  extends ComponentPropsWithoutRef<typeof Button> {
   selectedProject: IProject | null;
   openPopover: boolean;
   large: boolean;
@@ -19,7 +20,7 @@ interface IProjectSwitcherButtonProps {
 export const ProjectSwitcherButton = forwardRef<
   HTMLButtonElement,
   IProjectSwitcherButtonProps
->(({ selectedProject, openPopover, large }, ref) => {
+>(({ selectedProject, openPopover, large, className, ...props }, ref) => {
   const buttonVariant = openPopover ? "secondary" : "ghost";
   const spanClassName = cn(
     "inline-block truncate text-sm font-medium xl:max-w-[120px]",
@@ -27,7 +28,14 @@ export const ProjectSwitcherButton = forwardRef<
   );
 
   return (
-    <Button ref={ref} className="h-8 px-2" variant={buttonVariant}>
+    <Button
+      ref={ref}
+      className={cn("h-8 px-2", className)}
+      variant={buttonVariant}
+      type="button"
+      aria-expanded={openPopover}
+      {...props}
+    >
       <div className="flex items-center space-x-3 pr-2">
         {selectedProject && (
           <>
