@@ -16,6 +16,21 @@ import {
 } from "@/components/ui/command";
 import { Icons } from "@/components/shared/icons";
 
+type IconKey = keyof typeof Icons;
+
+interface ICommandOption {
+  key: string;
+  title: string;
+  icon: IconKey;
+  destination: string;
+  isDisabled: boolean;
+}
+
+interface ICommandSection {
+  title: string;
+  options: ICommandOption[];
+}
+
 export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
   const [open, setOpen] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
@@ -63,12 +78,13 @@ export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
   React.useEffect(() => {
     if (!isMounted) return;
 
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
+    const down = (event: KeyboardEvent) => {
+      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setOpen((prevState) => !prevState);
       }
     };
+
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, [isMounted]);
@@ -77,6 +93,78 @@ export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
     setOpen(false);
     command();
   }, []);
+
+  const commandSections = React.useMemo(() => {
+    const sections: ICommandSection[] = [];
+    const projectId = currentProjectId || fallbackProjectId;
+
+    for (const section of links) {
+      const options: ICommandOption[] = [];
+
+      for (const item of section.items) {
+        if (typeof item.href !== "string") continue;
+
+        const iconKey = (item.icon || "arrowRight") as IconKey;
+        const requiresProject = item.href.includes("[projectId]");
+        const destination =
+          requiresProject && projectId
+            ? item.href.replace("[projectId]", projectId)
+            : requiresProject
+              ? "/projects"
+              : item.href;
+
+        options.push({
+          key: `${section.title}-${item.title}`,
+          title: item.title,
+          icon: iconKey,
+          destination,
+          isDisabled: requiresProject && !projectId,
+        });
+      }
+
+      sections.push({
+        title: section.title,
+        options,
+      });
+    }
+
+    return sections;
+  }, [currentProjectId, fallbackProjectId, links]);
+
+  const renderedSections = React.useMemo(() => {
+    const groups: React.ReactNode[] = [];
+
+    for (const section of commandSections) {
+      const items: React.ReactNode[] = [];
+
+      for (const option of section.options) {
+        const Icon = Icons[option.icon];
+        items.push(
+          <CommandItem
+            key={option.key}
+            disabled={option.isDisabled}
+            onSelect={() => {
+              if (option.isDisabled) return;
+              runCommand(() => router.push(option.destination));
+            }}
+          >
+            <Icon className="mr-2 size-5" />
+            {option.title}
+          </CommandItem>,
+        );
+      }
+
+      if (items.length > 0) {
+        groups.push(
+          <CommandGroup key={section.title} heading={section.title}>
+            {items}
+          </CommandGroup>,
+        );
+      }
+    }
+
+    return groups;
+  }, [commandSections, router, runCommand]);
 
   if (!isMounted) {
     return (
@@ -120,38 +208,7 @@ export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
-          {links.map((section) => (
-            <CommandGroup key={section.title} heading={section.title}>
-              {section.items.map((item) => {
-                const Icon = Icons[item.icon || "arrowRight"];
-                const projectId = currentProjectId || fallbackProjectId;
-                const requiresProject =
-                  typeof item.href === "string" &&
-                  item.href.includes("[projectId]");
-                const destination =
-                  requiresProject && projectId
-                    ? (item.href as string).replace("[projectId]", projectId)
-                    : requiresProject
-                      ? "/projects"
-                      : (item.href as string);
-                const isDisabled = requiresProject && !projectId;
-
-                return (
-                  <CommandItem
-                    key={item.title}
-                    disabled={isDisabled}
-                    onSelect={() => {
-                      if (isDisabled) return;
-                      runCommand(() => router.push(destination));
-                    }}
-                  >
-                    <Icon className="mr-2 size-5" />
-                    {item.title}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          ))}
+          {renderedSections}
         </CommandList>
       </CommandDialog>
     </>

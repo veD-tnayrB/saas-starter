@@ -1,7 +1,6 @@
 import { Shield, TrendingUp, UserPlus, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Icons } from "@/components/shared/icons";
 
 interface IProjectStatsCardProps {
   title: string;
@@ -25,7 +24,7 @@ function getIcon(icon: IProjectStatsCardProps["icon"]) {
     case "trendingUp":
       return <TrendingUp className="size-4 text-muted-foreground" />;
     default:
-      return <Icons.logo className="size-4 text-muted-foreground" />;
+      return <Users className="size-4 text-muted-foreground" />;
   }
 }
 
@@ -36,30 +35,30 @@ export function ProjectStatsCard({
   icon,
   trend,
 }: IProjectStatsCardProps) {
-  const trendText = trend
-    ? `${trend.isPositive ? "+" : ""}${trend.value}%`
+  const trendLabel = trend
+    ? `${trend.isPositive ? "+" : ""}${trend.value}% from last month`
     : null;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="flex h-full flex-col">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-0">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {getIcon(icon)}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && (
+      <CardContent className="flex flex-1 flex-col justify-center space-y-2 pt-0">
+        <p className="text-2xl font-semibold leading-tight">{value}</p>
+        {description ? (
           <p className="text-xs text-muted-foreground">{description}</p>
-        )}
-        {trend && trendText && (
+        ) : null}
+        {trend && trendLabel ? (
           <p
-            className={`mt-1 text-xs ${
-              trend.isPositive ? "text-green-600" : "text-red-600"
+            className={`text-xs ${
+              trend.isPositive ? "text-emerald-500" : "text-rose-500"
             }`}
           >
-            {trendText} from last month
+            {trendLabel}
           </p>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
