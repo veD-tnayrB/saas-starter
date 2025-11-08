@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 interface IProject {
@@ -32,40 +32,15 @@ export function useProjects() {
   const [projects, setProjects] = useState<IProject[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === "loading") return;
-
-    async function fetchProjects() {
-      try {
+  const loadProjects = useCallback(async (withLoading = true) => {
+    try {
+      if (withLoading) {
         setLoading(true);
-        const response = await fetch("/api/projects");
-        if (!response.ok) {
-          throw new Error("Failed to fetch projects");
-        }
-        const data = await response.json();
-        const formattedProjects: IProject[] = data.projects.map(
-          function formatProject(project: any) {
-            return {
-              id: project.id,
-              name: project.name,
-              color: getProjectColor(project.id),
-            };
-          },
-        );
-        setProjects(formattedProjects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setLoading(false);
       }
-    }
-
-    fetchProjects();
-  }, [status]);
-
-  async function refreshProjects() {
-    const response = await fetch("/api/projects");
-    if (response.ok) {
+      const response = await fetch("/api/projects");
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
+      }
       const data = await response.json();
       const formattedProjects: IProject[] = data.projects.map(
         function formatProject(project: any) {
@@ -77,8 +52,35 @@ export function useProjects() {
         },
       );
       setProjects(formattedProjects);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    } finally {
+      if (withLoading) {
+        setLoading(false);
+      }
     }
-  }
+  }, []);
 
-  return { projects, loading, refreshProjects };
+  useEffect(() => {
+    if (status === "loading") return;
+    loadProjects();
+  }, [status, loadProjects]);
+
+  useEffect(() => {
+    function handleRefresh() {
+      loadProjects(false);
+    }
+
+    window.addEventListener("projects:refresh", handleRefresh);
+
+    return () => {
+      window.removeEventListener("projects:refresh", handleRefresh);
+    };
+  }, [loadProjects]);
+
+  return {
+    projects,
+    loading,
+    refreshProjects: () => loadProjects(),
+  };
 }

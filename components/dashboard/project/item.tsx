@@ -26,7 +26,8 @@ export function ProjectItem({
     <button
       className={cn(
         buttonVariants({ variant: "ghost" }),
-        "relative flex h-9 items-center gap-3 p-3 text-left text-muted-foreground hover:text-foreground",
+        "relative flex h-9 items-center gap-3 rounded-md p-3 text-left text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground focus-visible:bg-secondary/80 focus-visible:text-foreground",
+        isSelected && "bg-secondary/90 text-foreground",
       )}
       onClick={() => onSelect(project.id)}
     >

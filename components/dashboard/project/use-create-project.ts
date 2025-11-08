@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface IUseCreateProjectReturn {
@@ -10,6 +10,7 @@ interface IUseCreateProjectReturn {
   handleCreateProject: () => Promise<void>;
   openDialog: boolean;
   setOpenDialog: (open: boolean) => void;
+  openCreateDialog: () => void;
 }
 
 export function useCreateProject(
@@ -19,6 +20,27 @@ export function useCreateProject(
   const [projectName, setProjectName] = useState("");
   const [creating, setCreating] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+
+  useEffect(() => {
+    function handleOpenDialog(event: CustomEvent<string | undefined>) {
+      if (event.detail) {
+        setProjectName(event.detail);
+      }
+      setOpenDialog(true);
+    }
+
+    window.addEventListener(
+      "open-create-project",
+      handleOpenDialog as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "open-create-project",
+        handleOpenDialog as EventListener,
+      );
+    };
+  }, []);
 
   async function handleCreateProject() {
     if (!projectName.trim()) return;
@@ -44,6 +66,7 @@ export function useCreateProject(
 
       setOpenDialog(false);
       setProjectName("");
+      window.dispatchEvent(new Event("projects:refresh"));
       router.push(`/dashboard/${data.project.id}`);
       router.refresh();
 
@@ -67,5 +90,6 @@ export function useCreateProject(
     handleCreateProject,
     openDialog,
     setOpenDialog,
+    openCreateDialog: () => setOpenDialog(true),
   };
 }

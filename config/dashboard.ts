@@ -10,6 +10,11 @@ export const sidebarLinks: ISidebarNavItem[] = [
         title: "Dashboard",
       },
       {
+        href: "/dashboard/[projectId]/projects",
+        icon: "package",
+        title: "Projects",
+      },
+      {
         href: "/dashboard/[projectId]/billing",
         icon: "billing",
         title: "Billing",
