@@ -1,97 +1,49 @@
 ---
 title: Database Flow
-description: Data persistence and management with PostgreSQL and Prisma
+description: Data persistence and management with PostgreSQL using Kysely and raw SQL
 Last updated at: 2025-10-21
 ---
 
 ## Overview
 
-Manages data persistence using PostgreSQL with Prisma ORM. Handles user authentication, session management, and subscription data with proper relationships and constraints.
+Manages data persistence using PostgreSQL with Kysely and raw SQL. Handles user authentication, session management, and subscription data with proper relationships and constraints.
 
 **Main libraries/services:**
 
-- `@prisma/client` - Database ORM and query builder
-- `@auth/prisma-adapter` - NextAuth database adapter
+- `kysely` - Type-safe SQL query builder
+- Custom raw SQL repositories - Fine-grained control over complex queries
 - PostgreSQL - Primary database (Neon hosting)
-- Prisma migrations for schema management
+- SQL migrations (`/migrations`) for schema management
 
 ## File Map
 
 ```
-📁 prisma/schema.prisma - Database schema definition
-📁 prisma/migrations/ - Database migration files
-📁 lib/db.ts - Prisma client configuration
-📁 lib/user.ts - User-related database operations
-📁 lib/subscription.ts - Subscription data queries
-📁 actions/ - Server actions for database operations
+📁 migrations/             - SQL migration files
+📁 lib/db.ts               - Kysely client configuration
+📁 lib/db.types.ts         - Database type definitions for Kysely
+📁 repositories/           - Data access layer (Kysely + raw SQL)
+📁 services/               - Business logic built on repositories
+📁 actions/                - Server actions orchestrating database operations
 ```
 
 ## Database Schema
 
-### Core Models
+Schema changes are managed through SQL migrations under `/migrations`. Key tables:
 
-#### User Model
+- **users** – Stores profile data, OAuth linkage, and Stripe identifiers
+- **accounts** – OAuth provider accounts linked to users
+- **sessions** – NextAuth session tokens with expiry metadata
+- **projects / project_members / project_invitations** – Core project collaboration tables
+- **subscription_plans / subscriptions** – Billing and plan data
 
-```prisma
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
-  role          UserRole  @default(USER)
-
-  // Stripe integration fields
-  stripeCustomerId       String?   @unique
-  stripeSubscriptionId   String?   @unique
-  stripePriceId          String?
-  stripeCurrentPeriodEnd DateTime?
-
-  // Relations
-  accounts Account[]
-  sessions Session[]
-}
-```
-
-#### Account Model (OAuth)
-
-```prisma
-model Account {
-  id                String   @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?  @db.Text
-  access_token      String?  @db.Text
-  expires_at        Int?
-  // ... other OAuth fields
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-```
-
-#### Session Model
-
-```prisma
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-```
+Refer to the latest migration files for the exact SQL definitions.
 
 ## Step-by-Step Flow
 
 ### User Creation (OAuth)
 
 1. User authenticates via OAuth provider
-2. NextAuth PrismaAdapter handles user creation
+2. NextAuth KyselyAdapter handles user creation through raw SQL repositories
 3. User record created with OAuth account linked
 4. Stripe customer ID generated (if needed)
 5. User role set to default "USER"
@@ -112,7 +64,7 @@ model Session {
 
 ### Database Connection Management
 
-1. Prisma client configured with connection pooling
+1. Kysely client configured with connection pooling
 2. Development: Cached global instance
 3. Production: New instance per request
 4. Automatic connection management
@@ -120,11 +72,11 @@ model Session {
 ## Data Flow Diagram
 
 ```
-[NextAuth] → [PrismaAdapter] → [User Creation/Update] → [Database]
+[NextAuth] → [KyselyAdapter] → [User Creation/Update] → [Database]
      ↓
 [Webhooks] → [Subscription Updates] → [Database]
      ↓
-[Queries] → [Prisma Client] → [Database] → [Application Logic]
+[Queries] → [Kysely Client + raw SQL] → [Database] → [Application Logic]
 ```
 
 ## Database Operations
@@ -147,7 +99,7 @@ model Session {
 
 - **DATABASE_URL**: PostgreSQL connection string
 - **Neon**: Hosted PostgreSQL service
-- **Migrations**: Managed via Prisma CLI
+- **Migrations**: Managed via SQL files executed with preferred migration runner
 
 ## Notes and TODOs
 

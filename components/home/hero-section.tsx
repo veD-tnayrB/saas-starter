@@ -149,9 +149,9 @@ export function HeroSection() {
           {/* Subheadline - refined spacing */}
           <MotionSlideUp delay={0.4} y={25}>
             <p className="mx-auto max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg sm:leading-7">
-              Empower your next project with Next.js 16, Prisma, Neon, Auth.js
-              v5, Resend, React Email, Shadcn/ui, and Stripe. All seamlessly
-              integrated to accelerate your development journey.
+              Empower your next project with Next.js 16, Kysely, raw SQL, Neon,
+              Auth.js v5, Resend, React Email, Shadcn/ui, and Stripe. All
+              seamlessly integrated to accelerate your development journey.
             </p>
           </MotionSlideUp>
 
@@ -168,7 +168,7 @@ export function HeroSection() {
                   prefetch={true}
                   className={cn(
                     buttonVariants({ size: "lg", rounded: "full" }),
-                    "bg-gradient-silver shadow-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden text-background transition-all",
+                    "bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden text-background shadow-silver transition-all",
                   )}
                 >
                   <span className="relative z-10 flex items-center gap-2 font-semibold">

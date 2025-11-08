@@ -86,7 +86,7 @@ export type {
   IValidationError,
 } from "./errors";
 
-// Re-export Prisma types for convenience
+// Database adapter metadata for auth module
 // Note: UserRole no longer exists - roles are project-specific (ProjectRole)
 
 // Utility types for auth module
@@ -102,7 +102,7 @@ export type IAuthModuleConfig = {
     resend: Record<string, unknown>;
   };
   database: {
-    adapter: "prisma";
+    adapter: "kysely";
     url: string;
   };
   security: {

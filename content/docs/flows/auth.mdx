@@ -28,7 +28,7 @@ Nuestra arquitectura de autenticación está diseñada para ser **rápida de des
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Session       │    │   Database      │    │   User Profile  │
-│   (JWT/Cookie)  │    │   (Prisma)      │    │   (Provider)    │
+│   (JWT/Cookie)  │    │   (Kysely + SQL)│    │   (Provider)    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -364,7 +364,7 @@ openssl rand -base64 32
 **Solution:** Check your JWT callback
 
 - Make sure you're creating users in the database
-- Check if Prisma adapter is properly configured
+- Check if the Kysely adapter is properly configured
 
 #### 4. Session is null
 
@@ -537,7 +537,7 @@ A: Yes! You can customize callbacks, add custom providers, and modify session da
 A: Add role data in your JWT callback and check it in your session callback.
 
 **Q: What if I need to store additional user data?**
-A: Extend your User model in Prisma and update your callbacks to include the new data.
+A: Add the necessary columns via SQL migrations and update your Kysely repositories plus NextAuth callbacks to include the new data.
 
 **Q: How do I debug authentication issues?**
 A: Enable debug mode, add logging to callbacks, and check the Network tab in DevTools.

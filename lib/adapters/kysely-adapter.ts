@@ -17,7 +17,7 @@ import type { Adapter, AdapterSession, AdapterUser } from "next-auth/adapters";
  * Kysely Adapter for NextAuth
  *
  * Implements the NextAuth Adapter interface using Kysely raw SQL queries.
- * This replaces PrismaAdapter with our custom database layer.
+ * This replaces the legacy PrismaAdapter with our custom database layer.
  */
 export function KyselyAdapter(): Adapter {
   const adapter: Adapter = {

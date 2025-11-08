@@ -18,8 +18,8 @@ export default async function HeroLanding() {
           className="max-w-2xl text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8"
           style={{ animationDelay: "0.35s", animationFillMode: "forwards" }}
         >
-          Empower your next project with Next.js 16, Prisma, Neon, Auth.js v5,
-          Resend, React Email, Shadcn/ui, and Stripe.
+          Empower your next project with Next.js 16, Kysely, raw SQL, Neon,
+          Auth.js v5, Resend, React Email, Shadcn/ui, and Stripe.
         </p>
 
         <div

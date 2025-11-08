@@ -1,5 +1,5 @@
 -- Initial schema migration
--- This migration creates all tables based on the Prisma schema
+-- This migration creates all tables using SQL definitions managed via Kysely
 -- All table and column names use snake_case
 
 -- Enable UUID extension for generating IDs

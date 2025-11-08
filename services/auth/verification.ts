@@ -148,7 +148,7 @@ export class VerificationService {
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
       // Store in a database table like verification_tokens
-      // await prisma.verificationToken.create({
+      // await verificationTokenRepository.create({
       //   data: {
       //     userId,
       //     token,
@@ -171,7 +171,7 @@ export class VerificationService {
       // In a real implementation, you would query the database
       // For now, we'll return null (not recommended for production)
 
-      // const verificationToken = await prisma.verificationToken.findUnique({
+      // const verificationToken = await verificationTokenRepository.findByToken({
       //   where: { token },
       //   include: { user: true },
       // });
@@ -195,7 +195,7 @@ export class VerificationService {
   private async removeVerificationToken(token: string): Promise<void> {
     try {
       // In a real implementation, you would delete from database
-      // await prisma.verificationToken.delete({
+      // await verificationTokenRepository.deleteByToken({
       //   where: { token },
       // });
 
@@ -212,7 +212,7 @@ export class VerificationService {
   async cleanupExpiredTokens(): Promise<number> {
     try {
       // In a real implementation, you would delete expired tokens from database
-      // const result = await prisma.verificationToken.deleteMany({
+      // const result = await verificationTokenRepository.deleteExpired({
       //   where: {
       //     expiresAt: {
       //       lt: new Date(),

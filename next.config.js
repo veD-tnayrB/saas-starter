@@ -22,7 +22,6 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ["@prisma/client"],
   turbopack: {},
 };
 

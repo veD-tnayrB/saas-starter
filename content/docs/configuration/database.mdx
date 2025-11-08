@@ -17,7 +17,7 @@ If don't have an account on Neon, just follow their steps [here](https://neon.te
 
 ### Copy database url
 
-After create a project on Neon, you can copy the database url. Select `Prisma` from the list then the `env` tab.
+After creating a project on Neon, copy the database URL. Choose the `psql` option (or copy the raw connection string) from the `env` tab.
 
 <Callout type="warning">
   <b>Don't forget</b> to reveal the information hidden behind the stars using
@@ -27,15 +27,16 @@ After create a project on Neon, you can copy the database url. Select `Prisma` f
 Paste in your `.env` file.
 
 ```js
-DATABASE_URL = "postgres://alex:AbC123dEf@ep-cool-darkness-123456.us-east-2.aws.neon.tech/dbname";
+DATABASE_URL =
+  "postgres://alex:AbC123dEf@ep-cool-darkness-123456.us-east-2.aws.neon.tech/dbname";
 ```
 
 ### Push migrations
 
-You can push the migrations on your database with the cli.
+You can apply the SQL migrations to your database with the provided CLI script.
 
 ```bash
-npx prisma db push
+pnpm run db:migrate
 ```
 
 </Steps>

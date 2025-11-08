@@ -29,7 +29,7 @@ Start now.
 
 ## Introduction
 
-Empower your next project with the stack of Next.js 16, Prisma, Neon, Auth.js v5, Resend, React Email, Shadcn/ui, and Stripe.
+Empower your next project with the stack of Next.js 16, Kysely, raw SQL, Neon, Auth.js v5, Resend, React Email, Shadcn/ui, and Stripe.
 <br/>
 All seamlessly integrated to accelerate your development and saas journey.
 
@@ -116,7 +116,7 @@ pnpm run dev
 This project follows a **clean architecture pattern** with clear separation of concerns:
 
 ```
-├── repositories/     # Data access layer (Prisma queries)
+├── repositories/     # Data access layer (Kysely queries & raw SQL)
 │   ├── auth/        # User authentication repositories
 │   └── projects/    # Project, member, and invitation repositories
 ├── services/         # Business logic layer
@@ -139,7 +139,7 @@ This project follows a **clean architecture pattern** with clear separation of c
 - **Repository Pattern**: All database queries isolated in repositories
 - **Service Layer**: Business logic separated from data access
 - **Project-Specific Roles**: No global user roles; roles are defined per project
-- **Atomic Operations**: Project creation and member management use Prisma transactions
+- **Atomic Operations**: Project creation and member management use Kysely transactions with raw SQL support
 - **Type Safety**: Full TypeScript coverage with strict typing
 
 ## Roadmap
@@ -158,7 +158,7 @@ https://github.com/veD-tnayrB/saas-starter/assets/62285783/828a4e0f-30e3-4cfe-96
 
 - [Next.js](https://nextjs.org/) – React framework for building performant apps with the best developer experience
 - [Auth.js](https://authjs.dev/) – Handle user authentication with ease with providers like Google, Twitter, GitHub, etc.
-- [Prisma](https://www.prisma.io/) – Typescript-first ORM for Node.js
+- [Kysely](https://kysely.dev/) – Type-safe SQL query builder for Node.js with first-class raw SQL support
 - [React Email](https://react.email/) – Versatile email framework for efficient and flexible email development
 
 ### Platforms

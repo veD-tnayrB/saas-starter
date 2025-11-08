@@ -6,7 +6,7 @@ const site_url = env.NEXT_PUBLIC_APP_URL;
 export const siteConfig: ISiteConfig = {
   name: "SaaS Starter",
   description:
-    "Harness the power of Next.js 16, Prisma, Neon, Auth.js v5, Resend, React Email, Shadcn/ui and Stripe to build your next big thing.",
+    "Harness the power of Next.js 16, Kysely, raw SQL, Neon, Auth.js v5, Resend, React Email, Shadcn/ui and Stripe to build your next big thing.",
   url: site_url,
   ogImage: `${site_url}/_static/og.jpg`,
   links: {
