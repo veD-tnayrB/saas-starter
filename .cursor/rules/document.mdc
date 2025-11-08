@@ -10,8 +10,6 @@ alwaysApply: false
 
 # AUTHOR: Bryant Caballero
 
-# LAST UPDATED: 2025-10-21
-
 # ============================================
 
 name: document_flow
@@ -40,7 +38,6 @@ Use the following structure and standards:
 
 title: <FlowName> Flow
 description: End-to-end explanation of the <FlowName> flow
-lastUpdated: {{current_date}}
 
 ---
 
