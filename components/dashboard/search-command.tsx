@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ISidebarNavItem } from "@/types";
 
 import { cn } from "@/lib/utils";
@@ -16,10 +16,21 @@ import {
 } from "@/components/ui/command";
 import { Icons } from "@/components/shared/icons";
 
+function resolveProjectHref(href: string, currentPath: string): string {
+  if (!href || !href.includes("[projectId]")) return href;
+  const match = currentPath.match(/\/dashboard\/([^/]+)/);
+  const projectId = match?.[1];
+  if (!projectId || projectId.includes("[")) {
+    return "/dashboard";
+  }
+  return href.replace("[projectId]", projectId);
+}
+
 export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
   const [open, setOpen] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -89,11 +100,15 @@ export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
             <CommandGroup key={section.title} heading={section.title}>
               {section.items.map((item) => {
                 const Icon = Icons[item.icon || "arrowRight"];
+                const destination = resolveProjectHref(
+                  item.href as string,
+                  pathname,
+                );
                 return (
                   <CommandItem
                     key={item.title}
                     onSelect={() => {
-                      runCommand(() => router.push(item.href as string));
+                      runCommand(() => router.push(destination));
                     }}
                   >
                     <Icon className="mr-2 size-5" />

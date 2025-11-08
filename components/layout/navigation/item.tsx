@@ -19,13 +19,30 @@ interface INavigationItemProps {
   path: string;
 }
 
+function resolveProjectHref(href: string, currentPath: string): string {
+  if (!href || !href.includes("[projectId]")) return href;
+  const match = currentPath.match(/\/dashboard\/([^/]+)/);
+  const projectId = match?.[1];
+  if (!projectId || projectId.includes("[")) {
+    return "/dashboard";
+  }
+  return href.replace("[projectId]", projectId);
+}
+
 export function NavigationItem({
   item,
   isSidebarExpanded,
   path,
 }: INavigationItemProps) {
   const Icon = Icons[item.icon || "arrowRight"];
-  const isActive = path === item.href;
+  const resolvedHref = resolveProjectHref(item.href, path);
+  const normalizedPath = path.endsWith("/") ? path.slice(0, -1) : path;
+  const normalizedHref = resolvedHref.endsWith("/")
+    ? resolvedHref.slice(0, -1)
+    : resolvedHref;
+  const isActive =
+    normalizedPath === normalizedHref ||
+    normalizedPath.startsWith(`${normalizedHref}/`);
   const iconClass = isActive ? "text-foreground" : "text-foreground/70";
   const linkClass = cn(
     "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-muted",
@@ -43,7 +60,7 @@ export function NavigationItem({
     item.disabled &&
       "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-foreground/50",
   );
-  const linkHref = item.disabled ? "#" : item.href;
+  const linkHref = item.disabled ? "#" : resolvedHref;
   const hasBadge = !!item.badge;
 
   const expandedContent = (
