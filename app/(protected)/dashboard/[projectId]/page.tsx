@@ -1,24 +1,22 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
-import {
-  findAllUserProjects,
-  getProjectInvitationStats,
-  getProjectMemberCount,
-  getProjectMemberGrowth,
-  getProjectMembersByRole,
-} from "@/repositories/projects";
+import { findAllUserProjects } from "@/repositories/projects";
 import { memberService, projectService } from "@/services/projects";
 
 import { canManageProject, hasPermissionLevel } from "@/lib/project-roles";
 import { constructMetadata } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { InvitationAcceptedToast } from "@/components/dashboard/invitation-accepted-toast";
-import { InvitationsChart } from "@/components/dashboard/invitations-chart";
-import { MemberGrowthChart } from "@/components/dashboard/member-growth-chart";
-import { ProjectMembers } from "@/components/dashboard/members";
-import { MembersByRoleChart } from "@/components/dashboard/members-by-role-chart";
 import { ProjectNotFound } from "@/components/dashboard/project-not-found";
-import { ProjectStatsCard } from "@/components/dashboard/project-stats-card";
+import { InvitationsChartSection } from "@/components/dashboard/sections/invitations-chart-section";
+import { MemberGrowthSection } from "@/components/dashboard/sections/member-growth-section";
+import { MembersByRoleSection } from "@/components/dashboard/sections/members-by-role-section";
+import { ProjectMembersSection } from "@/components/dashboard/sections/project-members-section";
+import { ProjectStatsSection } from "@/components/dashboard/sections/project-stats";
+import { ChartSkeleton } from "@/components/dashboard/skeletons/chart-skeleton";
+import { ListSkeleton } from "@/components/dashboard/skeletons/list-skeleton";
+import { ProjectStatsSkeleton } from "@/components/dashboard/skeletons/project-stats-skeleton";
 
 interface IDashboardPageProps {
   params: Promise<{ projectId: string }>;
@@ -70,13 +68,7 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   const members = await memberService.getProjectMembers(projectId);
 
   // Get project statistics - all queries use the validated projectId
-  const [membersByRole, invitationStats, memberGrowth, totalMembers] =
-    await Promise.all([
-      getProjectMembersByRole(projectId),
-      getProjectInvitationStats(projectId),
-      getProjectMemberGrowth(projectId),
-      getProjectMemberCount(projectId),
-    ]);
+  const membersPromise = memberService.getProjectMembers(projectId);
 
   // Determine what statistics to show based on role
   const canViewAdvancedStats = hasPermissionLevel(userRole, "ADMIN");
@@ -84,64 +76,37 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   const canManageMembers = canManageProject(userRole);
 
   // Calculate total members by role
-  const totalMembersByRole =
-    membersByRole.OWNER + membersByRole.ADMIN + membersByRole.MEMBER;
-
   return (
     <>
       <InvitationAcceptedToast />
       <DashboardHeader
         heading={project.name}
-        text={`Role: ${userRole} — View project statistics and manage your team.`}
+        text={`Welcome back, ${user.name}!`}
       />
       <div className="flex flex-col gap-5">
-        {/* Statistics Cards - Visible to all, but with different data based on role */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <ProjectStatsCard
-            title="Total Members"
-            value={totalMembers}
-            description={`${membersByRole.OWNER} owners, ${membersByRole.ADMIN} admins, ${membersByRole.MEMBER} members`}
-            icon="users"
-          />
-          <ProjectStatsCard
-            title="Pending Invitations"
-            value={invitationStats.pending}
-            description={`${invitationStats.expired} expired invitations`}
-            icon="userPlus"
-          />
-          {canViewAdvancedStats && (
-            <>
-              <ProjectStatsCard
-                title="Team Leaders"
-                value={membersByRole.OWNER + membersByRole.ADMIN}
-                description="Owners and administrators"
-                icon="shield"
-              />
-              <ProjectStatsCard
-                title="Active Members"
-                value={membersByRole.MEMBER}
-                description="Regular team members"
-                icon="trendingUp"
-              />
-            </>
-          )}
-        </div>
+        <Suspense fallback={<ProjectStatsSkeleton />}>
+          <ProjectStatsSection projectId={projectId} />
+        </Suspense>
 
-        {/* Charts - Visible to all, but with different charts based on role */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <MembersByRoleChart data={membersByRole} />
-          <MemberGrowthChart data={memberGrowth} />
-          <InvitationsChart data={invitationStats} />
+          <Suspense fallback={<ChartSkeleton title="Members by role" />}>
+            <MembersByRoleSection projectId={projectId} />
+          </Suspense>
+          <Suspense fallback={<ChartSkeleton title="Member growth" />}>
+            <MemberGrowthSection projectId={projectId} />
+          </Suspense>
+          <Suspense fallback={<ChartSkeleton title="Invitations" />}>
+            <InvitationsChartSection projectId={projectId} />
+          </Suspense>
         </div>
 
-        {/* Project Members - Visible to all, but management depends on role */}
-        <div className="space-y-6">
-          <ProjectMembers
+        <Suspense fallback={<ListSkeleton title="Project members" />}>
+          <ProjectMembersSection
             projectId={projectId}
-            members={members}
+            canManageMembers={canManageMembers}
             userRole={userRole}
           />
-        </div>
+        </Suspense>
       </div>
     </>
   );
