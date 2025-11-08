@@ -1,0 +1,87 @@
+---
+title: Admin Access Flow
+description: How platform admins gain access to internal management features
+lastUpdated: 2025-11-08
+---
+
+## Overview
+
+Admin access controls whether a signed-in user may reach internal management pages (plan/role editors, permission matrices, etc.). The flow relies on project ownership or admin membership: any user who owns at least one project or holds an ADMIN role in any project is considered a “platform admin”. The flag is computed via repository counters and reused by server actions (`actions/permissions/*`) to guard sensitive operations.
+
+**Main Libraries/Services:**
+
+- **services/auth/platform-admin.ts** – Exposes `isPlatformAdmin(userId)` and `isPlatformOwner(userId)` by counting project ownership/admin memberships.
+- **lib/permissions/admin-access.ts** – Helper `canAccessAdminPages()` that short-circuits in development and otherwise calls `isPlatformAdmin` (via `countAdminMemberships`).
+- **actions/permissions/\*`** – Server actions (plans, roles, actions, permissions) that guard access using `canAccessAdminPages`.
+- **repositories/projects** – Provide `countProjectsByOwner`, `countAdminMemberships` SQL helpers that power admin detection.
+- **middleware/route guards** (if implemented) – Optionally redirect unauthorized users before rendering admin routes.
+
+## File Map
+
+- `services/auth/platform-admin.ts` – Platform admin/owner checks using repository counters.
+- `lib/permissions/admin-access.ts` – Shared helper for server actions and pages; allows unrestricted access in development, restricts in production.
+- `actions/permissions/{actions,plans,roles,permissions}.ts` – Each server action imports `canAccessAdminPages()` to enforce admin guard before reading/writing data.
+- `repositories/projects/index.ts` (and submodules) – Expose `countProjectsByOwner`, `countAdminMemberships` queries.
+- `app/(protected)/dashboard/admin/*` (if present) – UI modules that invoke guarded actions; render errors when access is denied.
+
+## Step-by-Step Flow
+
+### Determining Platform Admin Status
+
+1. `isPlatformAdmin(userId)` calls:
+   - `countProjectsByOwner(userId)`; if > 0, user is an owner → admin access granted.
+   - Otherwise `countAdminMemberships(userId)`; if > 0, user is an admin member → access granted.
+2. Any exceptions log errors and default to `false` (avoid granting access accidentally).
+
+### Guarding Admin Pages / Actions
+
+1. Server actions (e.g., `createPlanAction`) call `getCurrentUser()` to ensure a session exists; unauthenticated users are redirected to `/login`.
+2. `canAccessAdminPages()`:
+   - Returns `true` immediately in development mode.
+   - In production, uses `getCurrentUser()` and `countAdminMemberships` (same repo as `isPlatformAdmin`) to verify privileges.
+3. If the user lacks privileges, actions throw `Error("Forbidden")`, which the UI surfaces as access denied.
+4. Authorized users proceed to perform CRUD via repositories (`createPlan`, `updateRole`, etc.), with caches flushed by `CacheService` as needed.
+
+### Optional UI Flow
+
+1. Admin dashboards render analytics, plan configurators, and permission matrices.
+2. Components consuming server actions must handle thrown errors (show 403 message).
+3. Navigation links to admin pages should be hidden when `isPlatformAdmin` returns false.
+
+## Data Flow Diagram
+
+```mermaid
+flowchart TD
+  A[User requests admin page/action] --> B[getCurrentUser()]
+  B -->|unauthenticated| C[redirect /login]
+  B -->|authenticated| D[canAccessAdminPages()]
+  D -->|false| E[throw Forbidden / show 403]
+  D -->|true| F[Execute admin server action]
+  F --> G[repositories/permissions or projects]
+  G --> H[(PostgreSQL)]
+```
+
+## Dependencies & Contracts
+
+- `isPlatformAdmin(userId)` – Promise<boolean>; true if user owns any project or is ADMIN in any project.
+- `isPlatformOwner(userId)` – Promise<boolean>; true if user owns at least one project.
+- `canAccessAdminPages()` – Promise<boolean>; used by server actions/pages to gate access (development override).
+- `countProjectsByOwner(userId)` / `countAdminMemberships(userId)` – Repository helpers returning numeric counts.
+- Server actions (plans, roles, actions, permissions) – Call `canAccessAdminPages()` before performing mutations.
+- UI components – Should expect thrown “Forbidden” errors (or handle 403 responses) when access is denied.
+
+## Known Limitations
+
+- Admin privileges are derived solely from project ownership/admin roles; there is no dedicated “global admin” flag or table.
+- Development environments bypass checks entirely; ensure production config is correct before deploying.
+- There is no UI to promote/demote admins outside of role/plan management; it depends on project ownership.
+- Missing audit logs: there’s no record when admin actions occur (plan changes, permission tweaks).
+- Users removed from all projects lose admin access immediately; consider warnings or fallback roles if needed.
+
+## Notes & TODOs
+
+- Introduce explicit `platform_admins` table or flag for manual overrides beyond project roles.
+- Add audit logging and metrics for admin actions.
+- Surface admin status in the UI (profile badge, menu item visibility) to avoid confusion.
+- Provide a dedicated admin dashboard entry point with 403 handling rather than generic error throws.
+- Consider caching `isPlatformAdmin` results per request to avoid duplicate repository calls within the same action.

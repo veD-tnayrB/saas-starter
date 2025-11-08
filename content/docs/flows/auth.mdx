@@ -1,547 +1,93 @@
 ---
-title: Authentication Flow Guide
-description: Complete guide to understanding authentication flows for junior developers
-lastUpdated: 2024-12-19
+title: Auth Flow
+description: End-to-end explanation of the authentication flow
+lastUpdated: 2025-11-08
 ---
 
-## 🎯 What This Guide Covers
+## Overview
 
-This guide explains **exactly** how authentication works in our SaaS app. By the end, you'll understand:
+The authentication layer is powered by NextAuth.js with a custom Kysely adapter. It handles Google OAuth sign-in, builds secure JWT-based sessions, and keeps the current user cached for server components. Business logic lives in `services/auth`, which coordinates repositories (raw SQL via Kysely), OAuth clients, and downstream features such as automatic personal project creation.
 
-- How OAuth flows work (Google, GitHub, etc.)
-- What NextAuth.js does behind the scenes
-- How sessions are created and managed
-- How to debug authentication issues
-- The actual HTTP requests and responses
+**Main Libraries/Services:**
 
-## 🏗️ Arquitectura Simplificada para SaaS Starter Kit
+- **NextAuth.js** – Manages OAuth redirects, JWT/session callbacks, and session cookies.
+- **Kysely + raw SQL repositories** – Persist users, accounts, sessions, and tokens in PostgreSQL.
+- **services/auth/\*** – Orchestrates registration, provider linking, session handling, verification, and platform-admin checks.
+- **lib/session.ts** – Provides request-scoped cached helpers (`getSession`, `getCurrentUser`, `getCurrentUserId`).
+- **clients/auth** – Wraps external OAuth providers for token exchange and profile retrieval.
 
-Nuestra arquitectura de autenticación está diseñada para ser **rápida de desarrollar** y **fácil de entender**. Usamos instanciación directa con ES6 imports para mantener la simplicidad y consistencia.
+## File Map
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   NextAuth.js   │    │   OAuth Provider │
-│   (React)       │◄──►│   (Server)      │◄──►│   (Google, etc.) │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Session       │    │   Database      │    │   User Profile  │
-│   (JWT/Cookie)  │    │   (Kysely + SQL)│    │   (Provider)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+- `auth.ts` – NextAuth handler; configures providers, callbacks, events, and exposes the `auth()` helper.
+- `config/auth.ts` – Defines Google OAuth provider credentials and shared NextAuth options.
+- `lib/adapters/kysely-adapter.ts` – Custom NextAuth adapter backed by Kysely repositories.
+- `lib/session.ts` – Caches server-side session lookups per request to avoid redundant I/O.
+- `services/auth/session.ts` – Implements JWT/session callbacks and exposes helpers to validate, refresh, and destroy sessions.
+- `services/auth/providers.ts` – Handles OAuth callbacks, account linking, and provider metadata.
+- `services/auth/registration.ts` – Creates users, personal projects, and project memberships during onboarding.
+- `services/auth/user.ts` – User CRUD, profile updates, and activity/statistics queries.
+- `services/auth/verification.ts` – Placeholder service for verification and password reset workflows.
+- `services/auth/platform-admin.ts` – Determines platform-admin/owner access based on project roles.
+- `repositories/auth/*` – Raw SQL queries (via Kysely) for users, accounts, sessions, verification tokens, and roles.
 
-### 📁 Estructura Simplificada
+## Step-by-Step Flow
 
-**Servicios (Lógica de Negocio):**
+### OAuth Sign-In (Google)
 
-- `services/auth/` - Autenticación y gestión de usuarios
-- `services/billing/` - Facturación y suscripciones
-- `services/notifications/` - Emails y notificaciones
+1. The client calls `signIn("google")`; NextAuth uses `auth.ts`/`config/auth.ts` to redirect to Google with PKCE + state.
+2. After Google calls back, NextAuth invokes `ProviderService.handleOAuthCallback()` to exchange the code for tokens through `clients/auth`.
+3. `RegistrationService.handleOAuthRegistration()` ensures a user record exists, using repositories plus `projectService.createPersonalProject()` to seed a personal workspace with OWNER membership.
+4. Provider accounts are stored with `createAccount`/`linkProviderAccount`, so future sign-ins reuse the same user.
 
-**Repositorios (Base de Datos):**
+### Session & JWT Callbacks
 
-- `repositories/auth/` - Operaciones de base de datos
+1. During sign-in, `SessionManagementService.handleJWTCallback()` enriches the JWT with `sub`, `name`, `email`, and `picture`.
+2. When a session is read, `handleSessionCallback()` mirrors token data back into the session payload, preserving `expires`.
+3. If `trigger === "update"`, the service refetches the latest user via `userService.getUserById()` to keep session data in sync after profile edits.
+4. `SessionService` can create, validate, refresh, or revoke database-backed sessions for other features (e.g., admin dashboards).
 
-**Clientes (APIs Externas):**
+### Session Access in Server Components
 
-- `clients/auth/` - Integraciones con servicios externos
+1. `auth.ts` calls `setNextAuthConfig()` so `lib/session.ts` can reuse the NextAuth options without circular imports.
+2. `getSession`, `getCurrentUser`, and `getCurrentUserId` are wrapped with React’s `cache()` to dedupe work within a request.
+3. Server components and API routes import these helpers to guard routes or fetch the current user without repeated database calls.
 
-**Acciones (Server Actions):**
+### Project Bootstrapping & Admin Detection
 
-- `actions/` - Funciones del servidor que usan servicios
+1. The NextAuth `createUser` event triggers `projectService.createPersonalProject()` so every new account has an OWNER project.
+2. `RegistrationService` reuses the same logic for invitation acceptance to maintain consistent ownership rules.
+3. `SessionManagementService.isAdmin()` relies on `platform-admin.ts` to determine whether the authenticated user owns or administers any project and unlock platform-level actions accordingly.
 
-## 📁 Key Files Explained
-
-**Configuration Files:**
-
-- `auth.ts` - Main NextAuth configuration (providers, callbacks, session strategy)
-- `config/auth.ts` - OAuth provider settings (Google, GitHub, etc.)
-- `app/api/auth/[...nextauth]/route.ts` - API route that handles all auth requests
-
-**Service Files:**
-
-- `services/auth/session.ts` - Custom session management logic
-- `services/auth/user.ts` - User operations (create, update, delete)
-- `repositories/auth/` - Database operations for users and sessions
-
-**Type Files:**
-
-- `types/auth/` - TypeScript interfaces for users, sessions, and providers
-
-## 🔐 OAuth Flow Explained (Step by Step)
-
-### What is OAuth?
-
-OAuth is like a "valet key" for your account. Instead of giving your password to every app, you give permission for the app to access specific parts of your account.
-
-### Google OAuth Flow (Detailed)
-
-Let's trace through **exactly** what happens when a user clicks "Sign in with Google":
-
-#### Step 1: User Clicks "Sign in with Google"
-
-**What happens:**
-
-- User clicks button in your React component
-- Frontend makes a request to `/api/auth/providers`
-- NextAuth returns available providers
-
-**HTTP Request:**
-
-```http
-GET /api/auth/providers
-```
-
-**Response:**
-
-```json
-{
-  "google": {
-    "id": "google",
-    "name": "Google",
-    "type": "oidc",
-    "signinUrl": "http://localhost:3000/api/auth/signin/google",
-    "callbackUrl": "http://localhost:3000/api/auth/callback/google"
-  }
-}
-```
-
-#### Step 2: NextAuth Generates OAuth URL
-
-**What happens:**
-
-- NextAuth creates a secure OAuth URL with:
-  - Your app's client ID
-  - A random state parameter (prevents CSRF attacks)
-  - A code challenge (PKCE security)
-  - Redirect URL back to your app
-
-**Generated URL Example:**
-
-```
-https://accounts.google.com/o/oauth2/v2/auth?
-  response_type=code&
-  client_id=286317980099-59u5kdc0dor232moch9bufgusqp90igl.apps.googleusercontent.com&
-  redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback%2Fgoogle&
-  code_challenge=4mD3JVl4lXZ7Uw0jCNp-cz0lx1exRRE2RtBEX7WSaTA&
-  code_challenge_method=S256&
-  scope=openid+profile+email&
-  state=random-state-string
-```
-
-#### Step 3: User Authorizes on Google
-
-**What happens:**
-
-- User is redirected to Google's login page
-- User enters their Google credentials
-- Google shows permission screen: "App wants to access your profile"
-- User clicks "Allow"
-
-#### Step 4: Google Redirects Back with Code
-
-**What happens:**
-
-- Google redirects back to your app with an authorization code
-- The code is temporary and can only be used once
-
-**Redirect URL:**
-
-```
-http://localhost:3000/api/auth/callback/google?
-  code=4/0AX4XfWh...&
-  state=random-state-string
-```
-
-#### Step 5: NextAuth Exchanges Code for Tokens
-
-**What happens:**
-
-- NextAuth makes a POST request to Google's token endpoint
-- Exchanges the authorization code for access tokens
-
-**HTTP Request to Google:**
-
-```http
-POST https://oauth2.googleapis.com/token
-Content-Type: application/x-www-form-urlencoded
-
-code=4/0AX4XfWh...&
-client_id=your-client-id&
-client_secret=your-client-secret&
-redirect_uri=http://localhost:3000/api/auth/callback/google&
-grant_type=authorization_code&
-code_verifier=code-verifier-string
-```
-
-**Google's Response:**
-
-```json
-{
-  "access_token": "ya29.a0AfH6SMC...",
-  "expires_in": 3599,
-  "refresh_token": "1//04...",
-  "scope": "openid profile email",
-  "token_type": "Bearer",
-  "id_token": "eyJhbGciOiJSUzI1NiIs..."
-}
-```
-
-#### Step 6: NextAuth Fetches User Profile
-
-**What happens:**
-
-- NextAuth uses the access token to fetch user profile from Google
-- Gets user's name, email, profile picture, etc.
-
-**HTTP Request to Google:**
-
-```http
-GET https://www.googleapis.com/oauth2/v2/userinfo
-Authorization: Bearer ya29.a0AfH6SMC...
-```
-
-**Google's Response:**
-
-```json
-{
-  "id": "123456789",
-  "email": "user@gmail.com",
-  "verified_email": true,
-  "name": "John Doe",
-  "given_name": "John",
-  "family_name": "Doe",
-  "picture": "https://lh3.googleusercontent.com/...",
-  "locale": "en"
-}
-```
-
-#### Step 7: Your JWT Callback Runs
-
-**What happens:**
-
-- NextAuth calls your `jwt` callback function
-- You can modify the token before it's stored
-- This is where you add custom user data
-
-**Your JWT Callback Code:**
-
-```typescript
-// In auth.ts
-callbacks: {
-  async jwt({ token, user, account, profile }) {
-    // This runs when user signs in
-    if (user) {
-      token.id = user.id;
-      token.email = user.email;
-      token.name = user.name;
-      token.picture = user.picture;
-      token.role = user.role || 'USER';
-    }
-    return token;
-  }
-}
-```
-
-#### Step 8: Your Session Callback Runs
-
-**What happens:**
-
-- NextAuth calls your `session` callback function
-- You return the final session data that will be available in your app
-
-**Your Session Callback Code:**
-
-```typescript
-// In auth.ts
-callbacks: {
-  async session({ token, session }) {
-    // This runs every time session is accessed
-    session.user.id = token.id;
-    session.user.email = token.email;
-    session.user.name = token.name;
-    session.user.picture = token.picture;
-    session.user.role = token.role;
-    return session;
-  }
-}
-```
-
-#### Step 9: Session is Stored
-
-**What happens:**
-
-- NextAuth stores the session in a secure HTTP-only cookie
-- Cookie contains the JWT token with user data
-- User is now logged in
-
-**Cookie Example:**
-
-```
-next-auth.session-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-## 🔄 Session Management Flow
-
-### How Sessions Work
-
-Sessions are how your app knows who is logged in. Here's how they work:
-
-#### 1. Session Creation
-
-- Created when user successfully authenticates
-- Stored as JWT token in HTTP-only cookie
-- Contains user ID, email, role, and expiration time
-
-#### 2. Session Validation
-
-- Every request checks the session cookie
-- Validates JWT signature and expiration
-- Extracts user data from token
-
-#### 3. Session Usage
-
-- Available in server components via `getServerSession()`
-- Available in client components via `useSession()`
-- Used for authorization and user-specific data
-
-### Session Flow Diagram
+## Data Flow Diagram
 
 ```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant N as NextAuth
-    participant G as Google
-    participant D as Database
-
-    U->>F: Click "Sign in with Google"
-    F->>N: GET /api/auth/providers
-    N->>F: Return provider info
-    F->>N: POST /api/auth/signin/google
-    N->>G: Redirect to Google OAuth
-    G->>U: Show login page
-    U->>G: Enter credentials
-    G->>N: Redirect with code
-    N->>G: Exchange code for tokens
-    G->>N: Return access token
-    N->>G: Fetch user profile
-    G->>N: Return user data
-    N->>N: Run JWT callback
-    N->>N: Run session callback
-    N->>F: Set session cookie
-    F->>U: User logged in
+flowchart TD
+  A[User clicks Sign in] --> B[NextAuth handler (auth.ts)]
+  B --> C[services/auth/providers]
+  C --> D[registrationService + projectService]
+  D --> E[repositories/auth (Kysely + SQL)]
+  E --> F[(PostgreSQL)]
+  F --> G[SessionManagementService callbacks]
+  G --> H[lib/session cached helpers]
+  H --> I[Server components & API routes]
 ```
 
-## 🐛 Debugging Authentication Issues
+## Dependencies & Contracts
 
-### Common Problems and Solutions
+- `IAuthUser` – Canonical user object returned by auth services and stored in JWT/session data.
+- `IAuthSession` – Session payload emitted by `SessionService`.
+- `IProviderAuthResult` – Standard success/error contract for OAuth callbacks and account linking.
+- `IUserRegistrationData` – Input required when onboarding users via email or provider flows.
+- `ISessionValidationResult` – Outcome of validating session tokens (valid flag, user, optional error metadata).
 
-#### 1. "Invalid redirect URI" Error
+## Known Limitations
 
-**Problem:** Google rejects the redirect URI
-**Solution:** Check your Google Console settings
+- Email/password and magic-link flows are not implemented; `VerificationService` still stores tokens in memory.
+- `AuthService.signInWithProvider()` contains a TODO to coordinate provider callbacks through a single helper.
+- The legacy Prisma seed script still exists; seeding and migrations must be rewritten around Kysely SQL files.
 
-- Go to Google Cloud Console
-- Navigate to APIs & Services > Credentials
-- Add `http://localhost:3000/api/auth/callback/google` to authorized redirect URIs
+## Notes & TODOs
 
-#### 2. "State parameter mismatch" Error
-
-**Problem:** CSRF protection fails
-**Solution:** Check your AUTH_SECRET environment variable
-
-```bash
-# Generate a new secret
-openssl rand -base64 32
-```
-
-#### 3. "User not found" Error
-
-**Problem:** User exists in Google but not in your database
-**Solution:** Check your JWT callback
-
-- Make sure you're creating users in the database
-- Check if the Kysely adapter is properly configured
-
-#### 4. Session is null
-
-**Problem:** Session not being created or retrieved
-**Solution:** Check session strategy
-
-```typescript
-// In auth.ts
-session: {
-  strategy: "jwt";
-} // or "database"
-```
-
-### Debug Tools
-
-#### 1. Enable NextAuth Debug Mode
-
-```typescript
-// In auth.ts
-const nextAuthConfig = {
-  // ... other config
-  debug: process.env.NODE_ENV !== "production",
-};
-```
-
-#### 2. Add Logging to Callbacks
-
-```typescript
-// In auth.ts
-callbacks: {
-  async jwt({ token, user, account, profile }) {
-    console.log('🔐 JWT Callback:', { token, user, account, profile });
-    // ... your logic
-  },
-  async session({ token, session }) {
-    console.log('📝 Session Callback:', { token, session });
-    // ... your logic
-  },
-}
-```
-
-#### 3. Check Network Tab
-
-- Open browser DevTools
-- Go to Network tab
-- Look for requests to `/api/auth/*`
-- Check request/response data
-
-## 🔧 Adding New OAuth Providers
-
-### Step 1: Configure Provider
-
-Add provider to `config/auth.ts`:
-
-```typescript
-// For GitHub
-GitHub({
-  clientId: env.GITHUB_CLIENT_ID,
-  clientSecret: env.GITHUB_CLIENT_SECRET,
-});
-
-// For Discord
-Discord({
-  clientId: env.DISCORD_CLIENT_ID,
-  clientSecret: env.DISCORD_CLIENT_SECRET,
-});
-```
-
-### Step 2: Set Up Provider App
-
-1. Go to provider's developer console
-2. Create new OAuth application
-3. Set redirect URI to `http://localhost:3000/api/auth/callback/[provider]`
-4. Copy client ID and secret to environment variables
-
-### Step 3: Test the Flow
-
-1. Start your app: `pnpm dev`
-2. Go to login page
-3. Click the new provider button
-4. Complete OAuth flow
-5. Check if user is created in database
-
-## 📊 Database Schema
-
-### Users Table
-
-```sql
-CREATE TABLE "User" (
-  "id" TEXT NOT NULL,
-  "name" TEXT,
-  "email" TEXT NOT NULL,
-  "emailVerified" TIMESTAMP(3),
-  "image" TEXT,
-  "role" "UserRole" NOT NULL DEFAULT 'USER',
-  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP(3) NOT NULL,
-  CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
-```
-
-### Accounts Table (OAuth)
-
-```sql
-CREATE TABLE "Account" (
-  "id" TEXT NOT NULL,
-  "userId" TEXT NOT NULL,
-  "type" TEXT NOT NULL,
-  "provider" TEXT NOT NULL,
-  "providerAccountId" TEXT NOT NULL,
-  "refresh_token" TEXT,
-  "access_token" TEXT,
-  "expires_at" INTEGER,
-  "token_type" TEXT,
-  "scope" TEXT,
-  "id_token" TEXT,
-  "session_state" TEXT,
-  CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
-);
-```
-
-### Sessions Table
-
-```sql
-CREATE TABLE "Session" (
-  "id" TEXT NOT NULL,
-  "sessionToken" TEXT NOT NULL,
-  "userId" TEXT NOT NULL,
-  "expires" TIMESTAMP(3) NOT NULL,
-  CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
-);
-```
-
-## 🚀 Production Considerations
-
-### Security Checklist
-
-- [ ] Use HTTPS in production
-- [ ] Set secure cookie flags
-- [ ] Use strong AUTH_SECRET
-- [ ] Enable CSRF protection
-- [ ] Validate all inputs
-- [ ] Use rate limiting
-- [ ] Monitor failed login attempts
-
-### Performance Tips
-
-- [ ] Use JWT strategy for better performance
-- [ ] Implement session cleanup
-- [ ] Use Redis for session storage (if needed)
-- [ ] Cache user data appropriately
-- [ ] Monitor authentication metrics
-
-## 📚 Additional Resources
-
-- [NextAuth.js Documentation](https://next-auth.js.org/)
-- [OAuth 2.0 Specification](https://tools.ietf.org/html/rfc6749)
-- [JWT.io](https://jwt.io/) - JWT token decoder
-- [Google OAuth 2.0 Guide](https://developers.google.com/identity/protocols/oauth2)
-
-## ❓ FAQ
-
-**Q: Why do we use NextAuth instead of implementing OAuth manually?**
-A: NextAuth handles security, CSRF protection, session management, and provider integration. Implementing this manually would be error-prone and time-consuming.
-
-**Q: Can I customize the OAuth flow?**
-A: Yes! You can customize callbacks, add custom providers, and modify session data.
-
-**Q: How do I handle user roles and permissions?**
-A: Add role data in your JWT callback and check it in your session callback.
-
-**Q: What if I need to store additional user data?**
-A: Add the necessary columns via SQL migrations and update your Kysely repositories plus NextAuth callbacks to include the new data.
-
-**Q: How do I debug authentication issues?**
-A: Enable debug mode, add logging to callbacks, and check the Network tab in DevTools.
-
----
-
-_This guide should give you a complete understanding of how authentication works in our app. If you have questions, check the debugging section or ask a senior developer!_
+- Implement persistent verification-token storage using the auth repositories.
+- Replace the Prisma-based seed pipeline with a Kysely-driven seeding script.
+- Extend `RegistrationService` once verification storage is ready to support magic-link or other passwordless flows.

@@ -1,0 +1,103 @@
+---
+title: Settings Flow
+description: End-to-end explanation of the user settings and profile update flow
+lastUpdated: 2025-11-08
+---
+
+## Overview
+
+The settings flow allows authenticated users to update personal information (e.g., display name) and manage destructive actions such as account deletion. `app/(protected)/dashboard/settings/page.tsx` renders the page with form components that rely on server actions (`actions/update-user-name.ts`) and services (`services/auth/user.ts`). After profile changes, the flow revalidates cached session data and layout routes so the updated name propagates across the application.
+
+**Main Libraries/Services:**
+
+- **actions/update-user-name.ts** – Server action invoked from the settings form; validates ownership, parses input, updates profile, and revalidates paths.
+- **services/auth/user.ts** – `userAuthService` and `userService` handle user CRUD, profile updates, validation, and deletion.
+- **services/auth/session.ts** – Provides caching and JWT/session callbacks; profile changes trigger revalidation to refresh session data.
+- **components/forms/user-name-form.tsx** – Client component that posts to the server action and renders success/error feedback.
+- **components/dashboard/delete-account** – UI that consumes deletion flows (`userAuthService.deleteUserAccount`) and handles confirmation modals.
+- **lib/session.ts** – Cached helpers (`getSession`, `getCurrentUser`, `getCurrentUserId`) used on the settings page for initial user data.
+
+## File Map
+
+- `app/(protected)/dashboard/settings/page.tsx` – Server component fetching the current user and rendering forms.
+- `actions/update-user-name.ts` – Server action for name updates (`"use server"`); revalidates `/dashboard/settings`, `/dashboard`, and `/`.
+- `services/auth/user.ts` – `userAuthService.updateUserProfile` (name update) and `userAuthService.deleteUserAccount`.
+- `services/auth/session.ts` – Ensures session cache reflects updated profile via `handleJWTCallback` (`trigger === "update"`) and `handleSessionCallback`.
+- `components/forms/user-name-form.tsx` – Posts to the action, handles optimistic UI and validation states.
+- `components/dashboard/delete-account` – Uses deletion services and optional notifications.
+- `lib/notifications` (optional) – Sends account deletion emails when triggered.
+
+## Step-by-Step Flow
+
+### Loading the Settings Page
+
+1. `SettingsPage` fetches the current user via `getCurrentUser()` (cached helper) inside a server component.
+2. If no authenticated user is found, the page redirects to `/login`.
+3. The component renders:
+   - `UserNameForm` (client component) with the user’s current name.
+   - `DeleteAccountSection` for destructive account management.
+
+### Updating the User Name
+
+1. `UserNameForm` submits the new name to `updateUserName(userId, { name })` server action.
+2. The action verifies the current session (`getCurrentUser`) and checks that the caller matches the target `userId`.
+3. Input is validated via `userNameSchema.parse(data)` (Zod).
+4. `userAuthService.updateUserProfile(userId, { name })` persists the change through `UserService.updateUser` (Kysely repos).
+5. The action calls `revalidatePath("/dashboard/settings", "layout")`, `revalidatePath("/dashboard", "layout")`, and `revalidatePath("/", "layout")` to refresh cached layouts and server components that display user data.
+6. The action returns `{ status: "success" }`; the form component shows feedback and optionally resets the form state.
+
+### Session Refresh After Profile Update
+
+1. Layout revalidation causes affected server components to refetch `getCurrentUser()`, now reflecting the updated name.
+2. If session data is cached in JWT (via NextAuth), `SessionManagementService.handleJWTCallback` runs with `trigger === "update"` (from `useSession().update()` calls in client components) to fetch fresh user data.
+3. `handleSessionCallback` propagates the new name into the session payload accessible across routes.
+
+### Account Deletion (High-Level)
+
+1. `DeleteAccountSection` prompts the user for confirmation and authentication (e.g., password re-entry if implemented).
+2. On confirmation, a server action or mutation calls `userAuthService.deleteUserAccount(userId)` → `UserService.deleteUser`.
+3. Associated cleanup:
+   - Session termination (logout).
+   - Optional email notification (`NotificationService.sendAccountDeletionEmail`).
+   - Redirection to a goodbye or marketing page.
+
+## Data Flow Diagram
+
+```mermaid
+flowchart TD
+  A[User opens Settings] --> B[getCurrentUser()]
+  B --> C[SettingsPage renders forms]
+  C --> D[UserNameForm submit (updateUserName)]
+  D --> E[userAuthService.updateUserProfile]
+  E --> F[repositories/auth/user.updateUser]
+  F --> G[(PostgreSQL)]
+  D --> H[revalidatePath /dashboard/settings,/dashboard,/]
+  H --> I[Layouts re-fetch getCurrentUser()]
+  I --> J[Updated name visible across app]
+```
+
+## Dependencies & Contracts
+
+- `updateUserName(userId, data)` – Server action returning `{ status: "success" | "error" }`.
+- `userAuthService.updateUserProfile(userId, { name })` – Updates profile via repositories; throws on error.
+- `userService.updateUser(id, data)` – Kysely repository call that persists changes (`repositories/auth/user`).
+- `SessionManagementService.handleJWTCallback` – On `trigger === "update"`, fetches latest user data to keep JWT/session in sync.
+- `revalidatePath(path, "layout")` – Forces layout re-render and data refresh for routes showing user info.
+- `DeleteAccountSection` – Uses `userAuthService.deleteUserAccount` and flows similar to name updates (not detailed in this doc unless implemented).
+- `userNameSchema` – Zod schema ensuring names meet length/character requirements before persistence.
+
+## Known Limitations
+
+- Only the display name is configurable in the current flow; email, avatar, and other fields require additional components/actions.
+- Account deletion flow depends on other services (billing cancellation, project membership cleanup) that must be orchestrated manually.
+- No optimistic UI or client-side validation beyond form-level checks; server errors return generic messages.
+- Preferences (e.g., notifications) live elsewhere; the settings page focuses on profile basics.
+- Revalidation targets (`/`, `/dashboard`) assume global layouts display user info; additional pages may need manual inclusion.
+
+## Notes & TODOs
+
+- Expand settings to include email updates, password resets, and multi-factor authentication management.
+- Integrate profile photo upload using a client component + server action pattern similar to name updates.
+- Add richer error handling and user feedback for update failures.
+- Ensure account deletion triggers cleanup across billing, projects, and invitations automatically.
+- Consider storing user preferences (language, notification settings) and surfacing them on this page.

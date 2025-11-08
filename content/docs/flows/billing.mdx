@@ -1,0 +1,97 @@
+---
+title: Billing Flow
+description: End-to-end explanation of the billing and subscription flow
+lastUpdated: 2025-11-08
+---
+
+## Overview
+
+The billing flow coordinates Stripe subscriptions, customer self-service, and project plan management. Billing operations are centered around `services/billing/index.ts`, which calls the Stripe SDK, validates access through auth services, and relies on subscription services for current plan state. Stripe webhooks keep subscription data in sync so the UI always reflects the customer’s actual plan, renewal date, and billing status.
+
+**Main Libraries/Services:**
+
+- **Stripe SDK (`@/clients/stripe`)** – Creates checkout sessions and Billing Portal sessions.
+- **services/billing** – High-level billing orchestrator responsible for generating URLs, validating access, and surfacing results.
+- **services/subscriptions** – Retrieves and updates subscription records to ensure billing operations work with fresh data.
+- **repositories/auth** – Looks up users to determine email addresses and user IDs required by Stripe.
+- **services/auth/platform-admin** – Grants platform-level access for owners/admins to manage billing on behalf of others.
+- **Stripe webhooks (`services/subscriptions/webhooks`)** – Persist subscription events (payment success, checkout completion) and sync status changes.
+
+## File Map
+
+- `services/billing/index.ts` – BillingService implementation; creates checkout and portal sessions, validates access, and exposes helper methods (`getBillingUrl`, `getCheckoutUrl`).
+- `services/subscriptions/get-plan.ts` – Returns the current subscription plan including Stripe customer IDs and plan metadata.
+- `services/subscriptions/create.ts` / `update.ts` / `cancel.ts` – Manage the lifecycle of subscriptions (creation, plan change, cancellation).
+- `services/subscriptions/webhooks.ts` – Handles Stripe webhook events to persist subscription status changes and attach customers to projects.
+- `actions/generate-user-stripe.ts` & `actions/open-customer-portal.ts` – Server actions that wrap BillingService for UI-triggered flows.
+- `clients/stripe.ts` – Configures the Stripe SDK with API keys.
+- `repositories/auth` – Reads user records when building Stripe requests.
+- `app/(protected)/dashboard/[projectId]/billing/page.tsx` – Consumes subscription data to display billing status in the dashboard.
+
+## Step-by-Step Flow
+
+### Checkout Session Creation
+
+1. The UI (pricing page or dashboard) triggers `generateUserStripe` action with a target price ID.
+2. The action validates the current session via `lib/session.ts`, fetches user data, and calls `billingService.generateUserCheckoutSession`.
+3. BillingService retrieves the user subscription plan via `getUserSubscriptionPlan`, verifies the user exists (via `findUserById`), and composes success/cancel URLs.
+4. `createCheckoutSession` uses the Stripe SDK (`stripe.checkout.sessions.create`) to build a subscription checkout session (mode `subscription`, metadata includes `userId`).
+5. The service returns the hosted checkout URL to the action, which redirects the user to Stripe Checkout.
+
+### Stripe → Application (Checkout Completion)
+
+1. After payment succeeds, Stripe sends `checkout.session.completed` (and follow-up events) to the webhook endpoint handled by `services/subscriptions/webhooks.ts`.
+2. `handleCheckoutCompleted` links the Stripe customer and subscription to the user/project by updating the database via repositories.
+3. `handlePaymentSucceeded` confirms ongoing payments and updates subscription status, plan, and billing periods.
+4. Dashboard pages load fresh data via `getProjectSubscriptionPlan` / `getUserSubscriptionPlan`, ensuring the new plan is visible immediately.
+
+### Opening the Billing Portal
+
+1. The UI triggers `openCustomerPortal` action (usually from the dashboard billing card).
+2. The action validates the session, then calls `billingService.openCustomerPortal`.
+3. The service fetches the user’s current subscription plan (must include `stripeCustomerId`) and uses `createBillingPortalSession` to generate a portal URL.
+4. Stripe Billing Portal lets the customer manage payment methods, invoices, and subscription upgrades/downgrades.
+5. On return (configured to `/dashboard/billing`), the dashboard reloads data to show any changes made in the portal.
+
+### Permission and Admin Access
+
+1. `BillingService.validateUserAccess` ensures that only the owner of the subscription or a platform admin can initiate billing operations.
+2. Platform admins are determined via `services/auth/platform-admin.ts` (owners/admins of any project).
+3. `getBillingUrl` and `getCheckoutUrl` respect these permissions before returning sensitive URLs.
+
+## Data Flow Diagram
+
+```mermaid
+flowchart TD
+  A[User clicks Upgrade/Billing] --> B[Server Action (generateUserStripe or openCustomerPortal)]
+  B --> C[BillingService]
+  C --> D[Stripe SDK]
+  D --> E[Stripe Hosted Page (Checkout/Billing Portal)]
+  E --> F[Stripe Webhooks]
+  F --> G[services/subscriptions/webhooks]
+  G --> H[(PostgreSQL via repositories)]
+  H --> I[Dashboard reload (getUserSubscriptionPlan/getProjectSubscriptionPlan)]
+```
+
+## Dependencies & Contracts
+
+- `BillingResult` – Standard response from billing service containing `status`, optional `stripeUrl`, and optional `error`.
+- `ICheckoutSessionData` – Input structure for creating checkout sessions (priceId, user identifiers, redirect URLs).
+- `IBillingPortalData` – Input structure for Billing Portal sessions (Stripe customer ID plus user identifiers).
+- `Stripe.Checkout.Session` / `Stripe.BillingPortal.Session` – Objects returned by the Stripe SDK.
+- `IUserSubscriptionPlan` (from subscription services) – Shape containing plan metadata, Stripe customer IDs, and renewal info.
+- Webhook payload interfaces (Stripe events) – Consumed by `handleWebhookEvent` to map Stripe objects to database updates.
+
+## Known Limitations
+
+- Cancellation and upgrade/downgrade flows rely on Stripe portal/webhooks; there is no custom UI to manage partial refunds or proration.
+- The billing service assumes emails are present for all users; missing emails will cause checkout creation to fail.
+- Webhook handlers depend on environment configuration (`STRIPE_WEBHOOK_SECRET`) and are sensitive to event ordering; retries must be handled carefully.
+- The legacy Prisma seed still populates plan data; migrating seeds to Kysely SQL is pending.
+
+## Notes & TODOs
+
+- Implement additional webhook handlers for edge cases (invoice payment failures, subscription trials ending).
+- Add automated tests for billing permission checks to prevent unauthorized access to customer portals.
+- Migrate the seeding strategy to Kysely and ensure subscription plans are inserted via SQL migrations.
+- Explore surfacing billing history/invoices inside the dashboard using Stripe’s API to reduce reliance on external portal navigation.
