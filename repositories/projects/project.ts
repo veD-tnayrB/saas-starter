@@ -597,7 +597,10 @@ export async function deleteProject(id: string, userId: string): Promise<void> {
     `.execute(db);
   } catch (error) {
     console.error("Error deleting project:", error);
-    if (error instanceof Error && error.message === "Project not found or access denied") {
+    if (
+      error instanceof Error &&
+      error.message === "Project not found or access denied"
+    ) {
       throw error;
     }
     throw new Error("Failed to delete project");
