@@ -33,7 +33,7 @@ export default async function BillingPage({ params }: BillingPageProps) {
     redirect(`/dashboard/${projectId}`);
   }
 
-  const userSubscriptionPlan = await getProjectSubscriptionPlan(projectId);
+  const userSubscriptionPlan = await getProjectSubscriptionPlan(projectId, user.id);
 
   return (
     <>

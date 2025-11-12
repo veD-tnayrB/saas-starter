@@ -34,7 +34,14 @@ export class PermissionService {
     actionSlug: string,
   ): Promise<boolean> {
     try {
-      // Get project's subscription plan
+      // Check authorization first - user must be a project member
+      const projectMember = await findProjectMember(projectId, userId);
+
+      if (!projectMember || !projectMember.role) {
+        return false;
+      }
+
+      // Get project's subscription plan (user is authorized, safe to fetch)
       const projectPlan = await getProjectSubscriptionPlan(projectId);
       if (!projectPlan) {
         // If project has no plan, use Free plan (default)
@@ -42,21 +49,14 @@ export class PermissionService {
         // For now, we'll allow basic actions even without a plan
       }
 
-      // Get user's role in the project (with roleId)
-      const projectMember = await findProjectMember(projectId, userId);
-
-      if (!projectMember || !projectMember.role) {
-        return false;
-      }
+      // Use role from projectMember
+      const role = projectMember.role;
 
       // Get action by slug
       const action = await findActionBySlug(actionSlug);
       if (!action) {
         return false;
       }
-
-      // Use role from projectMember
-      const role = projectMember.role;
 
       // If no plan, use Free plan as default
       if (!projectPlan) {

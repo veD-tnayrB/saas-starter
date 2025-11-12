@@ -1,6 +1,6 @@
 import { retrieveSubscription } from "@/clients/stripe";
-import { findProjectById } from "@/repositories/projects/project";
 import { findUserSubscription } from "@/repositories/subscriptions";
+import { projectService } from "@/services/projects/project-service";
 
 import { IUserSubscriptionPlan } from "@/types/subscriptions";
 
@@ -18,13 +18,17 @@ import {
  */
 export async function getProjectSubscriptionPlan(
   projectId: string,
+  userId: string,
 ): Promise<IUserSubscriptionPlan> {
   if (!projectId) {
     throw new Error("Missing projectId parameter");
   }
+  if (!userId) {
+    throw new Error("Missing userId parameter");
+  }
 
-  // Get project with subscription plan
-  const project = await findProjectById(projectId);
+  // Get project with subscription plan (service enforces authorization)
+  const project = await projectService.getProjectById(projectId, userId);
 
   if (!project) {
     throw new Error("Project not found");

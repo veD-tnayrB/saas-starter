@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/repositories/auth/session";
 import { findAllUserProjects } from "@/repositories/projects";
 import { memberService, projectService } from "@/services/projects";
 
-import { canManageProject, hasPermissionLevel } from "@/lib/project-roles";
+import { canManageProject } from "@/lib/project-roles";
 import { constructMetadata } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { InvitationAcceptedToast } from "@/components/dashboard/invitation-accepted-toast";
@@ -44,8 +44,17 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
     return <ProjectNotFound firstProjectId={firstProjectId} />;
   }
 
-  // Get project and verify access
-  const project = await projectService.getProjectById(projectId);
+  // Get project and verify access (service enforces authorization)
+  let project;
+  try {
+    project = await projectService.getProjectById(projectId, user.id);
+  } catch (error) {
+    // User is not authorized - redirect to their first project
+    const userProjects = await findAllUserProjects(user.id);
+    const firstProjectId = userProjects[0]?.id ?? null;
+    return <ProjectNotFound firstProjectId={firstProjectId} />;
+  }
+
   if (!project) {
     // Get user's projects to redirect to first one
     const userProjects = await findAllUserProjects(user.id);
@@ -53,26 +62,17 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
     return <ProjectNotFound firstProjectId={firstProjectId} />;
   }
 
-  // Verify user has access by checking their role directly
-  // This is more reliable than checking findAllUserProjects, especially
-  // after accepting an invitation where the membership was just created
+  // Get user role for UI display
   const userRole = await memberService.getUserRole(projectId, user.id);
+
+  // Since user passed authorization check, they must have a role
   if (!userRole) {
-    // User is not a member of this project - redirect to their first project
     const userProjects = await findAllUserProjects(user.id);
     const firstProjectId = userProjects[0]?.id ?? null;
     return <ProjectNotFound firstProjectId={firstProjectId} />;
   }
 
-  // Get project members
-  const members = await memberService.getProjectMembers(projectId);
-
-  // Get project statistics - all queries use the validated projectId
-  const membersPromise = memberService.getProjectMembers(projectId);
-
   // Determine what statistics to show based on role
-  const canViewAdvancedStats = hasPermissionLevel(userRole, "ADMIN");
-  const canViewMembers = true; // All members can view members
   const canManageMembers = canManageProject(userRole);
 
   // Calculate total members by role

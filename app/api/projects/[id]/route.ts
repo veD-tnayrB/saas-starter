@@ -37,21 +37,29 @@ export async function GET(
 
     const { id: projectId } = await params;
 
-    // Check if user is a member
-    const userRole = await memberService.getUserRole(projectId, userId);
-    if (!userRole) {
-      return NextResponse.json(
-        { error: "Project not found or access denied" },
-        { status: 404 },
-      );
+    // Get project (service will enforce authorization)
+    let project;
+    try {
+      project = await projectService.getProjectById(projectId, userId);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "Project not found or access denied"
+      ) {
+        return NextResponse.json(
+          { error: "Project not found or access denied" },
+          { status: 404 },
+        );
+      }
+      throw error;
     }
 
-    const project = await projectService.getProjectById(projectId);
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // Get members
+    // Get user role and members
+    const userRole = await memberService.getUserRole(projectId, userId);
     const members = await memberService.getProjectMembers(projectId);
 
     return NextResponse.json(

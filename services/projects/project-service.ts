@@ -156,12 +156,31 @@ export class ProjectService {
 
   /**
    * Get project by ID
+   * Requires userId to enforce authorization - only owners and members can access projects
+   * This is the ONLY place that should call findProjectById from the repository
    */
-  async getProjectById(id: string): Promise<IProject | null> {
+  async getProjectById(id: string, userId: string): Promise<IProject | null> {
     try {
-      return await findProjectById(id);
+      // Fetch project first
+      const project = await findProjectById(id);
+      if (!project) {
+        return null;
+      }
+
+      // Check if user is authorized (owner or member)
+      const isMember = await memberService.isProjectMember(id, userId);
+      const isOwner = project.ownerId === userId;
+
+      if (!isMember && !isOwner) {
+        throw new Error("Project not found or access denied");
+      }
+
+      return project;
     } catch (error) {
       console.error("Error getting project:", error);
+      if (error instanceof Error && error.message === "Project not found or access denied") {
+        throw error;
+      }
       throw new Error("Failed to get project");
     }
   }
@@ -305,7 +324,7 @@ export class ProjectService {
         }
       }
 
-      const updatedProject = await findProjectById(id);
+      const updatedProject = await this.getProjectById(id, userId);
       if (!updatedProject) {
         throw new Error("Project not found after update");
       }
@@ -333,8 +352,8 @@ export class ProjectService {
         throw new Error("Only the project owner can delete the project");
       }
 
-      // Verify user is the actual owner
-      const project = await findProjectById(id);
+      // Verify user is the actual owner (getProjectById will check authorization)
+      const project = await this.getProjectById(id, userId);
       if (!project) {
         throw new Error("Project not found");
       }

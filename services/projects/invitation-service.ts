@@ -14,7 +14,6 @@ import {
   createProjectMember,
   findProjectMember,
 } from "@/repositories/projects/members";
-import { findProjectById } from "@/repositories/projects/project";
 import { render } from "@react-email/render";
 import { Resend } from "resend";
 
@@ -22,6 +21,7 @@ import { env } from "@/env.mjs";
 import { siteConfig } from "@/config/site";
 
 import { memberService } from "./member-service";
+import { projectService } from "./project-service";
 
 /**
  * Invitation service for business logic
@@ -41,8 +41,8 @@ export class InvitationService {
     invitedById: string,
   ): Promise<IProjectInvitation> {
     try {
-      // Validate project exists
-      const project = await findProjectById(projectId);
+      // Validate project exists and inviter has access
+      const project = await projectService.getProjectById(projectId, invitedById);
       if (!project) {
         throw new Error("Project not found");
       }
