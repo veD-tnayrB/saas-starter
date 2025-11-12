@@ -157,28 +157,25 @@ export class ProjectService {
   /**
    * Get project by ID
    * Requires userId to enforce authorization - only owners and members can access projects
+   * Authorization is enforced at the database query level in the repository
    * This is the ONLY place that should call findProjectById from the repository
    */
   async getProjectById(id: string, userId: string): Promise<IProject | null> {
     try {
-      // Fetch project first
-      const project = await findProjectById(id);
+      // Fetch project with authorization check enforced at database level
+      const project = await findProjectById(id, userId);
       if (!project) {
-        return null;
-      }
-
-      // Check if user is authorized (owner or member)
-      const isMember = await memberService.isProjectMember(id, userId);
-      const isOwner = project.ownerId === userId;
-
-      if (!isMember && !isOwner) {
+        // Project doesn't exist or user doesn't have access
         throw new Error("Project not found or access denied");
       }
 
       return project;
     } catch (error) {
       console.error("Error getting project:", error);
-      if (error instanceof Error && error.message === "Project not found or access denied") {
+      if (
+        error instanceof Error &&
+        error.message === "Project not found or access denied"
+      ) {
         throw error;
       }
       throw new Error("Failed to get project");

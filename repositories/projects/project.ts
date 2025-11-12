@@ -47,9 +47,13 @@ export interface IProjectUpdateData {
 }
 
 /**
- * Find project by ID
+ * Find project by ID with authorization check
+ * Only returns project if user is the owner or a member
  */
-export async function findProjectById(id: string): Promise<IProject | null> {
+export async function findProjectById(
+  id: string,
+  userId: string,
+): Promise<IProject | null> {
   try {
     const result = await sql<{
       id: string;
@@ -87,6 +91,12 @@ export async function findProjectById(id: string): Promise<IProject | null> {
       FROM projects p
       LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
       WHERE p.id = ${id}
+        AND (p.owner_id = ${userId} OR EXISTS (
+          SELECT 1
+          FROM project_members pm
+          WHERE pm.project_id = p.id
+            AND pm.user_id = ${userId}
+        ))
       LIMIT 1
     `.execute(db);
 
