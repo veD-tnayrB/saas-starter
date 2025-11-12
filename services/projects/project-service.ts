@@ -248,8 +248,9 @@ export class ProjectService {
       }
 
       // Update project name if provided
+      // Repository enforces ownership check at database level (defense-in-depth)
       if (data.name) {
-        await updateProject(id, { name: data.name });
+        await updateProject(id, { name: data.name }, userId);
       }
 
       // Handle member updates
@@ -359,7 +360,8 @@ export class ProjectService {
       }
 
       // Delete project (cascade will handle members and invitations)
-      await deleteProjectRepository(id);
+      // Repository enforces ownership check at database level (defense-in-depth)
+      await deleteProjectRepository(id, userId);
     } catch (error) {
       console.error("Error deleting project:", error);
       throw error instanceof Error

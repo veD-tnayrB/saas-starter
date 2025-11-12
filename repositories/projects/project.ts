@@ -490,10 +490,13 @@ export async function createProjectWithOwner(
 
 /**
  * Update project
+ * Requires userId to enforce authorization - only owners can update projects
+ * Authorization is enforced at the database query level
  */
 export async function updateProject(
   id: string,
   data: IProjectUpdateData,
+  userId: string,
 ): Promise<IProject> {
   try {
     // Build SET clause parts using sql fragments for proper sanitization
@@ -515,7 +518,7 @@ export async function updateProject(
     }>`
       UPDATE projects
       SET ${setClause}
-      WHERE id = ${id}
+      WHERE id = ${id} AND owner_id = ${userId}
       RETURNING 
         id,
         name,
@@ -570,15 +573,33 @@ export async function updateProject(
 
 /**
  * Delete project
+ * Requires userId to enforce authorization - only owners can delete projects
+ * Authorization is enforced at the database query level
  */
-export async function deleteProject(id: string): Promise<void> {
+export async function deleteProject(id: string, userId: string): Promise<void> {
   try {
+    // First verify the project exists and belongs to the user
+    // This provides clearer error messages and ensures defense-in-depth
+    const project = await findProjectById(id, userId);
+    if (!project) {
+      throw new Error("Project not found or access denied");
+    }
+
+    // Verify user is the owner (defense-in-depth check)
+    if (project.ownerId !== userId) {
+      throw new Error("Project not found or access denied");
+    }
+
+    // Delete project - WHERE clause includes ownership check for defense-in-depth
     await sql`
       DELETE FROM projects
-      WHERE id = ${id}
+      WHERE id = ${id} AND owner_id = ${userId}
     `.execute(db);
   } catch (error) {
     console.error("Error deleting project:", error);
+    if (error instanceof Error && error.message === "Project not found or access denied") {
+      throw error;
+    }
     throw new Error("Failed to delete project");
   }
 }
