@@ -152,8 +152,6 @@ This project follows a **clean architecture pattern** with clear separation of c
 
 ## Tech Stack + Features
 
-https://github.com/veD-tnayrB/saas-starter/assets/62285783/828a4e0f-30e3-4cfe-96ff-4dfd9cd55124
-
 ### Frameworks
 
 - [Next.js](https://nextjs.org/) – React framework for building performant apps with the best developer experience
