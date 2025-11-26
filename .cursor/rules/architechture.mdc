@@ -1,0 +1,586 @@
+---
+alwaysApply: true
+---
+
+## alwaysApply: true
+
+# Project Architecture Rules
+
+This document defines the strict architectural patterns for the Vend.ia project. All code MUST follow these patterns to maintain clean separation of concerns and maintainability.
+
+## Architecture Layers
+
+The project follows a **layered architecture** with strict separation between layers:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Presentation Layer                       │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │ Components  │  │   Pages      │  │  Actions/API     │  │
+│  │   (UI)      │  │  (Routes)    │  │   Routes         │  │
+│  └──────┬──────┘  └──────┬───────┘  └────────┬─────────┘  │
+│         │                │                    │            │
+│         └────────────────┴────────────────────┘            │
+│                            │                                │
+└────────────────────────────┼────────────────────────────────┘
+                             │
+┌────────────────────────────┼────────────────────────────────┐
+│                     Business Logic Layer                    │
+│                            │                                │
+│                    ┌───────▼────────┐                       │
+│                    │    Services    │                       │
+│                    │  (Business     │                       │
+│                    │    Logic)      │                       │
+│                    └───────┬────────┘                       │
+└────────────────────────────┼────────────────────────────────┘
+                             │
+┌────────────────────────────┼────────────────────────────────┐
+│                     Data Access Layer                       │
+│         ┌──────────────────┴──────────────────┐            │
+│         │                                      │            │
+│  ┌──────▼────────┐                    ┌───────▼────────┐   │
+│  │ Repositories  │                    │    Clients     │   │
+│  │  (Database)   │                    │  (External     │   │
+│  │               │                    │     APIs)      │   │
+│  └───────────────┘                    └────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Layer Responsibilities
+
+### 1. Components (`components/`)
+
+**Purpose:** UI presentation and user interaction
+**Can access:**
+
+- ✅ Services (`services/*`)
+- ✅ UI libraries (Shadcn, Radix, Tailwind)
+- ✅ Types (`types/*`)
+- ✅ Utilities (`lib/utils.ts`)
+
+**CANNOT access:**
+
+- ❌ Repositories (`repositories/*`) - **MUST use Services**
+- ❌ Clients (`clients/*`) - **MUST use Services**
+- ❌ Direct database queries (`sql`, `db`)
+- ❌ Direct API calls (`fetch`, `axios`, etc.)
+
+**Example:**
+
+```typescript
+// ✅ GOOD: Component using service
+import { catalogService } from "@/services/catalog";
+
+export function ProductList() {
+  const products = await catalogService.getProductsByCatalog(catalogId);
+  // ...
+}
+
+// ❌ BAD: Component accessing repository directly
+import { findProductsByCatalogId } from "@/repositories/catalog";
+
+export function ProductList() {
+  const products = await findProductsByCatalogId(catalogId);
+  // ...
+}
+```
+
+### 2. Pages (`app/**/page.tsx`)
+
+**Purpose:** Route handlers and server-side data fetching
+**Can access:**
+
+- ✅ Services (`services/*`)
+- ✅ Session helpers (`lib/session.ts`, `repositories/auth/session.ts`)
+- ✅ Types (`types/*`)
+- ✅ Utilities (`lib/utils.ts`)
+
+**CANNOT access:**
+
+- ❌ Repositories (`repositories/*`) - **MUST use Services** (except `getCurrentUser()`)
+- ❌ Clients (`clients/*`) - **MUST use Services**
+- ❌ Direct database queries
+
+**Exception:**
+
+- `getCurrentUser()` from `@/repositories/auth/session` is allowed as it's a session helper utility
+
+**Example:**
+
+```typescript
+// ✅ GOOD: Page using service
+import { catalogService } from "@/services/catalog";
+import { getCurrentUser } from "@/repositories/auth/session";
+
+export default async function CatalogPage() {
+  const user = await getCurrentUser(); // ✅ Exception allowed
+  const catalogs = await catalogService.getCatalogsByProject(projectId);
+  // ...
+}
+
+// ❌ BAD: Page accessing repository directly
+import { findCatalogsByProjectId } from "@/repositories/catalog";
+
+export default async function CatalogPage() {
+  const catalogs = await findCatalogsByProjectId(projectId);
+  // ...
+}
+```
+
+### 3. Actions (`actions/**/*.ts`)
+
+**Purpose:** Server actions for form submissions and mutations
+**Can access:**
+
+- ✅ Services (`services/*`)
+- ✅ Session helpers (`lib/session.ts`, `repositories/auth/session.ts`)
+- ✅ Next.js utilities (`next/cache` for `revalidatePath`, etc.)
+- ✅ Types (`types/*`)
+
+**CANNOT access:**
+
+- ❌ Repositories (`repositories/*`) - **MUST use Services** (except `getCurrentUser()`)
+- ❌ Clients (`clients/*`) - **MUST use Services**
+
+**Example:**
+
+```typescript
+// ✅ GOOD: Action using service
+import { catalogService } from "@/services/catalog";
+import { projectService } from "@/services/projects";
+
+export async function createProductAction(data) {
+  const userId = await getCurrentUserId();
+  await projectService.verifyAccess(projectId, userId);
+  const product = await catalogService.createProduct(data);
+  revalidatePath(`/dashboard/${projectId}/catalog`);
+  return { success: true, product };
+}
+
+// ❌ BAD: Action accessing repository directly
+import { createProduct } from "@/repositories/catalog";
+
+export async function createProductAction(data) {
+  const product = await createProduct(data);
+  // ...
+}
+```
+
+### 4. API Routes (`app/api/**/route.ts`)
+
+**Purpose:** REST API endpoints
+**Can access:**
+
+- ✅ Services (`services/*`)
+- ✅ Session helpers (`lib/session.ts`, `repositories/auth/session.ts`)
+- ✅ Next.js utilities (`NextResponse`)
+- ✅ Validation libraries (`zod`)
+
+**CANNOT access:**
+
+- ❌ Repositories (`repositories/*`) - **MUST use Services** (except `getCurrentUser()`)
+- ❌ Clients (`clients/*`) - **MUST use Services**
+
+**Example:**
+
+```typescript
+// ✅ GOOD: API route using service
+import { catalogService } from "@/services/catalog";
+import { projectService } from "@/services/projects";
+
+export async function GET(req, { params }) {
+  const userId = await getCurrentUserId();
+  await projectService.verifyAccess(projectId, userId);
+  const catalogs = await catalogService.getCatalogsByProject(projectId);
+  return NextResponse.json({ catalogs });
+}
+
+// ❌ BAD: API route accessing repository directly
+import { findCatalogsByProjectId } from "@/repositories/catalog";
+
+export async function GET(req, { params }) {
+  const catalogs = await findCatalogsByProjectId(projectId);
+  return NextResponse.json({ catalogs });
+}
+```
+
+### 5. Services (`services/**/*.ts`)
+
+**Purpose:** Business logic orchestration
+**Can access:**
+
+- ✅ Repositories (`repositories/*`)
+- ✅ Clients (`clients/*`)
+- ✅ Other services (for composition)
+- ✅ Types (`types/*`)
+- ✅ Utilities (`lib/utils.ts`)
+
+**CANNOT access:**
+
+- ❌ Direct database queries (`sql`, `db`) - **MUST use Repositories**
+- ❌ Direct API calls (`fetch`, `axios`) - **MUST use Clients**
+- ❌ Components
+- ❌ Pages
+
+**Example:**
+
+```typescript
+// ✅ GOOD: Service using repository and client
+import { findProductById } from "@/repositories/catalog";
+import { sendWhatsAppMessage } from "@/clients/whatsapp";
+
+export async function notifyProductUpdate(productId: string) {
+  const product = await findProductById(productId);
+  await sendWhatsAppMessage({
+    to: "+1234567890",
+    message: `Product ${product.name} was updated`,
+  });
+}
+
+// ❌ BAD: Service making direct API call
+export async function notifyProductUpdate(productId: string) {
+  const product = await findProductById(productId);
+  await fetch("https://api.whatsapp.com/messages", {
+    method: "POST",
+    body: JSON.stringify({ message: `Product ${product.name} updated` }),
+  });
+}
+```
+
+### 6. Repositories (`repositories/**/*.ts`)
+
+**Purpose:** Database data access
+**Can access:**
+
+- ✅ Database client (`lib/db.ts`, `clients/db.ts`)
+- ✅ Kysely SQL builder (`kysely`)
+- ✅ Types (`types/*`)
+
+**CANNOT access:**
+
+- ❌ Clients (external APIs)
+- ❌ Services (would create circular dependency)
+- ❌ Business logic
+- ❌ Components, Pages, Actions
+
+**Responsibilities:**
+
+- ✅ Execute SQL queries
+- ✅ Map database columns to TypeScript interfaces
+- ✅ Use proper SQL aliases with double quotes for PostgreSQL
+- ✅ Sanitize all inputs using Kysely parameter binding
+- ✅ Return typed data structures
+
+**Example:**
+
+```typescript
+// ✅ GOOD: Repository doing database operations only
+import { sql } from "kysely";
+
+import type { IProduct } from "@/types/catalog";
+import { db } from "@/lib/db";
+
+export async function findProductById(id: string): Promise<IProduct | null> {
+  const result = await sql<IProduct>`
+    SELECT
+      id,
+      catalog_id AS "catalogId",
+      name,
+      description,
+      price,
+      image_url AS "imageUrl",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
+    FROM products
+    WHERE id = ${id}
+  `.execute(db);
+
+  return result.rows[0] ?? null;
+}
+```
+
+### 7. Clients (`clients/**/*.ts`)
+
+**Purpose:** External API integrations
+**Can access:**
+
+- ✅ External API libraries (Stripe, OpenAI, WhatsApp SDKs)
+- ✅ Environment variables (`env.mjs`)
+- ✅ Types (`types/*`)
+- ✅ Utilities (`lib/utils.ts`)
+
+**CANNOT access:**
+
+- ❌ Repositories (would create circular dependency)
+- ❌ Services
+- ❌ Database queries
+- ❌ Business logic
+
+**Responsibilities:**
+
+- ✅ Configure API clients
+- ✅ Make external API calls
+- ✅ Handle API errors and responses
+- ✅ Return typed data structures
+- ✅ Abstract away API-specific details
+
+**Example:**
+
+```typescript
+// ✅ GOOD: Client handling external API
+import { env } from "@/env.mjs";
+import { OpenAI } from "openai";
+
+const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const response = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: text,
+  });
+  return response.data[0].embedding;
+}
+
+// ❌ BAD: Client accessing repository
+import { findUserById } from "@/repositories/auth";
+
+export async function generateEmbedding(text: string, userId: string) {
+  const user = await findUserById(userId); // ❌ Violation
+  // ...
+}
+```
+
+## Data Flow
+
+### Standard Flow Pattern
+
+1. **User Interaction** → Component triggers Action or API call
+2. **Action/API Route** → Validates and calls Service
+3. **Service** → Orchestrates business logic using Repositories and Clients
+4. **Repository/Client** → Performs data operation
+5. **Response flows back** → Service → Action/API → Component
+
+### Example: Creating a Product
+
+```
+User clicks "Create Product" button
+  ↓
+Component (ProductForm) calls createProductAction()
+  ↓
+Action validates input and calls catalogService.createProduct()
+  ↓
+Service (catalogService):
+  - Calls repository.createProduct() → Database
+  - Calls embeddingsService.generateEmbedding() → Service → Client → OpenAI API
+  - Calls repository.addProductTag() → Database
+  ↓
+Service returns product
+  ↓
+Action revalidates paths and returns success
+  ↓
+Component shows success message
+```
+
+## Cross-Layer Rules
+
+### Services Can Compose Other Services
+
+Services can call other services to compose complex business logic:
+
+```typescript
+// ✅ GOOD: Service composing other services
+import { aiService } from "@/services/ai";
+import { embeddingService } from "@/services/embeddings";
+
+export async function processProduct(product: IProduct) {
+  const embedding = await embeddingService.generateEmbedding(product);
+  const response = await aiService.generateResponse(product, embedding);
+  return response;
+}
+```
+
+### Repositories Should Be Pure Data Access
+
+Repositories should NOT contain business logic:
+
+```typescript
+// ❌ BAD: Repository with business logic
+export async function createProduct(data: IProductCreateData) {
+  // Business logic should be in service
+  if (data.price < 0) {
+    throw new Error("Price cannot be negative");
+  }
+  // ...
+}
+
+// ✅ GOOD: Repository is pure data access
+export async function createProduct(data: IProductCreateData) {
+  const result = await sql`
+    INSERT INTO products (name, price, ...)
+    VALUES (${data.name}, ${data.price}, ...)
+  `.execute(db);
+  return result.rows[0];
+}
+```
+
+### Clients Should Be Abstraction Layer
+
+Clients should abstract away API-specific details:
+
+```typescript
+// ✅ GOOD: Client abstracts API details
+export async function sendWhatsAppMessage(params: ISendMessageParams) {
+  // Handles API versioning, authentication, error handling internally
+  const response = await fetch(
+    `${WHATSAPP_API_BASE_URL}/${phoneNumberId}/messages`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({
+        /* WhatsApp-specific format */
+      }),
+    },
+  );
+  // Returns clean, typed response
+  return { success: true, messageId: response.id };
+}
+```
+
+## File Naming Conventions
+
+### Remove Redundant Prefixes in Nested Folders
+
+**When a file is inside a folder that already indicates its domain, the filename should NOT repeat that domain name.**
+
+This applies to:
+
+- **Actions** (`actions/**/*.ts`)
+- **Services** (`services/**/*.ts`)
+- **Repositories** (`repositories/**/*.ts`)
+- **Clients** (`clients/**/*.ts`)
+- **API Routes** (`app/api/**/*.ts`)
+
+**Examples:**
+
+```typescript
+// ❌ BAD: Redundant prefix
+actions/catalog/update-catalog.ts       // "catalog" is redundant
+actions/catalog/delete-catalog.ts       // "catalog" is redundant
+services/catalog/catalog-service.ts     // "catalog" is redundant
+repositories/catalog/catalog-repo.ts    // "catalog" is redundant
+clients/whatsapp/whatsapp-client.ts     // "whatsapp" is redundant
+
+// ✅ GOOD: Clean naming without redundant prefix
+actions/catalog/update.ts               // Already in catalog folder
+actions/catalog/delete.ts               // Already in catalog folder
+services/catalog/service.ts             // Already in catalog folder
+repositories/catalog/repo.ts            // Already in catalog folder
+clients/whatsapp/client.ts              // Already in whatsapp folder
+```
+
+**When to include the domain name:**
+
+- Only when the file is at the root level or when it helps disambiguate:
+
+  ```typescript
+  // ✅ GOOD: Root-level files need context
+  actions/create-project.ts
+  actions/delete-project.ts
+
+  // ✅ GOOD: When inside nested folder, remove prefix
+  actions/project/create.ts
+  actions/project/delete.ts
+  ```
+
+**Exception for index files:**
+
+- `index.ts` files should always be named `index.ts` regardless of folder:
+  ```typescript
+  // ✅ GOOD: Standard index file naming
+  services / catalog / index.ts;
+  repositories / catalog / index.ts;
+  ```
+
+## Special Cases and Exceptions
+
+### Session Helpers
+
+The following session helpers are exceptions and can be accessed from any layer:
+
+- `getCurrentUser()` from `@/repositories/auth/session`
+- `getCurrentUserId()` from `@/lib/session`
+
+**Reason:** These are utility functions, not business logic, and are commonly needed across all layers.
+
+### Type Imports
+
+Type-only imports are allowed from any layer:
+
+```typescript
+// ✅ GOOD: Type-only import
+import type { IConversation } from "@/repositories/conversations"; // Types are fine
+
+import type { IProduct } from "@/types/catalog";
+```
+
+### Direct Database Access
+
+**ONLY** allowed in:
+
+- Repositories (`repositories/**/*.ts`)
+- Migration scripts (`scripts/migrate.ts`)
+- Utility scripts (`scripts/**/*.ts`)
+
+## Validation and Enforcement
+
+### How to Verify Architecture Compliance
+
+1. **Components should NOT import from `repositories/`** (except types)
+
+   ```bash
+   grep -r "from.*@/repositories" components/ --include="*.tsx" --include="*.ts"
+   ```
+
+2. **Pages should NOT import from `repositories/`** (except `getCurrentUser()`)
+
+   ```bash
+   grep -r "from.*@/repositories" app/ --include="*.tsx" --include="*.ts"
+   ```
+
+3. **Services should NOT use `fetch()` directly**
+
+   ```bash
+   grep -r "fetch(" services/ --include="*.ts"
+   ```
+
+4. **Clients should NOT import from `repositories/`**
+
+   ```bash
+   grep -r "from.*@/repositories" clients/ --include="*.ts"
+   ```
+
+5. **Repositories should NOT import from `clients/`** (except `clients/db.ts`)
+   ```bash
+   grep -r "from.*@/clients" repositories/ --include="*.ts" | grep -v "clients/db"
+   ```
+
+## Summary
+
+**Key Principles:**
+
+1. **Components, Pages, Actions, API Routes** → Use **Services only**
+2. **Services** → Use **Repositories** (database) and **Clients** (external APIs)
+3. **Repositories** → Database access **only**
+4. **Clients** → External API access **only**
+5. **No circular dependencies** between layers
+6. **Business logic lives in Services**, not Repositories or Clients
+7. **Data access lives in Repositories**, not Services
+8. **External API calls live in Clients**, not Services
+
+**Violation Detection:**
+
+- Components importing from `repositories/` → ❌ Violation
+- Pages importing from `repositories/` → ❌ Violation (except `getCurrentUser()`)
+- Services using `fetch()` → ❌ Violation (use Clients)
+- Clients importing from `repositories/` → ❌ Violation
+- Actions importing from `repositories/` → ❌ Violation (except `getCurrentUser()`)
