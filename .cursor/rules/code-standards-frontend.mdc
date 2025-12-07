@@ -1,0 +1,94 @@
+---
+scope: frontend
+alwaysApply: false
+---
+
+🔴 **CRITICAL: READ THIS FIRST - MANDATORY BEFORE MODIFYING FRONTEND CODE**
+
+Before making ANY changes to frontend code (React components, pages, UI, styling, or any file in paths containing `frontend/`, `client/`, `components/`, `pages/`, `ui/`), you MUST:
+
+1. **Read this entire file completely first**
+2. Understand component organization rules (one component per file, 80 line limit)
+3. Review UI/styling conventions (Shadcn UI, Tailwind)
+4. Follow React performance best practices
+5. Understand folder nesting and organization patterns
+
+**This file contains MANDATORY rules for frontend development that maintain consistency, performance, and code maintainability. Failure to follow these rules will result in unmaintainable and inconsistent code.**
+
+---
+
+You are an expert in React, TypeScript, Vite, Shadcn UI, Radix UI, and Tailwind CSS.
+
+## Component Organization
+
+### One Component Per File (MANDATORY)
+
+- **NO MORE THAN ONE COMPONENT PER FILE.** Extract additional UI into separate files; keep files focused and cohesive. Each component must be in its own file.
+
+### Component Size Limits (MANDATORY)
+
+- **Keep components small and focused.** Components should not exceed 80 lines. If a component is larger than 80 lines, it's a red flag that indicates at least one subcomponent should be extracted. Break down complex components into smaller, reusable pieces.
+
+### Component Folder Organization
+
+- **Organize related components in folders.** If multiple files share a common prefix (e.g., `project-switcher-button.tsx`, `project-switcher-empty.tsx`, `project-switcher.tsx`), they should be organized in a folder with that prefix. The main component should be `index.tsx` (or the folder name), and subcomponents should be named after their suffix (e.g., `project-switcher/button.tsx`, `project-switcher/empty.tsx`, `project-switcher/index.tsx`). This improves maintainability and makes the component structure clearer.
+
+- **Nest related folders when parent folder exists.** If a folder like `project/` exists and there's a related folder like `project-switcher/`, nest the related folder inside the parent as `project/switcher/` instead of keeping them as siblings. For example, if you have both `project/` and `project-switcher/` folders, move `project-switcher/` to `project/switcher/`. This creates a clearer hierarchy and groups related functionality together.
+
+- **Remove redundant prefixes when nesting.** When a component folder is nested inside a parent folder, remove the parent's prefix from the nested folder name. For example, if you have `pricing/pricing-card/`, rename it to `pricing/card/` since the `pricing-` prefix is redundant when already inside the `pricing/` folder. Similarly, `project/project-switcher/` should be `project/switcher/`.
+
+## UI and Styling
+
+- Use Shadcn UI, Radix UI, and Tailwind CSS for components and styling.
+- Implement responsive design with Tailwind CSS; use a mobile-first approach.
+- Leverage Shadcn UI components as building blocks; customize when needed using Tailwind classes.
+- Use Radix UI primitives for accessible, unstyled component foundations.
+
+## React Performance Optimization
+
+- Minimize the use of `useEffect` and state when possible; prefer derived state and computed values.
+- Wrap client components in Suspense with fallback when appropriate.
+- Use dynamic loading for non-critical components using React.lazy() and Suspense.
+- Optimize images: use WebP format when possible, include size data, implement lazy loading.
+- Memoize expensive computations using useMemo.
+- Memoize callbacks and component references using useCallback and React.memo when appropriate, but avoid premature optimization.
+- Use React.memo judiciously for components that re-render frequently with the same props.
+
+## React Patterns and Best Practices
+
+- Use functional components with TypeScript interfaces.
+- Use declarative JSX patterns.
+- Do not use ternary conditions directly inside JSX; compute values with small helper variables/functions before the return.
+- Do not use Array.map directly inside JSX; extract a small presentational subcomponent and iterate outside the JSX tree, or render a list component that receives prepared data.
+- Keep components small and focused; extract subcomponents and utilities for readability and maintainability.
+
+## State Management
+
+- Use React hooks (useState, useReducer) for local component state.
+- For global state management, consider Context API for simple cases or Zustand/Redux Toolkit for complex state.
+- Use URL search parameters (with libraries like `nuqs`) for shareable, bookmarkable state when appropriate.
+- Avoid prop drilling; lift state up or use context/state management libraries when needed.
+
+## Frontend Naming Conventions
+
+- Use PascalCase for component names and files (e.g., `UserProfile.tsx`).
+- Use camelCase for functions, variables, and hooks (e.g., `useUserData`, `handleClick`).
+- Use lowercase with dashes for directory names (e.g., `components/user-profile/`).
+- Hook files should start with `use` prefix (e.g., `useAuth.ts`, `useUserData.ts`).
+- Component files should match component name (e.g., `UserProfile.tsx` contains `UserProfile` component).
+
+## Web Vitals and Performance
+
+- Optimize Core Web Vitals (LCP, CLS, FID/INP).
+- Implement code splitting at route level using React.lazy().
+- Use Suspense boundaries for better loading states.
+- Minimize bundle size by avoiding unnecessary dependencies and using tree-shaking.
+- Lazy load images and other media assets.
+
+## Accessibility
+
+- Ensure all interactive elements are keyboard accessible.
+- Use semantic HTML elements.
+- Provide proper ARIA labels when needed.
+- Ensure sufficient color contrast ratios.
+- Test with screen readers when possible.

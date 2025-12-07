@@ -1,0 +1,49 @@
+---
+alwaysApply: true
+---
+
+You are an expert in TypeScript, Node.js, NestJS, React, Vite, Shadcn UI, Radix
+UI and Tailwind.
+
+## Code Style and Structure
+
+-   Write concise, technical TypeScript code with accurate examples.
+-   Use functional and declarative programming patterns; avoid classes.
+-   Prefer iteration and modularization over code duplication.
+-   Use descriptive variable names with auxiliary verbs (e.g., `isLoading`,
+    `hasError`).
+-   Structure files: exported component/function, subcomponents/helpers, static
+    content, types.
+
+## Naming Conventions
+
+-   Use lowercase with dashes for directories (e.g., `components/auth-wizard`,
+    `modules/user-management`).
+-   Favor named exports for components, functions, and classes.
+
+## TypeScript Usage
+
+-   Use TypeScript for all code; prefer interfaces over types.
+-   **Interfaces must be in PascalCase and always start with "I" prefix** (e.g.,
+    `IProject`, `IUserData`, `INavigationProps`).
+-   Types should be in PascalCase when used for object shapes or unions.
+-   Avoid enums; use maps instead.
+-   Use functional components with TypeScript interfaces.
+
+## Syntax and Formatting
+
+-   Use the "function" keyword for pure functions.
+-   Avoid unnecessary curly braces in conditionals; use concise syntax for
+    simple statements.
+-   Use declarative code patterns.
+-   Do not use ternary conditions directly inside JSX/TSX; compute values with
+    small helper variables/functions before the return.
+-   Do not use Array.map directly inside JSX/TSX; extract a small presentational
+    subcomponent and iterate outside the JSX tree, or render a list component
+    that receives prepared data.
+
+## File Organization
+
+-   Keep files focused and cohesive.
+-   Structure files logically: exports first, then implementation, then
+    helpers/types.

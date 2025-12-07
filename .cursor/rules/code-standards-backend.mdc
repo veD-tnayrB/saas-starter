@@ -1,0 +1,144 @@
+---
+scope: backend
+alwaysApply: false
+---
+
+🔴 **CRITICAL: READ THIS FIRST - MANDATORY BEFORE MODIFYING BACKEND CODE**
+
+Before making ANY changes to backend code (NestJS modules, services, controllers, repositories, database queries, or any file in paths containing `backend/`, `server/`, `nestjs/`, `database/`), you MUST:
+
+1. **Read this entire file completely first**
+2. Understand the database query patterns (especially SQL aliases with double quotes for PostgreSQL)
+3. Review security requirements for SQL injection prevention
+4. Follow NestJS module structure patterns
+5. Understand DTO validation patterns
+
+**This file contains MANDATORY rules for backend development that prevent critical security vulnerabilities and maintain code consistency. Failure to follow these rules will result in security vulnerabilities, runtime errors, and code inconsistencies.**
+
+---
+
+You are an expert in NestJS, TypeScript, PostgreSQL, and Kysely query builder.
+
+## Database Queries and Repository Pattern
+
+### SQL Aliases with PostgreSQL (CRITICAL)
+
+- **Always use SQL aliases to convert snake_case columns to camelCase in SELECT queries.** This allows reusing existing TypeScript interfaces directly without creating temporary interfaces, improving type safety and reducing code duplication.
+- When querying the database, use `AS` aliases to map database column names (snake_case) to TypeScript property names (camelCase) in the SELECT clause.
+- **CRITICAL: For PostgreSQL, aliases with camelCase MUST be wrapped in double quotes to preserve case-sensitivity.** Use `AS "projectId"` instead of `AS projectId` (PostgreSQL converts unquoted identifiers to lowercase by default).
+- **MANDATORY RULE: ALL SQL aliases in SELECT, RETURNING, and other clauses MUST use double quotes for camelCase identifiers.** Without quotes, PostgreSQL will return lowercase column names (e.g., `projectid` instead of `projectId`), causing `undefined` property access errors in TypeScript.
+- Example: Instead of selecting `email_verified` and manually mapping it to `emailVerified`, use `email_verified AS "emailVerified"` in the SQL query.
+- The query result type should use the existing interface (e.g., `IAuthUser`) directly, not a temporary interface with snake_case properties.
+- Return the query result directly without manual property mapping when aliases are used correctly.
+- This pattern must be applied to ALL repository functions that perform SELECT queries, RETURNING clauses, and any other SQL that uses aliases.
+
+### SQL Injection Prevention (CRITICAL SECURITY REQUIREMENT)
+
+- **ALL database queries MUST be properly sanitized using Kysely's standard parameter binding to prevent SQL injection attacks.** This is a critical security requirement that must be enforced in ALL repository functions.
+- **NEVER use string concatenation with `sql.raw()` for user input or dynamic values.** Always use Kysely's template literal syntax with parameter interpolation.
+- When building dynamic queries, use `sql` template literals and `sql.join()` for combining fragments, NOT string concatenation.
+- Use `sql.raw()` ONLY for static SQL keywords (e.g., column names, table names, SQL operators) that are controlled by the codebase, NEVER for user-provided data.
+- All dynamic values (user input, IDs, dates, etc.) MUST be passed as interpolated parameters using `${value}` syntax within `sql` template literals.
+
+### SQL Alias Examples
+
+```typescript
+// ❌ BAD: Using temporary interface and manual mapping
+const result = await sql<{
+  email_verified: Date | null;
+  created_at: Date;
+}>`
+  SELECT email_verified, created_at FROM users
+`.execute(db);
+return {
+  emailVerified: row.email_verified,
+  createdAt: row.created_at,
+};
+
+// ❌ BAD: Aliases without double quotes (PostgreSQL will convert to lowercase)
+const result = await sql<IAuthUser>`
+  SELECT
+    email_verified AS emailVerified,  // ❌ Will return as 'emailverified' (lowercase)
+    created_at AS createdAt            // ❌ Will return as 'createdat' (lowercase)
+  FROM users
+`.execute(db);
+// Error: row.emailVerified is undefined because PostgreSQL returns 'emailverified'
+
+// ✅ GOOD: Using aliases with double quotes (PostgreSQL requirement) and existing interface
+const result = await sql<IAuthUser>`
+  SELECT
+    email_verified AS "emailVerified",  // ✅ Preserves camelCase
+    created_at AS "createdAt"           // ✅ Preserves camelCase
+  FROM users
+`.execute(db);
+return result.rows[0];  // ✅ Properties are correctly accessible as emailVerified, createdAt
+```
+
+### SQL Injection Prevention Examples
+
+```typescript
+// ❌ BAD: Vulnerable to SQL injection - using string concatenation
+const setParts: string[] = [
+  `stripe_price_id = ${sql.lit(data.priceId)}`, // sql.lit() in string is unsafe
+];
+const result = await sql`
+  UPDATE users
+  SET ${sql.raw(setParts.join(", "))} // Dangerous: raw SQL with concatenated strings
+  WHERE id = ${userId}
+`.execute(db);
+
+// ❌ BAD: Vulnerable to SQL injection - direct string interpolation
+const result = await sql`
+  SELECT * FROM users WHERE email = '${userEmail}' // NEVER do this!
+`.execute(db);
+
+// ✅ GOOD: Properly sanitized using Kysely parameter binding
+const setParts = [
+  sql.raw("updated_at = CURRENT_TIMESTAMP"), // OK: static SQL
+  sql`stripe_price_id = ${data.priceId}`, // ✅ Parameter is sanitized
+];
+const setClause = sql.join(setParts, sql`, `);
+const result = await sql`
+  UPDATE users
+  SET ${setClause} // ✅ Safe: uses Kysely fragments
+  WHERE id = ${userId} // ✅ Parameter is sanitized
+`.execute(db);
+
+// ✅ GOOD: Direct parameter interpolation (recommended) with quoted aliases for PostgreSQL
+const result = await sql<IUserSubscriptionRecord>`
+  UPDATE users
+  SET
+    stripe_price_id = ${data.priceId ?? null}, // ✅ Sanitized automatically
+    updated_at = CURRENT_TIMESTAMP
+  WHERE id = ${userId} // ✅ Sanitized automatically
+  RETURNING
+    id AS "userId",
+    stripe_price_id AS "stripePriceId"
+`.execute(db);
+```
+
+## NestJS Architecture Patterns
+
+- Follow NestJS module structure: Controllers handle HTTP requests, Services contain business logic, Repositories handle data access.
+- Use dependency injection throughout the application.
+- Keep controllers thin; delegate business logic to services.
+- Use DTOs (Data Transfer Objects) for request/response validation with class-validator and class-transformer.
+- Implement proper error handling using NestJS exception filters.
+- Use guards for authentication and authorization.
+- Leverage interceptors for cross-cutting concerns (logging, transformation, caching).
+
+## Backend Naming Conventions
+
+- Use PascalCase for classes, interfaces, and DTOs.
+- Use camelCase for variables, functions, and methods.
+- Use kebab-case for file names (e.g., `user.service.ts`, `auth.controller.ts`).
+- Repository classes should end with `Repository` (e.g., `UserRepository`).
+- Service classes should end with `Service` (e.g., `UserService`).
+- Controller classes should end with `Controller` (e.g., `UserController`).
+
+## Error Handling
+
+- Use NestJS built-in exceptions (BadRequestException, NotFoundException, etc.) for HTTP errors.
+- Create custom exceptions that extend HttpException when needed.
+- Always provide meaningful error messages.
+- Log errors appropriately for debugging while avoiding sensitive information in production logs.
