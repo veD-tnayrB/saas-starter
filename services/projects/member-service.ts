@@ -1,15 +1,19 @@
 import { findRoleByName } from "@/repositories/permissions";
 import {
+  addRoleToMember as addRoleToMemberRepo,
   createProjectMember,
   findProjectMember,
   findProjectMembers,
   getUserProjectRole,
+  getUserProjectRoles,
   removeProjectMember,
+  removeRoleFromMember as removeRoleFromMemberRepo,
+  setMemberRoles as setMemberRolesRepo,
   updateProjectMember,
   type IProjectMember,
 } from "@/repositories/projects/members";
 
-import { hasPermissionLevel } from "@/lib/project-roles";
+import { hasPermissionLevel, hasPermissionLevelWithRoles } from "@/lib/project-roles";
 
 /**
  * Project member service for business logic
@@ -17,6 +21,7 @@ import { hasPermissionLevel } from "@/lib/project-roles";
 export class MemberService {
   /**
    * Check if user has permission in project
+   * Checks if user has any role that meets the required permission level
    * @deprecated Use permissionService.canUserPerformAction instead
    */
   async hasPermission(
@@ -25,9 +30,9 @@ export class MemberService {
     requiredRole: string, // Role name: "OWNER", "ADMIN", "MEMBER"
   ): Promise<boolean> {
     try {
-      const role = await getUserProjectRole(projectId, userId);
-      if (!role) return false;
-      return hasPermissionLevel(role as any, requiredRole as any);
+      const roles = await getUserProjectRoles(projectId, userId);
+      if (roles.length === 0) return false;
+      return hasPermissionLevelWithRoles(roles, requiredRole);
     } catch (error) {
       console.error("Error checking permission:", error);
       return false;
@@ -35,11 +40,27 @@ export class MemberService {
   }
 
   /**
-   * Get user role name in project
+   * Get user role names in project
+   * Returns array of role names (e.g., ["OWNER", "ADMIN"])
+   */
+  async getUserRoles(projectId: string, userId: string): Promise<string[]> {
+    try {
+      return await getUserProjectRoles(projectId, userId);
+    } catch (error) {
+      console.error("Error getting user roles:", error);
+      throw new Error("Failed to get user roles");
+    }
+  }
+
+  /**
+   * Get user role name in project (backward compatibility)
+   * Returns the first role name or null
+   * @deprecated Use getUserRoles instead
    */
   async getUserRole(projectId: string, userId: string): Promise<string | null> {
     try {
-      return await getUserProjectRole(projectId, userId);
+      const roles = await getUserProjectRoles(projectId, userId);
+      return roles[0] ?? null;
     } catch (error) {
       console.error("Error getting user role:", error);
       throw new Error("Failed to get user role");
@@ -104,7 +125,95 @@ export class MemberService {
   }
 
   /**
-   * Update member role
+   * Add role to member
+   */
+  async addRoleToMember(
+    projectId: string,
+    userId: string,
+    roleName: string,
+  ): Promise<IProjectMember> {
+    try {
+      const member = await findProjectMember(projectId, userId);
+      if (!member) {
+        throw new Error("Project member not found");
+      }
+
+      const role = await findRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role ${roleName} not found`);
+      }
+
+      await addRoleToMemberRepo(member.id, role.id);
+      return await findProjectMember(projectId, userId) ?? member;
+    } catch (error) {
+      console.error("Error adding role to member:", error);
+      throw error instanceof Error ? error : new Error("Failed to add role to member");
+    }
+  }
+
+  /**
+   * Remove role from member
+   */
+  async removeRoleFromMember(
+    projectId: string,
+    userId: string,
+    roleName: string,
+  ): Promise<IProjectMember> {
+    try {
+      const member = await findProjectMember(projectId, userId);
+      if (!member) {
+        throw new Error("Project member not found");
+      }
+
+      const role = await findRoleByName(roleName);
+      if (!role) {
+        throw new Error(`Role ${roleName} not found`);
+      }
+
+      await removeRoleFromMemberRepo(member.id, role.id);
+      return await findProjectMember(projectId, userId) ?? member;
+    } catch (error) {
+      console.error("Error removing role from member:", error);
+      throw error instanceof Error ? error : new Error("Failed to remove role from member");
+    }
+  }
+
+  /**
+   * Set all roles for a member (replaces existing roles)
+   */
+  async setMemberRoles(
+    projectId: string,
+    userId: string,
+    roleNames: string[],
+  ): Promise<IProjectMember> {
+    try {
+      const member = await findProjectMember(projectId, userId);
+      if (!member) {
+        throw new Error("Project member not found");
+      }
+
+      // Get role IDs
+      const roleIds: string[] = [];
+      for (const roleName of roleNames) {
+        const role = await findRoleByName(roleName);
+        if (!role) {
+          throw new Error(`Role ${roleName} not found`);
+        }
+        roleIds.push(role.id);
+      }
+
+      await setMemberRolesRepo(member.id, roleIds);
+      return await findProjectMember(projectId, userId) ?? member;
+    } catch (error) {
+      console.error("Error setting member roles:", error);
+      throw error instanceof Error ? error : new Error("Failed to set member roles");
+    }
+  }
+
+  /**
+   * Update member role (backward compatibility)
+   * Sets the role as the only role for the member
+   * @deprecated Use setMemberRoles or addRoleToMember instead
    */
   async updateMemberRole(
     projectId: string,
@@ -112,13 +221,7 @@ export class MemberService {
     roleName: string, // Role name: "OWNER", "ADMIN", "MEMBER"
   ): Promise<IProjectMember> {
     try {
-      // Get role by name
-      const role = await findRoleByName(roleName);
-      if (!role) {
-        throw new Error(`Role ${roleName} not found`);
-      }
-
-      return await updateProjectMember(projectId, userId, { roleId: role.id });
+      return await this.setMemberRoles(projectId, userId, [roleName]);
     } catch (error) {
       console.error("Error updating member role:", error);
       throw new Error("Failed to update member role");

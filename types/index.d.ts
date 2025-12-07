@@ -18,7 +18,7 @@ export interface INavItem {
   badge?: number;
   disabled?: boolean;
   external?: boolean;
-  authorizeOnly?: "ADMIN" | "OWNER"; // Platform admin (project owner/admin) or Owner only
+  authorizeOnly?: "ADMIN" | "OWNER" | "CORE"; // Platform admin (project owner/admin), Owner only, or Core project member
   icon?: keyof typeof Icons;
 }
 
@@ -31,7 +31,7 @@ export interface IMarketingConfig {
 export interface ISidebarNavItem {
   title: string;
   items: INavItem[];
-  authorizeOnly?: "ADMIN"; // Platform admin (project owner/admin)
+  authorizeOnly?: "ADMIN" | "CORE"; // Platform admin (project owner/admin) or Core project
   icon?: keyof typeof Icons;
 }
 

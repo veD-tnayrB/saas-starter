@@ -3,9 +3,9 @@ import { MemberItem } from "./item";
 interface IProjectMember {
   id: string;
   userId: string;
-  role: {
+  roles: Array<{
     name: string;
-  };
+  }>;
   user?: {
     id: string;
     name: string | null;

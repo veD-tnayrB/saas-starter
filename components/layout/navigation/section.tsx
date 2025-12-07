@@ -13,6 +13,7 @@ interface INavigationSectionProps {
   projectId: string | null;
   hasExplicitProject: boolean;
   isCurrentProjectOwner: boolean;
+  isInCoreProject: boolean;
 }
 
 export function NavigationSection({
@@ -22,6 +23,7 @@ export function NavigationSection({
   projectId,
   hasExplicitProject,
   isCurrentProjectOwner,
+  isInCoreProject,
 }: INavigationSectionProps) {
   const sectionTitle = isSidebarExpanded ? (
     <p className="text-xs font-medium uppercase tracking-wider text-foreground/60">
@@ -37,8 +39,14 @@ export function NavigationSection({
 
       // Always show items, even if they require projectId (we'll use fallback)
       // Filter OWNER items: only show if user is OWNER of current project
+      // Filter CORE items: only show if user is in a core project
       // ADMIN items are already filtered in server component
-      return canAccessNavigationItem(item, true, isCurrentProjectOwner);
+      return canAccessNavigationItem(
+        item,
+        true,
+        isCurrentProjectOwner,
+        isInCoreProject,
+      );
     })
     .map((item) => {
       let href = item.href;

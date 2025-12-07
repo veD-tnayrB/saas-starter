@@ -8,7 +8,8 @@ import { getCurrentUserId } from "@/lib/session";
 const inviteSchema = z.object({
   projectId: z.string().min(1),
   email: z.string().email(),
-  role: z.enum(["ADMIN", "MEMBER"]),
+  role: z.enum(["ADMIN", "MEMBER"]).optional(), // Backward compatibility
+  roles: z.array(z.enum(["OWNER", "ADMIN", "MEMBER"])).optional(), // New: multiple roles
 });
 
 export async function POST(req: Request) {
@@ -29,22 +30,26 @@ export async function POST(req: Request) {
       );
     }
 
-    const { projectId, email, role } = parsed.data;
+    const { projectId, email, role, roles } = parsed.data;
 
     // Check if user has permission to invite (ADMIN or OWNER)
-    const userRole = await memberService.getUserRole(projectId, userId);
-    if (!canInviteMembers(userRole)) {
+    const userRoles = await memberService.getUserRoles(projectId, userId);
+    const canInvite = userRoles.some((r) => canInviteMembers(r));
+    if (!canInvite) {
       return NextResponse.json(
         { error: "You don't have permission to invite members" },
         { status: 403 },
       );
     }
 
+    // Determine roles to assign (prefer roles array, fallback to single role for backward compatibility)
+    const roleNames = roles && roles.length > 0 ? roles : role ? [role] : ["MEMBER"];
+
     // Create and send invitation
     const invitation = await invitationService.createInvitation(
       projectId,
       email,
-      role,
+      roleNames,
       userId,
     );
 
@@ -54,7 +59,7 @@ export async function POST(req: Request) {
         invitation: {
           id: invitation.id,
           email: invitation.email,
-          role: invitation.role.name,
+          roles: invitation.roles.map((r) => r.name),
           expiresAt: invitation.expiresAt,
         },
       },

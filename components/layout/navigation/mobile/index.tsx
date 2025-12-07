@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ISidebarNavItem } from "@/types";
+import { getNavigationLinksWithModules } from "@/actions/modules/navigation";
 
 import { MobileNavigationSection } from "./section";
 
@@ -26,9 +27,26 @@ export function MobileNavigationSections({
     matchedId && !knownRoutes.includes(matchedId) ? matchedId : null;
 
   const [isCurrentProjectOwner, setIsCurrentProjectOwner] = useState(false);
+  const [isInCoreProject, setIsInCoreProject] = useState(false);
   const [fallbackProjectId, setFallbackProjectId] = useState<string | null>(
     null,
   );
+  const [enhancedLinks, setEnhancedLinks] = useState<ISidebarNavItem[]>(links);
+
+  // Load enhanced links with core modules
+  useEffect(() => {
+    async function loadEnhancedLinks() {
+      try {
+        const enhanced = await getNavigationLinksWithModules(links, path);
+        setEnhancedLinks(enhanced);
+      } catch (error) {
+        console.error("Error loading enhanced links:", error);
+        setEnhancedLinks(links);
+      }
+    }
+
+    loadEnhancedLinks();
+  }, [links, path]);
 
   // Get first project as fallback when no currentProjectId
   useEffect(() => {
@@ -57,12 +75,13 @@ export function MobileNavigationSections({
     getFirstProject();
   }, [currentProjectId]);
 
-  // Check if user is OWNER of current project (only once, shared across all sections)
+  // Check if user is OWNER of current project and if project is core (only once, shared across all sections)
   useEffect(() => {
-    async function checkOwnerRole() {
+    async function checkProjectAccess() {
       const projectIdToCheck = currentProjectId || fallbackProjectId;
       if (!projectIdToCheck) {
         setIsCurrentProjectOwner(false);
+        setIsInCoreProject(false);
         return;
       }
 
@@ -71,20 +90,22 @@ export function MobileNavigationSections({
         if (response.ok) {
           const data = await response.json();
           setIsCurrentProjectOwner(data.project?.userRole === "OWNER");
+          setIsInCoreProject(data.project?.isCore === true);
         }
       } catch (error) {
-        console.error("Error checking owner role:", error);
+        console.error("Error checking project access:", error);
         setIsCurrentProjectOwner(false);
+        setIsInCoreProject(false);
       }
     }
 
-    checkOwnerRole();
+    checkProjectAccess();
   }, [currentProjectId, fallbackProjectId]);
 
   // Use currentProjectId if available, otherwise use fallbackProjectId
   const effectiveProjectId = currentProjectId || fallbackProjectId;
 
-  const sections = links.map((section, index) => {
+  const sections = enhancedLinks.map((section, index) => {
     const isLastSection = index === links.length - 1;
 
     return (
@@ -95,6 +116,7 @@ export function MobileNavigationSections({
           onItemClick={onItemClick}
           currentProjectId={effectiveProjectId}
           isCurrentProjectOwner={isCurrentProjectOwner}
+          isInCoreProject={isInCoreProject}
         />
       </div>
     );

@@ -13,6 +13,7 @@ import {
 import {
   createProjectMember,
   findProjectMember,
+  setMemberRoles,
 } from "@/repositories/projects/members";
 import { render } from "@react-email/render";
 import { Resend } from "resend";
@@ -33,14 +34,19 @@ export class InvitationService {
 
   /**
    * Create and send project invitation
+   * Supports multiple roles per invitation
    */
   async createInvitation(
     projectId: string,
     email: string,
-    roleName: string, // Role name: "OWNER", "ADMIN", "MEMBER"
+    roleNames: string[], // Array of role names: ["OWNER", "ADMIN", "MEMBER"]
     invitedById: string,
   ): Promise<IProjectInvitation> {
     try {
+      if (roleNames.length === 0) {
+        throw new Error("At least one role is required");
+      }
+
       // Validate project exists and inviter has access
       const project = await projectService.getProjectById(projectId, invitedById);
       if (!project) {
@@ -65,10 +71,14 @@ export class InvitationService {
         throw new Error("Invitation already sent to this email");
       }
 
-      // Get role by name
-      const role = await findRoleByName(roleName);
-      if (!role) {
-        throw new Error(`Role ${roleName} not found`);
+      // Get role IDs by names
+      const roleIds: string[] = [];
+      for (const roleName of roleNames) {
+        const role = await findRoleByName(roleName);
+        if (!role) {
+          throw new Error(`Role ${roleName} not found`);
+        }
+        roleIds.push(role.id);
       }
 
       // Generate token and expiration (7 days)
@@ -76,11 +86,11 @@ export class InvitationService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      // Create invitation
+      // Create invitation with multiple roles
       const invitation = await createProjectInvitation({
         projectId,
         email,
-        roleId: role.id,
+        roleIds,
         invitedById,
         token,
         expiresAt,
@@ -118,11 +128,15 @@ export class InvitationService {
     try {
       const acceptUrl = `${env.NEXT_PUBLIC_APP_URL}/accept-invitation?token=${data.invitation.token}`;
 
+      // Get role names for display (use first role or all if multiple)
+      const roleNames = data.invitation.roles.map((r) => r.name).join(", ");
+      const primaryRole = data.invitation.roles[0]?.name ?? "MEMBER";
+
       const html = await render(
         ProjectInvitationEmail({
           projectName: data.projectName,
           inviterName: data.inviterName,
-          role: data.invitation.role.name,
+          role: primaryRole, // Use first role for email template
           acceptUrl,
           siteName: siteConfig.name,
         }) as React.ReactElement,
@@ -131,7 +145,7 @@ export class InvitationService {
       const text = `
         You've been invited to join "${data.projectName}" on ${siteConfig.name}
 
-        ${data.inviterName} has invited you to join their project as ${data.invitation.role.name}.
+        ${data.inviterName} has invited you to join their project with role(s): ${roleNames}.
 
         Accept invitation: ${acceptUrl}
 
@@ -197,12 +211,18 @@ export class InvitationService {
         };
       }
 
-      // Add user as project member
-      await createProjectMember({
+      // Add user as project member with all roles from invitation
+      const member = await createProjectMember({
         projectId: invitation.projectId,
         userId,
-        roleId: invitation.roleId,
+        roleId: invitation.roles[0]?.id ?? "", // Use first role for backward compatibility
       });
+
+      // Add all other roles if there are multiple
+      if (invitation.roles.length > 1) {
+        const roleIds = invitation.roles.map((r) => r.id);
+        await setMemberRoles(member.id, roleIds);
+      }
 
       // Delete invitation
       await deleteInvitationByToken(token);

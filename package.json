@@ -16,6 +16,7 @@
     "postinstall": "prisma generate",
     "email": "email dev --dir emails --port 3333",
     "db:seed": "tsx prisma/seed.ts",
+    "migration": "tsx scripts/migrate-all.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:migrate:permissions": "tsx scripts/migrate-permissions.ts",
     "db:migrate:subscription-plan": "tsx scripts/add-subscription-plan-to-projects.ts",

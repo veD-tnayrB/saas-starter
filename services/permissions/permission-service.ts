@@ -21,12 +21,11 @@ export class PermissionService {
    *
    * Flow:
    * 1. Get user's subscription plan
-   * 2. Get user's role in the project
+   * 2. Get user's roles in the project (supports multiple roles)
    * 3. Get action by slug
-   * 4. Check cache first
-   * 5. If not cached, check permissions in DB
-   * 6. Cache result
-   * 7. Return boolean
+   * 4. Check permissions for each role
+   * 5. Return true if any role has permission
+   * 6. Cache results per role
    */
   async canUserPerformAction(
     userId: string,
@@ -37,7 +36,7 @@ export class PermissionService {
       // Check authorization first - user must be a project member
       const projectMember = await findProjectMember(projectId, userId);
 
-      if (!projectMember || !projectMember.role) {
+      if (!projectMember || projectMember.roles.length === 0) {
         return false;
       }
 
@@ -49,54 +48,55 @@ export class PermissionService {
         // For now, we'll allow basic actions even without a plan
       }
 
-      // Use role from projectMember
-      const role = projectMember.role;
-
       // Get action by slug
       const action = await findActionBySlug(actionSlug);
       if (!action) {
         return false;
       }
 
-      // If no plan, use Free plan as default
-      if (!projectPlan) {
-        // For projects without a plan, check if Free plan would allow this action
-        const freePlan = await findPlanByName("free");
-        if (!freePlan) {
-          return false;
+      // Check permissions for each role - return true if any role has permission
+      const planId = projectPlan?.id;
+      const freePlan = projectPlan ? null : await findPlanByName("free");
+      const effectivePlanId = planId ?? freePlan?.id;
+
+      if (!effectivePlanId) {
+        return false;
+      }
+
+      // Check each role - if any role has permission, return true
+      for (const role of projectMember.roles) {
+        // Generate cache key for this role
+        const cacheKey = getPermissionCacheKey(
+          effectivePlanId,
+          role.id,
+          actionSlug,
+        );
+
+        // Check cache first
+        const cachedResult = getCachedPermission(cacheKey);
+        if (cachedResult !== undefined) {
+          if (cachedResult) return true; // If cached and true, return immediately
+          continue; // If cached and false, check next role
         }
+
+        // Check permission in DB
         const canPerform = await canRolePerformActionInPlan(
-          freePlan.id,
+          effectivePlanId,
           role.id,
           action.id,
         );
-        return canPerform;
+
+        // Cache result
+        setCachedPermission(cacheKey, canPerform);
+
+        // If this role has permission, return true immediately
+        if (canPerform) {
+          return true;
+        }
       }
 
-      // Generate cache key
-      const cacheKey = getPermissionCacheKey(
-        projectPlan.id,
-        role.id,
-        actionSlug,
-      );
-
-      // Check cache first
-      const cachedResult = getCachedPermission(cacheKey);
-      if (cachedResult !== undefined) {
-        return cachedResult;
-      }
-
-      // Check permission in DB
-      const canPerform = await canRolePerformActionInPlan(
-        projectPlan.id,
-        role.id,
-        action.id,
-      );
-
-      // Cache result
-      setCachedPermission(cacheKey, canPerform);
-
-      return canPerform;
+      // No role has permission
+      return false;
     } catch (error) {
       console.error("Error checking user permission:", error);
       return false;

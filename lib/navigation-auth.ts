@@ -3,7 +3,7 @@ import type { INavItem } from "@/types";
 /**
  * Authorization types for navigation items
  */
-export type NavigationAuthType = "ADMIN" | "OWNER";
+export type NavigationAuthType = "ADMIN" | "OWNER" | "CORE";
 
 /**
  * Check if navigation item should be visible based on authorization
@@ -12,6 +12,7 @@ export function canAccessNavigationItem(
   item: INavItem,
   userIsAdmin: boolean,
   userIsCurrentProjectOwner: boolean,
+  userIsInCoreProject: boolean = false,
 ): boolean {
   if (!item.authorizeOnly) return true;
 
@@ -21,6 +22,10 @@ export function canAccessNavigationItem(
 
   if (item.authorizeOnly === "OWNER") {
     return userIsCurrentProjectOwner;
+  }
+
+  if (item.authorizeOnly === "CORE") {
+    return userIsInCoreProject;
   }
 
   return false;
@@ -33,8 +38,14 @@ export function filterNavigationItems(
   items: INavItem[],
   userIsAdmin: boolean,
   userIsCurrentProjectOwner: boolean,
+  userIsInCoreProject: boolean = false,
 ): INavItem[] {
   return items.filter((item) =>
-    canAccessNavigationItem(item, userIsAdmin, userIsCurrentProjectOwner),
+    canAccessNavigationItem(
+      item,
+      userIsAdmin,
+      userIsCurrentProjectOwner,
+      userIsInCoreProject,
+    ),
   );
 }

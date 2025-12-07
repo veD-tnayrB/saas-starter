@@ -16,6 +16,12 @@ export const sidebarLinks: ISidebarNavItem[] = [
         title: "Billing",
         authorizeOnly: "OWNER", // Only project owners can access billing
       },
+      {
+        href: "/dashboard/[projectId]/admin/modules",
+        icon: "package",
+        title: "Modules",
+        authorizeOnly: "CORE", // Only users in core projects can access modules
+      },
     ],
   },
   {

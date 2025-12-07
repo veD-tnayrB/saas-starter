@@ -79,7 +79,7 @@ export class ProjectService {
               await invitationService.createInvitation(
                 result.id,
                 member.email,
-                member.role,
+                [member.role], // Convert single role to array
                 data.ownerId,
               );
               memberResults.push({ email: member.email, role: member.role });
@@ -309,7 +309,7 @@ export class ProjectService {
                 await invitationService.createInvitation(
                   id,
                   member.email,
-                  member.role,
+                  [member.role], // Convert single role to array
                   userId,
                 );
                 memberResults.push({ email: member.email, role: member.role });

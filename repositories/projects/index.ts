@@ -22,13 +22,18 @@ export {
 
 // Project member repository functions
 export {
+  addRoleToMember,
   countAdminMemberships,
   createProjectMember,
   findProjectMember,
+  findProjectMemberRoles,
   findProjectMembers,
   findUserProjectMemberships,
   getUserProjectRole,
+  getUserProjectRoles,
   removeProjectMember,
+  removeRoleFromMember,
+  setMemberRoles,
   updateProjectMember,
 } from "./members";
 

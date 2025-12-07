@@ -5,17 +5,18 @@ import { db } from "@/lib/db";
 
 /**
  * Project member data transfer object
+ * Supports multiple roles per member
  */
 export interface IProjectMember {
   id: string;
   projectId: string;
   userId: string;
-  roleId: string;
-  role: {
+  roleId?: string; // Deprecated: kept for backward compatibility
+  roles: Array<{
     id: string;
     name: string;
     priority: number;
-  };
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,23 +38,55 @@ export interface IProjectMemberUpdateData {
 }
 
 /**
+ * Find project member roles by project member ID
+ */
+export async function findProjectMemberRoles(
+  projectMemberId: string,
+): Promise<Array<{ id: string; name: string; priority: number }>> {
+  try {
+    const result = await sql<{
+      roleId: string;
+      roleName: string;
+      rolePriority: number;
+    }>`
+      SELECT 
+        ar.id AS "roleId",
+        ar.name AS "roleName",
+        ar.priority AS "rolePriority"
+      FROM project_member_roles pmr
+      INNER JOIN app_roles ar ON ar.id = pmr.role_id
+      WHERE pmr.project_member_id = ${projectMemberId}
+      ORDER BY ar.priority ASC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.roleId,
+      name: row.roleName,
+      priority: row.rolePriority,
+    }));
+  } catch (error) {
+    console.error("Error finding project member roles:", error);
+    throw new Error("Failed to find project member roles");
+  }
+}
+
+/**
  * Find project member by project and user ID
+ * Returns member with all their roles
  */
 export async function findProjectMember(
   projectId: string,
   userId: string,
 ): Promise<IProjectMember | null> {
   try {
-    const result = await sql<{
+    // First find the project member
+    const memberResult = await sql<{
       id: string;
       projectId: string;
       userId: string;
-      roleId: string;
+      roleId: string | null;
       createdAt: Date;
       updatedAt: Date;
-      roleId2: string;
-      roleName: string;
-      rolePriority: number;
     }>`
       SELECT 
         pm.id,
@@ -61,32 +94,27 @@ export async function findProjectMember(
         pm.user_id AS "userId",
         pm.role_id AS "roleId",
         pm.created_at AS "createdAt",
-        pm.updated_at AS "updatedAt",
-        ar.id AS "roleId2",
-        ar.name AS "roleName",
-        ar.priority AS "rolePriority"
+        pm.updated_at AS "updatedAt"
       FROM project_members pm
-      INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.project_id = ${projectId}
         AND pm.user_id = ${userId}
       LIMIT 1
     `.execute(db);
 
-    const row = result.rows[0];
-    if (!row) return null;
+    const memberRow = memberResult.rows[0];
+    if (!memberRow) return null;
+
+    // Get all roles for this member
+    const roles = await findProjectMemberRoles(memberRow.id);
 
     return {
-      id: row.id,
-      projectId: row.projectId,
-      userId: row.userId,
-      roleId: row.roleId,
-      role: {
-        id: row.roleId2,
-        name: row.roleName,
-        priority: row.rolePriority,
-      },
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
+      id: memberRow.id,
+      projectId: memberRow.projectId,
+      userId: memberRow.userId,
+      roleId: memberRow.roleId ?? undefined,
+      roles,
+      createdAt: memberRow.createdAt,
+      updatedAt: memberRow.updatedAt,
     };
   } catch (error) {
     console.error("Error finding project member:", error);
@@ -96,6 +124,7 @@ export async function findProjectMember(
 
 /**
  * Find all members of a project with user information
+ * Returns members with all their roles
  */
 export async function findProjectMembers(projectId: string): Promise<
   (IProjectMember & {
@@ -108,16 +137,14 @@ export async function findProjectMembers(projectId: string): Promise<
   })[]
 > {
   try {
-    const result = await sql<{
+    // First get all members with user info
+    const membersResult = await sql<{
       id: string;
       projectId: string;
       userId: string;
-      roleId: string;
+      roleId: string | null;
       createdAt: Date;
       updatedAt: Date;
-      roleId2: string;
-      roleName: string;
-      rolePriority: number;
       userId2: string;
       userName: string | null;
       userEmail: string | null;
@@ -130,39 +157,39 @@ export async function findProjectMembers(projectId: string): Promise<
         pm.role_id AS "roleId",
         pm.created_at AS "createdAt",
         pm.updated_at AS "updatedAt",
-        ar.id AS "roleId2",
-        ar.name AS "roleName",
-        ar.priority AS "rolePriority",
         u.id AS "userId2",
         u.name AS "userName",
         u.email AS "userEmail",
         u.image AS "userImage"
       FROM project_members pm
-      INNER JOIN app_roles ar ON ar.id = pm.role_id
       INNER JOIN users u ON u.id = pm.user_id
       WHERE pm.project_id = ${projectId}
-      ORDER BY ar.priority ASC, pm.created_at ASC
+      ORDER BY pm.created_at ASC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      projectId: row.projectId,
-      userId: row.userId,
-      roleId: row.roleId,
-      role: {
-        id: row.roleId2,
-        name: row.roleName,
-        priority: row.rolePriority,
-      },
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      user: {
-        id: row.userId2,
-        name: row.userName,
-        email: row.userEmail,
-        image: row.userImage,
-      },
-    }));
+    // For each member, get their roles
+    const members = await Promise.all(
+      membersResult.rows.map(async (row) => {
+        const roles = await findProjectMemberRoles(row.id);
+        return {
+          id: row.id,
+          projectId: row.projectId,
+          userId: row.userId,
+          roleId: row.roleId ?? undefined,
+          roles,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          user: {
+            id: row.userId2,
+            name: row.userName,
+            email: row.userEmail,
+            image: row.userImage,
+          },
+        };
+      }),
+    );
+
+    return members;
   } catch (error) {
     console.error("Error finding project members:", error);
     throw new Error("Failed to find project members");
@@ -171,21 +198,19 @@ export async function findProjectMembers(projectId: string): Promise<
 
 /**
  * Find all projects where user is a member
+ * Returns memberships with all their roles
  */
 export async function findUserProjectMemberships(
   userId: string,
 ): Promise<IProjectMember[]> {
   try {
-    const result = await sql<{
+    const membersResult = await sql<{
       id: string;
       projectId: string;
       userId: string;
-      roleId: string;
+      roleId: string | null;
       createdAt: Date;
       updatedAt: Date;
-      roleId2: string;
-      roleName: string;
-      rolePriority: number;
     }>`
       SELECT 
         pm.id,
@@ -193,29 +218,29 @@ export async function findUserProjectMemberships(
         pm.user_id AS "userId",
         pm.role_id AS "roleId",
         pm.created_at AS "createdAt",
-        pm.updated_at AS "updatedAt",
-        ar.id AS "roleId2",
-        ar.name AS "roleName",
-        ar.priority AS "rolePriority"
+        pm.updated_at AS "updatedAt"
       FROM project_members pm
-      INNER JOIN app_roles ar ON ar.id = pm.role_id
       WHERE pm.user_id = ${userId}
       ORDER BY pm.created_at DESC
     `.execute(db);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      projectId: row.projectId,
-      userId: row.userId,
-      roleId: row.roleId,
-      role: {
-        id: row.roleId2,
-        name: row.roleName,
-        priority: row.rolePriority,
-      },
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    }));
+    // For each membership, get their roles
+    const memberships = await Promise.all(
+      membersResult.rows.map(async (row) => {
+        const roles = await findProjectMemberRoles(row.id);
+        return {
+          id: row.id,
+          projectId: row.projectId,
+          userId: row.userId,
+          roleId: row.roleId ?? undefined,
+          roles,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        };
+      }),
+    );
+
+    return memberships;
   } catch (error) {
     console.error("Error finding user project memberships:", error);
     throw new Error("Failed to find user memberships");
@@ -223,16 +248,34 @@ export async function findUserProjectMemberships(
 }
 
 /**
- * Get user role name in project
- * Returns the role name (OWNER, ADMIN, MEMBER) or null
+ * Get user role names in project
+ * Returns array of role names (e.g., ["OWNER", "ADMIN"]) or empty array
+ */
+export async function getUserProjectRoles(
+  projectId: string,
+  userId: string,
+): Promise<string[]> {
+  try {
+    const member = await findProjectMember(projectId, userId);
+    return member?.roles.map((r) => r.name) ?? [];
+  } catch (error) {
+    console.error("Error getting user project roles:", error);
+    throw new Error("Failed to get user project roles");
+  }
+}
+
+/**
+ * Get user role name in project (backward compatibility)
+ * Returns the first role name or null
+ * @deprecated Use getUserProjectRoles instead
  */
 export async function getUserProjectRole(
   projectId: string,
   userId: string,
 ): Promise<string | null> {
   try {
-    const member = await findProjectMember(projectId, userId);
-    return member?.role.name ?? null;
+    const roles = await getUserProjectRoles(projectId, userId);
+    return roles[0] ?? null;
   } catch (error) {
     console.error("Error getting user project role:", error);
     throw new Error("Failed to get user project role");
@@ -241,6 +284,7 @@ export async function getUserProjectRole(
 
 /**
  * Create project member
+ * Also creates the initial role in project_member_roles
  */
 export async function createProjectMember(
   data: IProjectMemberCreateData,
@@ -248,11 +292,12 @@ export async function createProjectMember(
   try {
     const id = randomUUID();
 
+    // Create project member (role_id is nullable now, but we keep it for backward compatibility)
     const memberResult = await sql<{
       id: string;
       projectId: string;
       userId: string;
-      roleId: string;
+      roleId: string | null;
       createdAt: Date;
       updatedAt: Date;
     }>`
@@ -270,31 +315,24 @@ export async function createProjectMember(
     const member = memberResult.rows[0];
     if (!member) throw new Error("Failed to create project member");
 
-    // Fetch role data
-    const roleResult = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-    }>`
-      SELECT id, name, priority
-      FROM app_roles
-      WHERE id = ${data.roleId}
-      LIMIT 1
-    `.execute(db);
+    // Create the role in project_member_roles
+    if (data.roleId) {
+      const roleMemberId = randomUUID();
+      await sql`
+        INSERT INTO project_member_roles (id, project_member_id, role_id, created_at)
+        VALUES (${roleMemberId}, ${member.id}, ${data.roleId}, CURRENT_TIMESTAMP)
+      `.execute(db);
+    }
 
-    const role = roleResult.rows[0];
-    if (!role) throw new Error("Role not found");
+    // Get all roles for this member
+    const roles = await findProjectMemberRoles(member.id);
 
     return {
       id: member.id,
       projectId: member.projectId,
       userId: member.userId,
-      roleId: member.roleId,
-      role: {
-        id: role.id,
-        name: role.name,
-        priority: role.priority,
-      },
+      roleId: member.roleId ?? undefined,
+      roles,
       createdAt: member.createdAt,
       updatedAt: member.updatedAt,
     };
@@ -305,7 +343,77 @@ export async function createProjectMember(
 }
 
 /**
- * Update project member role
+ * Add role to project member
+ */
+export async function addRoleToMember(
+  projectMemberId: string,
+  roleId: string,
+): Promise<void> {
+  try {
+    const id = randomUUID();
+    await sql`
+      INSERT INTO project_member_roles (id, project_member_id, role_id, created_at)
+      VALUES (${id}, ${projectMemberId}, ${roleId}, CURRENT_TIMESTAMP)
+      ON CONFLICT (project_member_id, role_id) DO NOTHING
+    `.execute(db);
+  } catch (error) {
+    console.error("Error adding role to member:", error);
+    throw new Error("Failed to add role to member");
+  }
+}
+
+/**
+ * Remove role from project member
+ */
+export async function removeRoleFromMember(
+  projectMemberId: string,
+  roleId: string,
+): Promise<void> {
+  try {
+    await sql`
+      DELETE FROM project_member_roles
+      WHERE project_member_id = ${projectMemberId}
+        AND role_id = ${roleId}
+    `.execute(db);
+  } catch (error) {
+    console.error("Error removing role from member:", error);
+    throw new Error("Failed to remove role from member");
+  }
+}
+
+/**
+ * Set all roles for a project member (replaces existing roles)
+ */
+export async function setMemberRoles(
+  projectMemberId: string,
+  roleIds: string[],
+): Promise<void> {
+  try {
+    // Delete all existing roles
+    await sql`
+      DELETE FROM project_member_roles
+      WHERE project_member_id = ${projectMemberId}
+    `.execute(db);
+
+    // Insert new roles
+    if (roleIds.length > 0) {
+      for (const roleId of roleIds) {
+        const id = randomUUID();
+        await sql`
+          INSERT INTO project_member_roles (id, project_member_id, role_id, created_at)
+          VALUES (${id}, ${projectMemberId}, ${roleId}, CURRENT_TIMESTAMP)
+        `.execute(db);
+      }
+    }
+  } catch (error) {
+    console.error("Error setting member roles:", error);
+    throw new Error("Failed to set member roles");
+  }
+}
+
+/**
+ * Update project member (backward compatibility)
+ * @deprecated Use addRoleToMember, removeRoleFromMember, or setMemberRoles instead
  */
 export async function updateProjectMember(
   projectId: string,
@@ -313,67 +421,27 @@ export async function updateProjectMember(
   data: IProjectMemberUpdateData,
 ): Promise<IProjectMember> {
   try {
-    if (!data.roleId) {
-      // No update needed, fetch existing
-      const existing = await findProjectMember(projectId, userId);
-      if (!existing) throw new Error("Project member not found");
-      return existing;
+    const existing = await findProjectMember(projectId, userId);
+    if (!existing) throw new Error("Project member not found");
+
+    if (data.roleId) {
+      // If roleId is provided, set it as the only role (for backward compatibility)
+      await setMemberRoles(existing.id, [data.roleId]);
+      
+      // Also update the legacy role_id field
+      await sql`
+        UPDATE project_members
+        SET 
+          role_id = ${data.roleId},
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${existing.id}
+      `.execute(db);
     }
 
-    const memberResult = await sql<{
-      id: string;
-      projectId: string;
-      userId: string;
-      roleId: string;
-      createdAt: Date;
-      updatedAt: Date;
-    }>`
-      UPDATE project_members
-      SET 
-        role_id = ${data.roleId},
-        updated_at = CURRENT_TIMESTAMP
-      WHERE project_id = ${projectId}
-        AND user_id = ${userId}
-      RETURNING 
-        id,
-        project_id AS "projectId",
-        user_id AS "userId",
-        role_id AS "roleId",
-        created_at AS "createdAt",
-        updated_at AS "updatedAt"
-    `.execute(db);
-
-    const member = memberResult.rows[0];
-    if (!member) throw new Error("Project member not found");
-
-    // Fetch role data
-    const roleResult = await sql<{
-      id: string;
-      name: string;
-      priority: number;
-    }>`
-      SELECT id, name, priority
-      FROM app_roles
-      WHERE id = ${data.roleId}
-      LIMIT 1
-    `.execute(db);
-
-    const role = roleResult.rows[0];
-    if (!role) throw new Error("Role not found");
-
-    return {
-      id: member.id,
-      projectId: member.projectId,
-      userId: member.userId,
-      roleId: member.roleId,
-      role: {
-        id: role.id,
-        name: role.name,
-        priority: role.priority,
-      },
-      createdAt: member.createdAt,
-      updatedAt: member.updatedAt,
-    };
+    // Return updated member
+    const updated = await findProjectMember(projectId, userId);
+    if (!updated) throw new Error("Failed to update project member");
+    return updated;
   } catch (error) {
     console.error("Error updating project member:", error);
     throw new Error("Failed to update project member");
@@ -402,13 +470,15 @@ export async function removeProjectMember(
 /**
  * Count admin memberships for a user (OWNER or ADMIN roles)
  * Checks roles with priority <= 1 (OWNER=0, ADMIN=1)
+ * Uses project_member_roles for accurate counting
  */
 export async function countAdminMemberships(userId: string): Promise<number> {
   try {
     const result = await sql<{ count: string }>`
-      SELECT COUNT(*)::text as count
+      SELECT COUNT(DISTINCT pm.id)::text as count
       FROM project_members pm
-      INNER JOIN app_roles ar ON ar.id = pm.role_id
+      INNER JOIN project_member_roles pmr ON pmr.project_member_id = pm.id
+      INNER JOIN app_roles ar ON ar.id = pmr.role_id
       WHERE pm.user_id = ${userId}
         AND ar.priority <= 1
     `.execute(db);

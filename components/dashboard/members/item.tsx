@@ -3,9 +3,9 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 interface IProjectMember {
   id: string;
   userId: string;
-  role: {
+  roles: Array<{
     name: string;
-  };
+  }>;
   user?: {
     id: string;
     name: string | null;
@@ -27,9 +27,13 @@ export function MemberItem({
 }: IMemberItemProps) {
   const userName = member.user?.name || "Unknown User";
   const userEmail = member.user?.email || "No email";
-  const roleName = member.role.name;
+  // Get the highest priority role (first one, as they're sorted by priority)
+  const roleName = member.roles[0]?.name || "MEMBER";
   const roleBadgeClass = `rounded-full px-3 py-1 text-xs font-medium ${roleColors[roleName] || ""}`;
-  const roleLabel = roleDisplay[roleName] || roleName;
+  // Show all roles if multiple, otherwise just the role name
+  const roleLabel = member.roles.length > 1
+    ? `${roleDisplay[roleName] || roleName} (+${member.roles.length - 1})`
+    : roleDisplay[roleName] || roleName;
 
   return (
     <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
