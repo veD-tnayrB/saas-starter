@@ -1,0 +1,466 @@
+---
+scope: backend
+alwaysApply: false
+---
+
+🔴 **CRITICAL: READ THIS FIRST - MANDATORY BEFORE DESIGNING OR MODIFYING
+DATABASE SCHEMAS**
+
+Before making ANY changes to database schemas, creating new tables, modifying
+existing tables, writing migrations, or designing data architecture (any file in
+paths containing `database/`, `migrations/`, `schema/`, or when working with
+SQL/DDL), you MUST:
+
+1. **Read this entire file completely first**
+2. Understand the multi-tenancy architecture (organization_id requirements)
+3. Review core entity requirements and prohibitions
+4. Understand custom fields implementation patterns
+5. Follow migration requirements and best practices
+6. Review performance and integrity requirements
+
+**This file contains MANDATORY and NON-NEGOTIABLE rules for database
+architecture that prevent critical architectural violations, data integrity
+issues, performance problems, and security vulnerabilities. Failure to follow
+these rules will result in an unmaintainable, insecure, and poorly performing
+database.**
+
+**CRITICAL PHILOSOPHY: The database does not exist to adapt to the backend. The
+backend exists to respect the database. The database is the source of truth.**
+
+---
+
+You are an expert in PostgreSQL, database architecture, multi-tenancy patterns,
+and relational database design.
+
+## Core Principles (Non-Negotiable)
+
+### Database Technology and Model
+
+-   **PostgreSQL is the ONLY primary database.** No exceptions.
+-   **Relational model first.** Always design using normalized relational
+    patterns.
+-   **No schemaless databases as a general rule.** JSONB is acceptable only for
+    metadata, configurations, and custom fields (see Custom Fields section).
+-   **No dynamic columns** except through Custom Fields pattern (see Custom
+    Fields section).
+
+### Source of Truth
+
+-   **The database is the source of truth, NOT the backend.**
+-   All structural changes must go through migrations.
+-   Never change database structure manually in production.
+-   The backend code must adapt to the database schema, not the other way
+    around.
+
+### Migrations
+
+-   **All tables MUST be created through migrations.**
+-   **All schema changes MUST go through migrations.**
+-   Migrations must be:
+    -   **Atomic**: Complete or rollback entirely
+    -   **Reversible**: Must have both `up` and `down` methods
+    -   **Ordered**: Use timestamp-based ordering
+-   **PROHIBITED**:
+    -   Changing structure manually in production
+    -   Creating tables without migrations
+    -   Migrations that cannot be rolled back
+
+## Multi-Tenancy (Organizations)
+
+### Organization ID Requirement
+
+-   **Every core business document/entity MUST belong to an organization.**
+-   **`organization_id` is MANDATORY in all core business tables.**
+-   There is NO "global" data except:
+    -   Catalogs (reference data)
+    -   System definitions
+    -   Feature flags
+
+### Multi-Tenancy Rules
+
+-   **NEVER** mix data from two organizations in a single query without
+    filtering by `organization_id`.
+-   **NEVER** hardcode organization IDs in queries or business logic.
+-   **ALWAYS** filter by `organization_id` in WHERE clauses for tenant-scoped
+    queries.
+-   Use organization context from authentication/authorization, never from
+    request parameters without validation.
+
+### Examples
+
+```typescript
+// ❌ BAD: Missing organization_id filter
+const users = await sql<IUser[]>`
+  SELECT id AS "userId", email FROM users
+`.execute(db);
+
+// ❌ BAD: Hardcoded organization
+const users = await sql<IUser[]>`
+  SELECT id AS "userId", email FROM users
+  WHERE organization_id = 'fixed-org-id'
+`.execute(db);
+
+// ✅ GOOD: Organization from context with proper filtering
+const users = await sql<IUser[]>`
+  SELECT id AS "userId", email FROM users
+  WHERE organization_id = ${organizationId}
+`.execute(db);
+```
+
+## Core Entities (Never Fragmented)
+
+These tables **ALWAYS exist** in all installations and are **NEVER versioned**
+or fragmented by organization type:
+
+### Mandatory Core Tables
+
+-   `organizations`
+-   `users`
+-   `roles`
+-   `permissions`
+-   `role_permissions`
+-   `modules`
+-   `organization_modules`
+-   `custom_fields`
+-   `custom_field_values`
+-   `audit_logs`
+
+### Core Entity Rules
+
+-   **NEVER fragment these tables** by organization type or create separate
+    versions.
+-   **NEVER duplicate these entities** for different organization types.
+-   These tables are the foundation of the system and must remain consistent
+    across all installations.
+-   Extend functionality through related tables or modules, NOT by modifying
+    core entities.
+
+## Custom Fields (Official Pattern)
+
+### Custom Fields Architecture
+
+Dynamic fields are implemented using this pattern:
+
+#### `custom_fields` Table Structure
+
+-   `id` (UUID, primary key)
+-   `organization_id` (UUID, foreign key to organizations)
+-   `entity_type` (string, e.g., 'project', 'task', 'invoice')
+-   `field_key` (string, unique per organization + entity_type)
+-   `field_type` (string, e.g., 'text', 'number', 'date', 'boolean')
+-   `required` (boolean)
+-   `metadata` (JSONB for additional configuration)
+
+#### `custom_field_values` Table Structure
+
+-   `id` (UUID, primary key)
+-   `custom_field_id` (UUID, foreign key to custom_fields)
+-   `entity_id` (UUID, references the entity instance)
+-   `value` (JSONB containing the actual value)
+
+### Custom Fields Rules
+
+✅ **ALWAYS use Custom Fields pattern for dynamic fields**
+
+✅ **NEVER add dynamic columns directly to business tables**
+
+✅ **NEVER use JSONB directly in core tables** for critical business logic
+
+✅ **JSONB is ONLY acceptable for**:
+
+-   Metadata (non-critical data)
+-   Configurations (system settings)
+-   Custom fields (via custom_field_values)
+
+### Examples
+
+```sql
+-- ❌ BAD: Adding dynamic columns to business table
+ALTER TABLE projects ADD COLUMN custom_field_1 TEXT;
+ALTER TABLE projects ADD COLUMN custom_field_2 INTEGER;
+
+-- ❌ BAD: Using JSONB for critical business logic
+CREATE TABLE projects (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  custom_data JSONB  -- ❌ BAD: Critical logic in JSONB
+);
+
+-- ✅ GOOD: Using Custom Fields pattern
+CREATE TABLE custom_fields (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  entity_type TEXT NOT NULL,
+  field_key TEXT NOT NULL,
+  field_type TEXT NOT NULL,
+  required BOOLEAN DEFAULT FALSE,
+  metadata JSONB,
+  UNIQUE(organization_id, entity_type, field_key)
+);
+
+CREATE TABLE custom_field_values (
+  id UUID PRIMARY KEY,
+  custom_field_id UUID NOT NULL REFERENCES custom_fields(id),
+  entity_id UUID NOT NULL,
+  value JSONB NOT NULL
+);
+```
+
+## Modules and Features
+
+### Module Rules
+
+-   **Modules do NOT create new databases.**
+-   Modules:
+    -   **MAY enable extended tables** (additional functionality)
+    -   **NEVER modify core entities** without a migration approved for all
+        installations
+    -   Are activated per organization via `organization_modules`
+
+### Module Activation
+
+-   Modules are enabled/disabled per organization using the
+    `organization_modules` table.
+-   Module-specific tables should follow naming conventions:
+    `{module_name}_{entity_name}`
+-   Module tables MUST include `organization_id` if they contain business data.
+
+### Examples
+
+```sql
+-- ✅ GOOD: Module extends functionality with new table
+CREATE TABLE project_analytics (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  project_id UUID NOT NULL REFERENCES projects(id),
+  views_count INTEGER DEFAULT 0,
+  last_viewed_at TIMESTAMP
+);
+
+-- ❌ BAD: Module modifies core entity directly
+-- DO NOT add columns to 'projects' table for module-specific features
+ALTER TABLE projects ADD COLUMN analytics_enabled BOOLEAN;
+```
+
+## Roles & Permissions
+
+### Permission-Based Authorization
+
+-   **NEVER use roles directly as strings in business logic.**
+-   **The backend ONLY evaluates permissions**, not roles.
+-   **The frontend ONLY consumes permissions**, not roles.
+-   Roles are a grouping mechanism for permissions, not authorization logic.
+
+### Authorization Pattern
+
+```typescript
+// ❌ BAD: Checking role directly
+if (user.role === 'admin') {
+	// Do something
+}
+
+// ❌ BAD: Frontend checking roles
+if (user.role === 'manager') {
+	return <AdminPanel />;
+}
+
+// ✅ GOOD: Backend evaluates permissions
+if (hasPermission(user, 'projects:delete')) {
+	// Do something
+}
+
+// ✅ GOOD: Frontend consumes permissions
+if (user.permissions.includes('projects:delete')) {
+	return <DeleteButton />;
+}
+```
+
+## Integrity and Security
+
+### Required Fields
+
+**ALL tables MUST have:**
+
+-   `id` (UUID, primary key)
+-   `created_at` (TIMESTAMP, NOT NULL, DEFAULT CURRENT_TIMESTAMP)
+-   `updated_at` (TIMESTAMP, NOT NULL, DEFAULT CURRENT_TIMESTAMP)
+
+### Foreign Keys
+
+-   **ALL relationships MUST have explicit foreign keys.**
+-   Foreign keys MUST be properly indexed.
+-   Use ON DELETE CASCADE or ON DELETE RESTRICT based on business logic.
+-   Document the cascade behavior in migration comments.
+
+### Audit Logs
+
+-   **ALL sensitive actions MUST be logged to `audit_logs` table.**
+-   Sensitive actions include:
+    -   Data deletions
+    -   Permission changes
+    -   Organization modifications
+    -   User access changes
+    -   Critical business data modifications
+
+### Examples
+
+```sql
+-- ✅ GOOD: Complete table structure with all required fields
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_projects_organization_id ON projects(organization_id);
+CREATE INDEX idx_projects_created_at ON projects(created_at);
+```
+
+## Performance
+
+### Mandatory Indexes
+
+**MUST create indexes on:**
+
+-   All foreign keys
+-   `organization_id` (if present)
+-   `user_id` (when applicable)
+-   Columns used in frequent WHERE clauses
+-   Columns used in JOIN conditions
+
+### Query Prohibitions
+
+❌ **NEVER use `SELECT *`** - Always specify columns explicitly
+
+❌ **NEVER write queries without limits** - Always paginate results
+
+❌ **NEVER write queries without organization_id filter** (for tenant-scoped
+data)
+
+❌ **NEVER write queries that scan entire tables** without proper indexing
+
+### Examples
+
+```sql
+-- ❌ BAD: SELECT * without limit or organization filter
+SELECT * FROM projects;
+
+-- ❌ BAD: Missing index on filtered column
+SELECT * FROM projects WHERE status = 'active';
+-- No index on 'status' column
+
+-- ✅ GOOD: Explicit columns, limit, and organization filter
+SELECT
+  id AS "projectId",
+  name,
+  status,
+  created_at AS "createdAt"
+FROM projects
+WHERE organization_id = $1
+  AND status = 'active'
+ORDER BY created_at DESC
+LIMIT 50
+OFFSET $2;
+
+-- ✅ GOOD: With proper indexes
+CREATE INDEX idx_projects_org_status ON projects(organization_id, status);
+CREATE INDEX idx_projects_created_at ON projects(created_at);
+```
+
+## Absolute Prohibitions
+
+### Never Do These
+
+❌ **Do NOT use "magic" ORMs without control** - Use query builders like Kysely
+that provide explicit control
+
+❌ **Do NOT use JSON as a replacement for relational model** - Use proper tables
+and relationships
+
+❌ **Do NOT duplicate entities by organization type** - Use single table with
+organization_id
+
+❌ **Do NOT put business logic inside the database** - Keep logic in application
+layer
+
+❌ **Do NOT use triggers for complex logic** - Triggers should only handle
+simple, low-level tasks (like updating updated_at)
+
+❌ **Do NOT create tables without migrations**
+
+❌ **Do NOT modify core entities for module-specific features**
+
+❌ **Do NOT use schemaless patterns for core business data**
+
+❌ **Do NOT mix data from multiple organizations in queries**
+
+❌ **Do NOT hardcode organization IDs**
+
+## Design Philosophy
+
+### The Database is the Source of Truth
+
+**CRITICAL PRINCIPLE:**
+
+> **The database does not exist to adapt to the backend.**
+>
+> **The backend exists to respect the database.**
+
+When designing:
+
+1. **Design the database schema first** based on business requirements
+2. **Design for data integrity and relationships**
+3. **Design for multi-tenancy from the start**
+4. **Then adapt the backend code to work with the schema**
+
+The database schema should be stable, well-designed, and serve as the contract
+that both backend and any future clients must respect.
+
+## Integration with Backend Rules
+
+When implementing database queries in the backend, also refer to
+`code-standards-backend.mdc` for:
+
+-   SQL alias patterns with double quotes for PostgreSQL
+-   SQL injection prevention using Kysely parameter binding
+-   Repository pattern implementation
+-   TypeScript interface mapping (use existing interfaces with "I" prefix)
+
+### Example Integration
+
+```typescript
+// Following both database architecture and backend query rules
+const projects = await sql<IProject[]>`
+  SELECT 
+    id AS "projectId",
+    organization_id AS "organizationId",
+    name,
+    created_at AS "createdAt",
+    updated_at AS "updatedAt"
+  FROM projects
+  WHERE organization_id = ${organizationId}
+  ORDER BY created_at DESC
+  LIMIT ${limit}
+  OFFSET ${offset}
+`.execute(db);
+```
+
+## Summary Checklist
+
+Before creating or modifying any database schema, verify:
+
+-   [ ] Table includes `id` (UUID), `created_at`, `updated_at`
+-   [ ] Table includes `organization_id` if it contains business data
+-   [ ] All foreign keys are explicitly defined and indexed
+-   [ ] Migration is atomic and reversible
+-   [ ] Required indexes are created (FKs, organization_id, frequently queried
+        columns)
+-   [ ] Custom fields use the official pattern, not dynamic columns
+-   [ ] No core entities are being modified for module-specific features
+-   [ ] Audit logging is considered for sensitive operations
+-   [ ] Query patterns follow performance guidelines (no SELECT \*, limits,
+        filters)
