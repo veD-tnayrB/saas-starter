@@ -13,7 +13,6 @@
     "start": "next start",
     "lint": "next lint",
     "preview": "next build && next start",
-    "postinstall": "prisma generate",
     "email": "email dev --dir emails --port 3333",
     "db:seed": "tsx prisma/seed.ts",
     "migration": "tsx scripts/migrate-all.ts",
