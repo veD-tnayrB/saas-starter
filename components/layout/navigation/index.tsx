@@ -110,7 +110,7 @@ export function NavigationSections({
     const isLastSection = index === links.length - 1;
 
     return (
-      <div key={section.title} className={isLastSection ? "mt-auto" : ""}>
+      <div key={section.title}>
         <NavigationSection
           section={section}
           isSidebarExpanded={isSidebarExpanded}

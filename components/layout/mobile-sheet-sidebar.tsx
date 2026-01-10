@@ -17,9 +17,13 @@ import { Icons } from "@/components/shared/icons";
 
 interface IMobileSheetSidebarProps {
   links: ISidebarNavItem[];
+  header?: React.ReactNode;
 }
 
-export function MobileSheetSidebar({ links }: IMobileSheetSidebarProps) {
+export function MobileSheetSidebar({
+  links,
+  header,
+}: IMobileSheetSidebarProps) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const { isSm, isMobile } = useMediaQuery();
@@ -51,7 +55,7 @@ export function MobileSheetSidebar({ links }: IMobileSheetSidebarProps) {
                   </span>
                 </Link>
 
-                <ProjectSwitcher large />
+                {header || <ProjectSwitcher large />}
 
                 <MobileNavigationSections
                   links={links}

@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  ReactElement,
+  useEffect,
+  useState,
+} from "react";
 import { usePathname } from "next/navigation";
 import { ISidebarNavItem } from "@/types";
 import { PanelLeftClose, PanelRightClose } from "lucide-react";
@@ -15,9 +21,10 @@ import { NavigationSections } from "@/components/layout/navigation";
 
 interface IDashboardSidebarProps {
   links: ISidebarNavItem[];
+  header?: React.ReactNode;
 }
 
-export function DashboardSidebar({ links }: IDashboardSidebarProps) {
+export function DashboardSidebar({ links, header }: IDashboardSidebarProps) {
   const path = usePathname();
 
   // Initialize with server-safe default (always true to match SSR)
@@ -68,7 +75,11 @@ export function DashboardSidebar({ links }: IDashboardSidebarProps) {
           >
             <div className="flex h-full max-h-screen flex-1 flex-col gap-2">
               <div className="flex h-14 items-center p-4 lg:h-[60px]">
-                {isSidebarExpanded && <ProjectSwitcher />}
+                {header && isValidElement(header)
+                  ? cloneElement(header as ReactElement<any>, {
+                      isCollapsed: !isSidebarExpanded,
+                    })
+                  : header || (isSidebarExpanded && <ProjectSwitcher />)}
 
                 <Button
                   variant="ghost"

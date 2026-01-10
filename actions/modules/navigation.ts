@@ -76,39 +76,14 @@ export async function getNavigationLinksWithModules(
       ? {
           title: "CORE",
           authorizeOnly: "CORE",
-          items: activeModules.map((module) => {
-            // Map module icons to available icons, fallback to package
-            const iconMap: Record<string, string> = {
-              users: "user",
-              zap: "arrowRight",
-              package: "package",
-              shield: "settings",
-              layout: "dashboard",
-            };
-            const iconKey = (
-              module.icon && iconMap[module.icon]
-                ? iconMap[module.icon]
-                : "package"
-            ) as keyof typeof import("@/components/shared/icons").Icons;
-
-            // Map specific core modules to admin routes
-            const adminRouteMap: Record<string, string> = {
-              "actions-management": "/admin/actions",
-              "role-management": "/admin/roles",
-              "pricing-management": "/admin/pricing",
-            };
-
-            const moduleHref =
-              adminRouteMap[module.slug] ||
-              `/project/[projectId]/core/${module.slug}`;
-
-            return {
-              href: moduleHref,
-              icon: iconKey,
-              title: module.name,
+          items: [
+            {
+              href: "/admin",
+              icon: "settings",
+              title: "Admin Mode",
               authorizeOnly: "CORE",
-            } as INavItem;
-          }),
+            } as INavItem,
+          ],
         }
       : null;
 
