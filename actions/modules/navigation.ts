@@ -91,7 +91,16 @@ export async function getNavigationLinksWithModules(
                 : "package"
             ) as keyof typeof import("@/components/shared/icons").Icons;
 
-            const moduleHref = `/project/[projectId]/core/${module.slug}`;
+            // Map specific core modules to admin routes
+            const adminRouteMap: Record<string, string> = {
+              "actions-management": "/admin/actions",
+              "role-management": "/admin/roles",
+              "pricing-management": "/admin/pricing",
+            };
+
+            const moduleHref =
+              adminRouteMap[module.slug] ||
+              `/project/[projectId]/core/${module.slug}`;
 
             return {
               href: moduleHref,
