@@ -54,7 +54,7 @@ export function PricingCard({
   const actionButton = hasUserSubscription ? (
     isStarterPlan ? (
       <Link
-        href="/dashboard"
+        href="/project"
         className={cn(
           buttonVariants({
             variant: "outline",

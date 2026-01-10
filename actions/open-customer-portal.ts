@@ -11,15 +11,9 @@ export type responseAction = {
   stripeUrl?: string;
 };
 
-const billingUrl = absoluteUrl("/dashboard/billing");
-
-/**
- * Open Stripe customer portal for billing management
- * @param userStripeId - User's Stripe customer ID
- * @returns Redirects to Stripe billing portal
- */
 export async function openCustomerPortal(
   userStripeId: string,
+  projectId?: string,
 ): Promise<responseAction> {
   try {
     const user = await getCurrentUser();
@@ -32,12 +26,15 @@ export async function openCustomerPortal(
       throw new Error("User Stripe ID is required");
     }
 
+    const returnUrl = projectId
+      ? absoluteUrl(`/project/${projectId}/billing`)
+      : absoluteUrl("/project");
+
     // Use billing service to handle the operation
-    const result = await billingService.createBillingPortalSession({
-      userId: user.id,
-      userEmail: user.email,
-      stripeCustomerId: userStripeId,
-    });
+    const result = await billingService.createBillingPortalSession(
+      userStripeId,
+      returnUrl,
+    );
 
     if (result.status === "error") {
       throw new Error(

@@ -24,7 +24,7 @@ export function ProjectCard({ project }: IProjectCardProps) {
   const formattedDate = new Date(project.createdAt).toLocaleDateString();
 
   return (
-    <Link href={`/dashboard/${project.id}`} prefetch={false}>
+    <Link href={`/project/${project.id}/dashboard`} prefetch={false}>
       <Card className="transition-silver hover-lift hover:border-primary/50 hover:shadow-silver/10">
         <CardHeader>
           <div className="flex items-center gap-2">

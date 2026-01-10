@@ -2,7 +2,7 @@
 
 import { getCurrentUser } from "@/repositories/auth/session";
 import { findAllModules } from "@/repositories/modules";
-import { ISidebarNavItem, INavItem } from "@/types";
+import { INavItem, ISidebarNavItem } from "@/types";
 
 import { canAccessCoreFeatures } from "@/lib/permissions/core-access";
 
@@ -12,12 +12,14 @@ import { canAccessCoreFeatures } from "@/lib/permissions/core-access";
  */
 export async function getActiveModulesForNavigation(
   projectId: string | null,
-): Promise<Array<{
-  id: string;
-  slug: string;
-  name: string;
-  icon: string | null;
-}>> {
+): Promise<
+  Array<{
+    id: string;
+    slug: string;
+    name: string;
+    icon: string | null;
+  }>
+> {
   if (!projectId) {
     return [];
   }
@@ -59,7 +61,7 @@ export async function getNavigationLinksWithModules(
   pathname: string,
 ): Promise<ISidebarNavItem[]> {
   // Extract projectId from pathname
-  const projectIdMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const projectIdMatch = pathname.match(/\/project\/([^/]+)/);
   const matchedId = projectIdMatch?.[1] || null;
   const knownRoutes = ["settings", "projects"];
   const currentProjectId =
@@ -83,11 +85,13 @@ export async function getNavigationLinksWithModules(
               shield: "settings",
               layout: "dashboard",
             };
-            const iconKey = (module.icon && iconMap[module.icon]
-              ? iconMap[module.icon]
-              : "package") as keyof typeof import("@/components/shared/icons").Icons;
+            const iconKey = (
+              module.icon && iconMap[module.icon]
+                ? iconMap[module.icon]
+                : "package"
+            ) as keyof typeof import("@/components/shared/icons").Icons;
 
-            const moduleHref = `/dashboard/[projectId]/core/${module.slug}`;
+            const moduleHref = `/project/[projectId]/core/${module.slug}`;
 
             return {
               href: moduleHref,
@@ -102,4 +106,3 @@ export async function getNavigationLinksWithModules(
   // Combine static links with dynamic core modules section
   return coreModulesSection ? [...links, coreModulesSection] : links;
 }
-

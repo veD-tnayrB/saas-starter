@@ -70,8 +70,8 @@ async function sendSubscriptionConfirmationEmail(data: {
 }): Promise<void> {
   try {
     const resend = new Resend(env.RESEND_API_KEY);
-    const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard`;
-    const billingPortalUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard/billing`;
+    const dashboardUrl = `${env.NEXT_PUBLIC_APP_URL}/project`;
+    const billingPortalUrl = `${env.NEXT_PUBLIC_APP_URL}/project`; // Redirects to dashboard if no project specified
 
     const html = await render(
       SubscriptionConfirmationEmail({

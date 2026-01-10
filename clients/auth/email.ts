@@ -270,7 +270,7 @@ export class EmailTemplateGenerator {
       - Explore our features
       - Connect with other users
       
-      Visit ${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard to get started.
+      Visit ${process.env.NEXTAUTH_URL || "http://localhost:3000"}/project to get started.
       
       If you have any questions, feel free to reach out to our support team.
       

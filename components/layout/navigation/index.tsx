@@ -18,7 +18,7 @@ export function NavigationSections({
   path,
 }: INavigationSectionsProps) {
   // Extract projectId from pathname if viewing a project
-  const projectIdMatch = path.match(/\/dashboard\/([^/]+)/);
+  const projectIdMatch = path.match(/\/project\/([^/]+)/);
   const matchedId = projectIdMatch?.[1] || null;
 
   // List of known routes that are NOT projectIds

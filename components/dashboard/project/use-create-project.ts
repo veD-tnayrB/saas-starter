@@ -67,7 +67,7 @@ export function useCreateProject(
       setOpenDialog(false);
       setProjectName("");
       window.dispatchEvent(new Event("projects:refresh"));
-      router.push(`/dashboard/${data.project.id}`);
+      router.push(`/project/${data.project.id}/dashboard`);
       router.refresh();
 
       if (onSuccess) {

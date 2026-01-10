@@ -25,7 +25,7 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/dashboard/:projectId/projects",
+        source: "/project/:projectId/projects",
         destination: "/projects",
         permanent: true,
       },

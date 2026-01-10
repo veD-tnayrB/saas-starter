@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ISidebarNavItem } from "@/types";
 import { getNavigationLinksWithModules } from "@/actions/modules/navigation";
+import { ISidebarNavItem } from "@/types";
 
 import { MobileNavigationSection } from "./section";
 
@@ -18,7 +18,7 @@ export function MobileNavigationSections({
   onItemClick,
 }: IMobileNavigationSectionsProps) {
   // Extract projectId from pathname if viewing a project
-  const projectIdMatch = path.match(/\/dashboard\/([^/]+)/);
+  const projectIdMatch = path.match(/\/project\/([^/]+)/);
   const matchedId = projectIdMatch?.[1] || null;
 
   // List of known routes that are NOT projectIds

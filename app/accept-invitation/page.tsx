@@ -19,7 +19,7 @@ export default async function AcceptInvitationPage({
 
   if (!token || typeof token !== "string" || token.trim() === "") {
     console.error("Missing or invalid token in accept-invitation page");
-    redirect("/dashboard?error=Invalid invitation token");
+    redirect("/project?error=Invalid invitation token");
   }
 
   const userId = await getCurrentUserId();
@@ -61,7 +61,7 @@ export default async function AcceptInvitationPage({
     );
 
     // Redirect to project dashboard with success message
-    redirect(`/dashboard/${result.projectId}?invitation=accepted`);
+    redirect(`/project/${result.projectId}/dashboard?invitation=accepted`);
   } catch (error) {
     // Re-throw redirect errors as-is (Next.js uses these internally)
     // NEXT_REDIRECT is not a real error, it's Next.js's way of handling redirects
@@ -77,6 +77,6 @@ export default async function AcceptInvitationPage({
     const errorMessage =
       error instanceof Error ? error.message : "Failed to accept invitation";
     console.error("Error details:", errorMessage);
-    redirect(`/dashboard?error=${encodeURIComponent(errorMessage)}`);
+    redirect(`/project?error=${encodeURIComponent(errorMessage)}`);
   }
 }

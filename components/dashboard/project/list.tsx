@@ -30,7 +30,7 @@ export function ProjectList({
 
   function handleProjectSelect(projectId: string) {
     setOpenPopover(false);
-    router.push(`/dashboard/${projectId}`);
+    router.push(`/project/${projectId}/dashboard`);
     router.refresh();
   }
 

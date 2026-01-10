@@ -16,9 +16,13 @@ import { CustomerPortalButton } from "@/components/forms/customer-portal-button"
 
 interface IBillingInfoProps extends React.HTMLAttributes<HTMLFormElement> {
   userSubscriptionPlan: IUserSubscriptionPlan;
+  projectId?: string;
 }
 
-export function BillingInfo({ userSubscriptionPlan }: IBillingInfoProps) {
+export function BillingInfo({
+  userSubscriptionPlan,
+  projectId,
+}: IBillingInfoProps) {
   const {
     title,
     description,
@@ -48,7 +52,10 @@ export function BillingInfo({ userSubscriptionPlan }: IBillingInfoProps) {
         ) : null}
 
         {isPaid && stripeCustomerId ? (
-          <CustomerPortalButton userStripeId={stripeCustomerId} />
+          <CustomerPortalButton
+            userStripeId={stripeCustomerId}
+            projectId={projectId}
+          />
         ) : (
           <Link href="/pricing" className={cn(buttonVariants())}>
             Choose a plan

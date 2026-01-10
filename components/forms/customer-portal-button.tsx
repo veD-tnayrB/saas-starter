@@ -8,13 +8,19 @@ import { Icons } from "@/components/shared/icons";
 
 interface CustomerPortalButtonProps {
   userStripeId: string;
+  projectId?: string;
 }
 
 export function CustomerPortalButton({
   userStripeId,
+  projectId,
 }: CustomerPortalButtonProps) {
   let [isPending, startTransition] = useTransition();
-  const generateUserStripeSession = openCustomerPortal.bind(null, userStripeId);
+  const generateUserStripeSession = openCustomerPortal.bind(
+    null,
+    userStripeId,
+    projectId,
+  );
 
   const stripeSessionAction = () =>
     startTransition(async () => await generateUserStripeSession());

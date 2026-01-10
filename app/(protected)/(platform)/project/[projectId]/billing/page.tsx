@@ -30,10 +30,13 @@ export default async function BillingPage({ params }: BillingPageProps) {
   // Verify user is OWNER of the project
   const userRole = await memberService.getUserRole(projectId, user.id);
   if (userRole !== "OWNER") {
-    redirect(`/dashboard/${projectId}`);
+    redirect(`/project/${projectId}/dashboard`);
   }
 
-  const userSubscriptionPlan = await getProjectSubscriptionPlan(projectId, user.id);
+  const userSubscriptionPlan = await getProjectSubscriptionPlan(
+    projectId,
+    user.id,
+  );
 
   return (
     <>
@@ -59,7 +62,10 @@ export default async function BillingPage({ params }: BillingPageProps) {
             .
           </AlertDescription>
         </Alert>
-        <BillingInfo userSubscriptionPlan={userSubscriptionPlan} />
+        <BillingInfo
+          userSubscriptionPlan={userSubscriptionPlan}
+          projectId={projectId}
+        />
       </div>
     </>
   );

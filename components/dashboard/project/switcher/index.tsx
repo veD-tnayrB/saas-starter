@@ -38,7 +38,7 @@ export function ProjectSwitcher({ large = false }: { large?: boolean }) {
     setOpenDialog,
   } = useCreateProject(refreshProjects);
 
-  const currentProjectId = pathname?.match(/\/dashboard\/([^/]+)/)?.[1] || null;
+  const currentProjectId = pathname?.match(/\/project\/([^/]+)/)?.[1] || null;
 
   let currentProject: IProject | null = null;
   if (currentProjectId) {

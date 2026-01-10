@@ -5,19 +5,19 @@ export const sidebarLinks: ISidebarNavItem[] = [
     title: "MENU",
     items: [
       {
-        href: "/dashboard/[projectId]",
+        href: "/project/[projectId]/dashboard",
         icon: "dashboard",
         title: "Dashboard",
       },
 
       {
-        href: "/dashboard/[projectId]/billing",
+        href: "/project/[projectId]/billing",
         icon: "billing",
         title: "Billing",
         authorizeOnly: "OWNER", // Only project owners can access billing
       },
       {
-        href: "/dashboard/[projectId]/admin/modules",
+        href: "/project/[projectId]/admin/modules",
         icon: "package",
         title: "Modules",
         authorizeOnly: "CORE", // Only users in core projects can access modules

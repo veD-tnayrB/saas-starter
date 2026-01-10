@@ -40,7 +40,7 @@ export function SearchCommand({ links }: { links: ISidebarNavItem[] }) {
     string | null
   >(null);
 
-  const projectIdMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const projectIdMatch = pathname.match(/\/project\/([^/]+)/);
   const matchedId = projectIdMatch?.[1] || null;
   const staticSegments = new Set(["settings", "projects"]);
   const currentProjectId =

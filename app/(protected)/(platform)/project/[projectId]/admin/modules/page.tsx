@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
+
 import { canAccessCoreFeatures } from "@/lib/permissions/core-access";
 import { constructMetadata } from "@/lib/utils";
 import { ModulesManagement } from "@/components/admin/modules/management";
@@ -26,7 +27,7 @@ export default async function ModulesPage({ params }: IModulesPageProps) {
   // Verify user has access to core features
   const hasAccess = await canAccessCoreFeatures(projectId, user.id);
   if (!hasAccess) {
-    redirect(`/dashboard/${projectId}`);
+    redirect(`/project/${projectId}/dashboard`);
   }
 
   return (
@@ -43,8 +44,3 @@ export default async function ModulesPage({ params }: IModulesPageProps) {
     </div>
   );
 }
-
-
-
-
-

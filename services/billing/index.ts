@@ -135,15 +135,14 @@ export class BillingService {
    * @returns Billing result with Stripe URL
    */
   async createBillingPortalSession(
-    data: IBillingPortalData,
+    customerId: string,
+    returnUrl: string,
   ): Promise<BillingResult> {
     try {
-      const { userId, userEmail, stripeCustomerId } = data;
-
       // Create billing portal session via Stripe client
       const portalSession = await createBillingPortalSession(
-        stripeCustomerId,
-        absoluteUrl("/dashboard/billing"),
+        customerId,
+        returnUrl,
       );
 
       if (!portalSession.url) {
@@ -204,9 +203,12 @@ export class BillingService {
   /**
    * Open customer portal for user billing management
    * @param userId - User ID
-   * @returns Billing result with portal URL
+   * @param projectId - Optional Project ID for redirect context
    */
-  async openCustomerPortal(userId: string): Promise<BillingResult> {
+  async openCustomerPortal(
+    userId: string,
+    projectId?: string,
+  ): Promise<BillingResult> {
     try {
       // Get user subscription plan to validate user and get Stripe customer ID
       const subscriptionPlan = await getUserSubscriptionPlan(userId);
@@ -227,7 +229,15 @@ export class BillingService {
         stripeCustomerId: subscriptionPlan.stripeCustomerId,
       };
 
-      return await this.createBillingPortalSession(portalData);
+      // Determine return URL
+      const returnUrl = projectId
+        ? absoluteUrl(`/project/${projectId}/billing`)
+        : absoluteUrl("/project");
+
+      return await this.createBillingPortalSession(
+        subscriptionPlan.stripeCustomerId,
+        returnUrl,
+      );
     } catch (error) {
       console.error("Error opening customer portal:", error);
       return {

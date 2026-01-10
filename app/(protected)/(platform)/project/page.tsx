@@ -13,5 +13,5 @@ export default async function DashboardRedirectPage() {
   }
 
   // Redirect to first project
-  redirect(`/dashboard/${projects[0].id}`);
+  redirect(`/project/${projects[0].id}/dashboard`);
 }
