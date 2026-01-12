@@ -17,6 +17,7 @@ import { ProjectStatsSection } from "@/components/dashboard/sections/project-sta
 import { ChartSkeleton } from "@/components/dashboard/skeletons/chart-skeleton";
 import { ListSkeleton } from "@/components/dashboard/skeletons/list-skeleton";
 import { ProjectStatsSkeleton } from "@/components/dashboard/skeletons/project-stats-skeleton";
+import { FramerWrapper } from "@/components/shared/framer-wrapper";
 
 interface IDashboardPageProps {
   params: Promise<{ projectId: string }>;
@@ -75,39 +76,46 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   // Determine what statistics to show based on role
   const canManageMembers = canManageProject(userRole);
 
-  // Calculate total members by role
   return (
-    <>
+    <FramerWrapper className="flex flex-col gap-8 pb-10">
       <InvitationAcceptedToast />
       <DashboardHeader
         heading={project.name}
         text={`Welcome back, ${user.name}!`}
       />
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-8">
         <Suspense fallback={<ProjectStatsSkeleton />}>
           <ProjectStatsSection projectId={projectId} />
         </Suspense>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Suspense fallback={<ChartSkeleton title="Members by role" />}>
-            <MembersByRoleSection projectId={projectId} />
+            <div className="glass-card rounded-2xl p-2">
+              <MembersByRoleSection projectId={projectId} />
+            </div>
           </Suspense>
           <Suspense fallback={<ChartSkeleton title="Member growth" />}>
-            <MemberGrowthSection projectId={projectId} />
+            <div className="glass-card rounded-2xl p-2">
+              <MemberGrowthSection projectId={projectId} />
+            </div>
           </Suspense>
           <Suspense fallback={<ChartSkeleton title="Invitations" />}>
-            <InvitationsChartSection projectId={projectId} />
+            <div className="glass-card rounded-2xl p-2">
+              <InvitationsChartSection projectId={projectId} />
+            </div>
           </Suspense>
         </div>
 
-        <Suspense fallback={<ListSkeleton title="Project members" />}>
-          <ProjectMembersSection
-            projectId={projectId}
-            canManageMembers={canManageMembers}
-            userRole={userRole}
-          />
-        </Suspense>
+        <div className="glass-card rounded-2xl p-2">
+          <Suspense fallback={<ListSkeleton title="Project members" />}>
+            <ProjectMembersSection
+              projectId={projectId}
+              canManageMembers={canManageMembers}
+              userRole={userRole}
+            />
+          </Suspense>
+        </div>
       </div>
-    </>
+    </FramerWrapper>
   );
 }

@@ -159,16 +159,23 @@ export function HeroSection() {
           <MotionSlideUp delay={0.6} y={25}>
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                animate={{
+                  scale: [1, 1.03, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Link
                   href="/pricing"
                   prefetch={true}
                   className={cn(
                     buttonVariants({ size: "lg", rounded: "full" }),
-                    "bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden text-background shadow-silver transition-all",
+                    "bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden border border-white/10 text-primary-foreground shadow-silver transition-all",
                   )}
                 >
                   <span className="relative z-10 flex items-center gap-2 font-semibold">

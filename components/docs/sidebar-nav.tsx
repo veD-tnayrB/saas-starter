@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { INavItem } from "types";
 import { docsConfig } from "@/config/docs";
 import { cn } from "@/lib/utils";
-import { INavItem } from "types";
 
 export interface IDocsSidebarNavProps {
   setOpen?: (open: boolean) => void;
@@ -56,9 +56,7 @@ export function DocsSidebarNavItems({
     const commonClasses =
       "flex w-full items-center rounded-md px-2 py-1.5 text-muted-foreground hover:underline";
     const activeClasses =
-      pathname === item.href
-        ? "font-medium text-blue-600 dark:text-blue-400"
-        : "";
+      pathname === item.href ? "font-medium text-primary" : "";
 
     if (item.disabled || !item.href) {
       return (

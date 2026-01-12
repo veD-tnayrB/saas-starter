@@ -37,7 +37,8 @@ export function NavigationItem({
   const isActive =
     !isFallback &&
     (normalizedPath === normalizedHref ||
-      normalizedPath.startsWith(`${normalizedHref}/`));
+      (normalizedHref.length > 0 &&
+        normalizedPath.startsWith(`${normalizedHref}/`)));
   const iconClass = isActive ? "text-foreground" : "text-foreground/70";
   const linkClass = cn(
     "flex items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-muted",

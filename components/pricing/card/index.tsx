@@ -6,7 +6,6 @@ import { IUserSubscriptionPlan } from "@/types";
 import { ISubscriptionPlan } from "@/types/index";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { BillingFormButton } from "@/components/forms/billing-form-button";
 
 import { BenefitItem } from "./benefit-item";
 import { LimitationItem } from "./limitation-item";
@@ -49,32 +48,24 @@ export function PricingCard({
   ));
 
   const buttonVariant = isProPlan ? "default" : "outline";
-  const borderClass = isProPlan ? "-m-0.5 border-2 border-purple-400" : "";
+  const borderClass = isProPlan ? "-m-0.5 border-2 border-primary/50" : "";
 
   const actionButton = hasUserSubscription ? (
-    isStarterPlan ? (
-      <Link
-        href="/project"
-        className={cn(
-          buttonVariants({
-            variant: "outline",
-            rounded: "full",
-          }),
-          "w-full",
-        )}
-      >
-        Go to dashboard
-      </Link>
-    ) : (
-      <BillingFormButton
-        year={isYearly}
-        offer={offer}
-        subscriptionPlan={subscriptionPlan}
-      />
-    )
+    <Link
+      href="/project"
+      className={cn(
+        buttonVariants({
+          variant: buttonVariant,
+          rounded: "full",
+        }),
+        "w-full",
+      )}
+    >
+      Go to dashboard
+    </Link>
   ) : (
     <Button variant={buttonVariant} rounded="full" onClick={onSignIn}>
-      Sign in
+      Get Started
     </Button>
   );
 

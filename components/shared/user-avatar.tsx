@@ -79,18 +79,12 @@ function getAvatarColor(name: string | null, email?: string | null): string {
   // Use the hash to select from a predefined palette of colors
   // These are vibrant, accessible colors that work well for avatars
   const colors = [
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-purple-500",
-    "bg-pink-500",
-    "bg-indigo-500",
-    "bg-orange-500",
-    "bg-teal-500",
-    "bg-cyan-500",
-    "bg-emerald-500",
-    "bg-violet-500",
-    "bg-fuchsia-500",
-    "bg-rose-500",
+    "bg-primary",
+    "bg-primary/80",
+    "bg-muted-foreground",
+    "bg-muted-foreground/80",
+    "bg-accent",
+    "bg-accent-foreground/20",
   ];
 
   const colorIndex = hash % colors.length;

@@ -29,28 +29,40 @@ export function ProjectCard({
   return (
     <Card
       className={cn(
-        "border-border bg-card/60 backdrop-blur",
-        isCurrent && "border-primary ring-1 ring-primary/40",
+        "glass-card hover-lift transition-all duration-300",
+        isCurrent && "border-primary/50 bg-primary/5 ring-2 ring-primary/20",
       )}
     >
-      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-col gap-1">
+      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-3">
-            <h3 className="text-base font-semibold text-foreground">{name}</h3>
-            <Badge variant="outline" className="text-xs">
+            <h3 className="text-lg font-bold tracking-tight text-foreground/90">
+              {name}
+            </h3>
+            <Badge
+              variant="outline"
+              className="border-primary/20 bg-primary/5 text-[10px] font-bold uppercase tracking-wider text-primary"
+            >
               {planName}
             </Badge>
+            {isCurrent && (
+              <Badge className="bg-primary text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                Current
+              </Badge>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground/80">
             Owner:{" "}
-            <span className="font-medium text-foreground">{ownerName}</span>
+            <span className="font-semibold text-foreground/70">
+              {ownerName}
+            </span>
           </p>
-          <p className="text-xs text-muted-foreground">
-            Created on {formatDate(createdAt.getTime())}
-          </p>
+          <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-tight text-muted-foreground/50">
+            <span>Created on {formatDate(createdAt.getTime())}</span>
+          </div>
         </div>
         {isOwner && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
             <EditProjectButton projectId={id} currentName={name} />
             <DeleteProjectButton projectId={id} projectName={name} />
           </div>

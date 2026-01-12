@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateRolePermissionAction } from "@/actions/permissions/permissions";
+import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,7 +35,6 @@ interface IAction {
 interface IAppRole {
   id: string;
   name: string;
-  displayName: string;
   description: string | null;
 }
 
@@ -135,56 +135,79 @@ export function RoleMatrix({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <span className="text-sm font-medium">Configure for Plan:</span>
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="glass flex w-fit items-center gap-4 rounded-xl border-primary/10 px-4 py-2 shadow-sm"
+      >
+        <span className="text-sm font-semibold text-muted-foreground">
+          Configure for Plan:
+        </span>
         <Select
           value={selectedPlanId}
           onValueChange={setSelectedPlanId}
           disabled={isPending}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[200px] border-none bg-transparent hover:bg-primary/5 focus:ring-0">
             <SelectValue placeholder="Select a plan" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="glass-card">
             {initialPlans.map((plan) => (
-              <SelectItem key={plan.id} value={plan.id}>
+              <SelectItem
+                key={plan.id}
+                value={plan.id}
+                className="focus:bg-primary/10"
+              >
                 {plan.displayName}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </motion.div>
 
-      <div className="rounded-md border">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="glass-card overflow-hidden rounded-xl"
+      >
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[300px]">Action</TableHead>
               {initialRoles.map((role) => (
-                <TableHead key={role.id} className="text-center">
-                  {role.displayName}
+                <TableHead
+                  key={role.id}
+                  className="text-center font-bold capitalize"
+                >
+                  {role.name}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {categories.map((category) => (
-              <>
-                <TableRow key={category} className="bg-muted/50">
+              <React.Fragment key={category}>
+                <TableRow className="bg-muted/30 transition-colors hover:bg-muted/40">
                   <TableCell
                     colSpan={initialRoles.length + 1}
-                    className="font-semibold capitalize"
+                    className="py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/70"
                   >
                     {category}
                   </TableCell>
                 </TableRow>
                 {actionsByCategory[category].map((action) => (
-                  <TableRow key={action.id}>
+                  <TableRow
+                    key={action.id}
+                    className="group transition-colors hover:bg-muted/20"
+                  >
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{action.name}</span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="font-semibold text-foreground/90">
+                          {action.name}
+                        </span>
+                        <span className="font-mono text-[10px] text-muted-foreground/60">
                           {action.slug}
                         </span>
                       </div>
@@ -201,13 +224,13 @@ export function RoleMatrix({
                         >
                           <div className="flex h-full w-full justify-center py-4">
                             <Button
-                              variant={isAllowed ? "default" : "outline"}
+                              variant="ghost"
                               size="sm"
                               className={cn(
-                                "h-8 w-8 rounded-full p-0",
+                                "h-10 w-10 rounded-xl transition-all duration-300",
                                 isAllowed
-                                  ? "bg-blue-600 hover:bg-blue-700"
-                                  : "text-muted-foreground",
+                                  ? "bg-primary/10 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.1)] hover:bg-primary/20"
+                                  : "text-muted-foreground/30 hover:bg-muted/50 hover:text-muted-foreground/60",
                               )}
                               onClick={() =>
                                 togglePermission(role.id, action.id, isAllowed)
@@ -215,12 +238,12 @@ export function RoleMatrix({
                               disabled={isPending || !selectedPlanId}
                             >
                               {isAllowed ? (
-                                <Check className="h-4 w-4" />
+                                <Check className="h-5 w-5" />
                               ) : (
-                                <X className="h-4 w-4" />
+                                <X className="h-5 w-5" />
                               )}
                               <span className="sr-only">
-                                Toggle {action.name} for {role.displayName}
+                                Toggle {action.name} for {role.name}
                               </span>
                             </Button>
                           </div>
@@ -229,11 +252,11 @@ export function RoleMatrix({
                     })}
                   </TableRow>
                 ))}
-              </>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
     </div>
   );
 }

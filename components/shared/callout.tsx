@@ -19,43 +19,35 @@ interface CalloutProps {
 const dataCallout = {
   default: {
     icon: Info,
-    classes:
-      "border-zinc-200 bg-gray-50 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-200",
+    classes: "border-border bg-muted/30 text-muted-foreground",
   },
   danger: {
     icon: CircleAlert,
-    classes:
-      "border-red-200 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-200",
+    classes: "border-destructive/30 bg-destructive/10 text-destructive",
   },
   error: {
     icon: Ban,
-    classes:
-      "border-red-200 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-200",
+    classes: "border-destructive/30 bg-destructive/10 text-destructive",
   },
   idea: {
     icon: Lightbulb,
-    classes:
-      "border-blue-200 bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+    classes: "border-primary/30 bg-primary/10 text-primary",
   },
   info: {
     icon: Info,
-    classes:
-      "border-blue-200 bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+    classes: "border-primary/30 bg-primary/10 text-primary",
   },
   note: {
     icon: FileText,
-    classes:
-      "border-blue-200 bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+    classes: "border-primary/30 bg-primary/10 text-primary",
   },
   success: {
     icon: CircleCheckBig,
-    classes:
-      "border-green-200 bg-green-50 text-green-800 dark:bg-green-400/20 dark:text-green-300",
+    classes: "border-primary/30 bg-primary/5 text-primary", // fallback for success
   },
   warning: {
     icon: AlertTriangle,
-    classes:
-      "border-orange-200 bg-orange-50 text-orange-800 dark:bg-orange-400/20 dark:text-orange-300",
+    classes: "border-warning/30 bg-warning/10 text-warning",
   },
 };
 

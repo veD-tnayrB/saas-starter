@@ -12,12 +12,14 @@ export function ActionsHeader({ onAddClick }: IActionsHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-lg font-medium">Actions</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-gradient text-3xl font-bold tracking-tight">
+          Actions
+        </h2>
+        <p className="text-muted-foreground">
           Manage system actions and capabilities.
         </p>
       </div>
-      <Button onClick={onAddClick}>
+      <Button onClick={onAddClick} className="hover-lift shadow-silver">
         <Plus className="mr-2 h-4 w-4" />
         Add Action
       </Button>

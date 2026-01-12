@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { CreateProjectDialog } from "@/components/dashboard/project/create-dialog";
 import { useCreateProject } from "@/components/dashboard/project/use-create-project";
 import { ProjectsList } from "@/components/dashboard/projects/list";
@@ -43,24 +45,31 @@ export function ProjectsOverview({ projects }: IProjectsOverviewProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
-          <p className="text-sm text-muted-foreground">
-            Review every project you have access to. Owners can manage them
-            directly from this list.
-          </p>
-        </div>
-        <Button type="button" onClick={openCreateDialog}>
-          <Icons.add className="mr-2 size-4" />
-          New project
-        </Button>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col gap-8"
+      >
+        <DashboardHeader
+          heading="Projects"
+          text="Review every project you have access to. Owners can manage them directly from this list."
+        >
+          <Button
+            type="button"
+            onClick={openCreateDialog}
+            className="hover-lift shadow-silver"
+          >
+            <Icons.add className="mr-2 size-4" />
+            New project
+          </Button>
+        </DashboardHeader>
 
-      <ProjectsList
-        projects={preparedProjects}
-        onCreateProject={hasProjects ? undefined : openCreateDialog}
-      />
+        <ProjectsList
+          projects={preparedProjects}
+          onCreateProject={hasProjects ? undefined : openCreateDialog}
+        />
+      </motion.div>
 
       <CreateProjectDialog
         open={openDialog}

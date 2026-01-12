@@ -7,6 +7,7 @@ import {
   deleteActionAction,
   updateActionAction,
 } from "@/actions/permissions/actions";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { ActionDialog } from "./dialog";
@@ -134,13 +135,20 @@ export function ActionsManagementClient({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="flex flex-col gap-6"
+    >
       <ActionsHeader onAddClick={handleOpenDialog} />
-      <ActionsTable
-        actions={actions}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="glass-card overflow-hidden rounded-xl">
+        <ActionsTable
+          actions={actions}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
       <ActionDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
@@ -150,6 +158,6 @@ export function ActionsManagementClient({
         onSubmit={handleSubmit}
         isPending={isPending}
       />
-    </div>
+    </motion.div>
   );
 }

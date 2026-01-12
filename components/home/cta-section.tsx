@@ -112,7 +112,15 @@ export function CTASection() {
               <MotionSlideUp delay={0.5}>
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
+                    animate={{
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Link
@@ -120,7 +128,7 @@ export function CTASection() {
                       prefetch={true}
                       className={cn(
                         buttonVariants({ size: "lg", rounded: "full" }),
-                        "bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden font-semibold text-background shadow-silver transition-all",
+                        "bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift group relative overflow-hidden border border-white/10 font-semibold text-primary-foreground shadow-silver transition-all",
                       )}
                     >
                       <span className="relative z-10 flex items-center gap-2">

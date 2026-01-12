@@ -96,7 +96,7 @@ export function UserNameForm({ user }: UserNameFormProps) {
         </div>
         <div className="flex flex-col justify-between p-1">
           {errors?.name && (
-            <p className="pb-0.5 text-[13px] text-red-600">
+            <p className="pb-0.5 text-[13px] text-destructive">
               {errors.name.message}
             </p>
           )}

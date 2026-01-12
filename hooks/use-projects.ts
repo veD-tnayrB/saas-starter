@@ -10,13 +10,11 @@ interface IProject {
 // Color palette for project indicators
 const projectColors = [
   "bg-primary",
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-yellow-500",
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-orange-500",
-  "bg-cyan-500",
+  "bg-primary/80",
+  "bg-muted-foreground",
+  "bg-muted-foreground/80",
+  "bg-accent",
+  "bg-accent-foreground/20",
 ];
 
 // Generate a consistent color for a project based on its ID

@@ -7,7 +7,7 @@ interface IBenefitItemProps {
 export function BenefitItem({ feature }: IBenefitItemProps) {
   return (
     <li className="flex items-start gap-x-3">
-      <Icons.check className="size-5 shrink-0 text-purple-500" />
+      <Icons.check className="size-5 shrink-0 text-primary" />
       <p>{feature}</p>
     </li>
   );

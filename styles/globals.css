@@ -4,93 +4,77 @@
 
 @layer base {
   :root {
-    /* Light Mode - Soft White & Silver Theme */
-    /* Main background: #FAFAFA */
-    --background: 0 0% 98%; /* #FAFAFA */
-    /* Main text: #0D0D0D */
-    --foreground: 0 0% 5.1%; /* #0D0D0D */
-    /* Card/section background: #FFFFFF */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 0 0% 5.1%; /* #0D0D0D */
-    --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 0 0% 5.1%; /* #0D0D0D */
-    /* Primary accent (silver): #6B6B6B - darker silver for light mode */
-    --primary: 0 0% 42%; /* #6B6B6B */
-    --primary-foreground: 0 0% 98%; /* #FAFAFA - light text on dark silver */
-    /* Secondary: light gray */
-    --secondary: 0 0% 96.1%; /* #F5F5F5 */
-    --secondary-foreground: 0 0% 5.1%; /* #0D0D0D */
-    /* Muted: light gray */
-    --muted: 0 0% 96.1%; /* #F5F5F5 */
-    --muted-foreground: 0 0% 45.1%; /* #737373 - muted text */
-    /* Accent: medium silver for hover */
-    --accent: 0 0% 90%; /* #E6E6E6 */
-    --accent-foreground: 0 0% 5.1%; /* #0D0D0D */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    /* Warning: Amber-500 */
-    --warning: 38 92% 50%;
-    /* Warning: Amber-500 */
-    --warning: 38 92% 50%;
-    /* Borders and dividers: #E5E5E5 */
-    --border: 0 0% 89.8%; /* #E5E5E5 */
-    --input: 0 0% 89.8%; /* #E5E5E5 */
-    --ring: 0 0% 42%; /* Darker silver for focus rings */
-    --radius: 0.5rem;
+    /* Light Mode - Premium SaaS Theme */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
-    /* Chart colors - monochrome silver variations for light mode */
-    --chart-1: 0 0% 42%; /* Dark silver */
-    --chart-2: 0 0% 55%; /* Medium silver */
-    --chart-3: 0 0% 30%; /* Darker silver */
-    --chart-4: 0 0% 20%; /* Very dark silver */
-    --chart-5: 0 0% 15%; /* Deep silver */
-    /* Surface color - for light mode use a subtle gray */
-    --surface: 0 0% 96.1%; /* #F5F5F5 - light gray for light mode */
-    --surface-foreground: 0 0% 5.1%; /* #0D0D0D - dark text on light surface */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 0 0% 42%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.75rem;
+
+    --surface: 210 40% 96%;
+    --surface-foreground: 222 47% 11%;
   }
 
   .dark {
-    /* Dark Mode - Soft Black & Silver Premium Theme */
-    /* Main background: #0D0D0D */
-    --background: 0 0% 5.1%; /* #0D0D0D */
-    /* Main text: #F5F5F5 */
-    --foreground: 0 0% 96.1%; /* #F5F5F5 */
-    /* Card/section background: #1A1A1A */
-    --card: 0 0% 10.2%; /* #1A1A1A */
-    --card-foreground: 0 0% 96.1%; /* #F5F5F5 */
-    --popover: 0 0% 10.2%; /* #1A1A1A */
-    --popover-foreground: 0 0% 96.1%; /* #F5F5F5 */
-    /* Primary accent (silver): #C0C0C0 */
-    --primary: 0 0% 75.3%; /* #C0C0C0 */
-    --primary-foreground: 0 0% 5.1%; /* #0D0D0D */
-    /* Secondary: surface color */
-    --secondary: 0 0% 10.2%; /* #1A1A1A */
-    --secondary-foreground: 0 0% 96.1%; /* #F5F5F5 */
-    /* Muted: surface with lower opacity */
-    --muted: 0 0% 10.2%; /* #1A1A1A */
-    --muted-foreground: 0 0% 62.7%; /* #A0A0A0 */
-    /* Accent: bright silver for hover */
-    --accent: 0 0% 87.8%; /* #E0E0E0 */
-    --accent-foreground: 0 0% 5.1%; /* #0D0D0D */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 96.1%;
-    /* Warning: Amber-400 */
-    --warning: 48 96% 53%;
-    /* Warning: Amber-400 equivalent for dark mode */
-    --warning: 48 96% 53%;
-    /* Borders and dividers: #2C2C2C */
-    --border: 0 0% 17.3%; /* #2C2C2C */
-    --input: 0 0% 17.3%; /* #2C2C2C */
-    --ring: 0 0% 75.3%; /* Silver */
+    /* Dark Mode - Deep Premium Theme */
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
 
-    --chart-1: 0 0% 75.3%; /* Silver */
-    --chart-2: 0 0% 87.8%; /* Bright silver */
-    --chart-3: 0 0% 62.7%; /* Muted silver */
-    --chart-4: 0 0% 50%; /* Dark silver */
-    --chart-5: 0 0% 40%; /* Deep silver */
-    /* Surface color - for dark mode use dark gray */
-    --surface: 0 0% 10.2%; /* #1A1A1A - dark gray for dark mode */
-    --surface-foreground: 0 0% 96.1%; /* #F5F5F5 - light text on dark surface */
+    --card: 222 47% 6%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 0 0% 75.3%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 48 96% 53%;
+
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 224 76% 48%;
+
+    --surface: 222 47% 10%;
+    --surface-foreground: 210 40% 98%;
   }
 }
 
@@ -106,18 +90,8 @@
       "calt" 1;
     scroll-behavior: smooth;
     transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-  }
-
-  /* Improve skeleton visibility in dark mode */
-  .dark .bg-muted {
-    background-color: hsl(var(--muted));
-  }
-
-  /* Ensure skeleton has better contrast */
-  .dark .animate-pulse {
-    background-color: hsl(var(--muted));
+      background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   html {
@@ -126,68 +100,88 @@
 }
 
 @layer utilities {
-  .step {
-    counter-increment: step;
+  .glass {
+    @apply border border-border/50 bg-background/60 backdrop-blur-md;
   }
 
-  .step:before {
-    @apply absolute inline-flex h-9 w-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-px font-mono text-base font-medium;
-    @apply ml-[-50px] mt-[-4px];
-    content: counter(step);
+  .glass-card {
+    @apply border border-border/40 bg-card/50 shadow-xl backdrop-blur-xl;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent;
+  }
+
+  .bg-grid {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.1) 1px, transparent 1px);
+  }
+
+  /* Premium Silver Gradient for text */
+  .text-gradient_silver {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #6b6b6b 0%, #a0a0a0 100%);
+  }
+
+  .dark .text-gradient_silver {
+    background-image: linear-gradient(135deg, #b0b0b0 0%, #e0e0e0 100%);
+  }
+
+  /* Premium Silver Gradient for backgrounds */
+  .bg-gradient-silver {
+    background: linear-gradient(135deg, #6b6b6b 0%, #a0a0a0 100%);
+  }
+
+  .dark .bg-gradient-silver {
+    background: linear-gradient(135deg, #b0b0b0 0%, #e0e0e0 100%);
+  }
+
+  /* Silver glow shadow utility */
+  .shadow-silver {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .shadow-silver {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+  }
+
+  .shadow-silver-lg {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .shadow-silver-lg {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
+  }
+
+  /* Smooth transitions for silver accents */
+  .transition-silver {
+    @apply transition-all duration-300 ease-out;
   }
 }
 
-/* Premium Silver Gradient for text */
-.text-gradient_silver {
-  background: linear-gradient(135deg, #6b6b6b 0%, #a0a0a0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark .text-gradient_silver {
-  background: linear-gradient(135deg, #b0b0b0 0%, #e0e0e0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Premium Silver Gradient for backgrounds */
-.bg-gradient-silver {
-  background: linear-gradient(135deg, #6b6b6b 0%, #a0a0a0 100%);
-}
-
-.dark .bg-gradient-silver {
-  background: linear-gradient(135deg, #b0b0b0 0%, #e0e0e0 100%);
-}
-
-/* Silver glow shadow utility */
-.shadow-silver {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.dark .shadow-silver {
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
-}
-
-.shadow-silver-lg {
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-
-.dark .shadow-silver-lg {
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
-}
-
-/* Smooth transitions for silver accents */
-.transition-silver {
-  transition: all 0.25s ease-out;
-}
-
-/* Hover lift effect */
+/* Premium Animations */
 .hover-lift {
-  transition: all 0.25s ease-out;
+  @apply transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl active:translate-y-0;
 }
 
-.hover-lift:hover {
-  transform: translateY(-1px);
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.05),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
