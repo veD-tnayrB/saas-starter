@@ -24,7 +24,13 @@ export async function updateProjectPlanAction(
     // 2. Assign plan to project
     await assignPlanToProject(projectId, planId);
 
-    // 3. Revalidate paths
+    // 3. Record audit log
+    const { auditLogService } = await import(
+      "@/services/projects/audit-log-service"
+    );
+    await auditLogService.logPlanUpdate(projectId, session.user.id, planId);
+
+    // 4. Revalidate paths
     revalidatePath(`/project/${projectId}/settings`);
     revalidatePath(`/project/${projectId}/dashboard`);
 

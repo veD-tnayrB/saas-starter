@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { invitationService, memberService } from "@/services/projects";
+import { auditLogService } from "@/services/projects/audit-log-service";
 import { z } from "zod";
 
 import { canInviteMembers } from "@/lib/project-roles";
@@ -43,7 +44,8 @@ export async function POST(req: Request) {
     }
 
     // Determine roles to assign (prefer roles array, fallback to single role for backward compatibility)
-    const roleNames = roles && roles.length > 0 ? roles : role ? [role] : ["MEMBER"];
+    const roleNames =
+      roles && roles.length > 0 ? roles : role ? [role] : ["MEMBER"];
 
     // Create and send invitation
     const invitation = await invitationService.createInvitation(
@@ -51,6 +53,14 @@ export async function POST(req: Request) {
       email,
       roleNames,
       userId,
+    );
+
+    // Record audit log
+    await auditLogService.logMemberInvite(
+      projectId,
+      userId,
+      email,
+      roleNames.join(", "),
     );
 
     return NextResponse.json(

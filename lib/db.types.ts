@@ -16,6 +16,7 @@ export interface Database {
   projects: Project;
   project_members: ProjectMember;
   project_invitations: ProjectInvitation;
+  audit_logs: AuditLog;
 }
 
 export interface User {
@@ -139,4 +140,16 @@ export interface ProjectInvitation {
   token: string;
   created_at: Date;
   expires_at: Date;
+}
+
+export interface AuditLog {
+  id: string;
+  project_id: string;
+  user_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: any;
+  ip_address: string | null;
+  created_at: Date;
 }

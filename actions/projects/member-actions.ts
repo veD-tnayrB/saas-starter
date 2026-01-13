@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/repositories/auth/session";
 import { permissionService } from "@/services/permissions/permission-service";
+import { auditLogService } from "@/services/projects/audit-log-service";
 import { memberService } from "@/services/projects/member-service";
 
 /**
@@ -34,6 +35,9 @@ export async function removeMemberAction(
     // but usually, it's safer to have a "Leave Project" separate action.
 
     await memberService.removeMember(projectId, userIdToRemove);
+
+    // Record audit log
+    await auditLogService.logMemberRemove(projectId, user.id, userIdToRemove);
 
     revalidatePath(`/project/${projectId}/members`);
     return { success: true };
@@ -72,6 +76,14 @@ export async function updateMemberRoleAction(
     }
 
     await memberService.setMemberRoles(projectId, userIdToUpdate, roleNames);
+
+    // Record audit log
+    await auditLogService.logRoleUpdate(
+      projectId,
+      user.id,
+      userIdToUpdate,
+      roleNames,
+    );
 
     revalidatePath(`/project/${projectId}/members`);
     return { success: true };
