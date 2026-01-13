@@ -50,10 +50,8 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   try {
     project = await projectService.getProjectById(projectId, user.id);
   } catch (error) {
-    // User is not authorized - redirect to their first project
-    const userProjects = await findAllUserProjects(user.id);
-    const firstProjectId = userProjects[0]?.id ?? null;
-    return <ProjectNotFound firstProjectId={firstProjectId} />;
+    // User is not authorized or project doesn't exist - redirect to project orchestrator
+    redirect("/project");
   }
 
   if (!project) {

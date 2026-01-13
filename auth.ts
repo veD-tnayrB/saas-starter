@@ -40,6 +40,22 @@ const nextAuthConfig = {
     },
   },
   events: {
+    async signIn({ user }) {
+      if (!user.id) return;
+      // Ensure user has at least one project upon login
+      try {
+        const projects = await projectService.getUserProjects(user.id);
+        if (projects.length === 0) {
+          await projectService.createPersonalProject(
+            user.id,
+            user.name || null,
+          );
+        }
+      } catch (error) {
+        console.error("Error ensuring project existence on sign in:", error);
+      }
+    },
+
     async createUser({ user }) {
       // Auto-create personal project for new OAuth users
       try {

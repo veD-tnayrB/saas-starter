@@ -12,7 +12,6 @@ interface IMobileNavigationSectionProps {
   onItemClick: () => void;
   currentProjectId: string | null;
   isCurrentProjectOwner: boolean;
-  isInCoreProject: boolean;
 }
 
 export function MobileNavigationSection({
@@ -21,7 +20,6 @@ export function MobileNavigationSection({
   onItemClick,
   currentProjectId,
   isCurrentProjectOwner,
-  isInCoreProject,
 }: IMobileNavigationSectionProps) {
   const items = section.items
     .filter((item) => {
@@ -29,14 +27,8 @@ export function MobileNavigationSection({
 
       // Always show items, even if they require projectId (we'll use fallback)
       // Filter OWNER items: only show if user is OWNER of current project
-      // Filter CORE items: only show if user is in a core project
       // ADMIN items are already filtered in server component
-      return canAccessNavigationItem(
-        item,
-        true,
-        isCurrentProjectOwner,
-        isInCoreProject,
-      );
+      return canAccessNavigationItem(item, true, isCurrentProjectOwner, false);
     })
     .map((item) => {
       // Replace [projectId] placeholder with actual projectId (or fallback)

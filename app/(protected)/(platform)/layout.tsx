@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
-import { isPlatformAdmin } from "@/services/auth/platform-admin";
+import { isPlatformAdmin, isSystemAdmin } from "@/services/auth/platform-admin";
 
 import { sidebarLinks } from "@/config/dashboard";
 import { filterNavigationItems } from "@/lib/navigation-auth";
@@ -8,9 +8,11 @@ import { SearchCommand } from "@/components/dashboard/search-command";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { MobileSheetSidebar } from "@/components/layout/mobile-sheet-sidebar";
 import { ModeToggle } from "@/components/layout/mode-toggle";
+import { NotificationsNav } from "@/components/layout/notifications-nav";
 import { UserAccountNav } from "@/components/layout/user-account-nav";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
+// Platform layout with navigation and project switching
 interface ProtectedLayoutProps {
   children: React.ReactNode;
 }
@@ -20,13 +22,21 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   if (!user) redirect("/login");
 
-  const userIsAdmin = await isPlatformAdmin(user.id);
+  const [userIsAdmin, userIsSystemAdmin] = await Promise.all([
+    isPlatformAdmin(user.id),
+    isSystemAdmin(user.id),
+  ]);
 
-  // Filter links for ADMIN (OWNER filtering is done in client component)
+  // Filter links for ADMIN and CORE (System Admin)
   // OWNER filtering requires pathname which is only available in client components
   const filteredLinks = sidebarLinks.map((section) => ({
     ...section,
-    items: filterNavigationItems(section.items, userIsAdmin, false),
+    items: filterNavigationItems(
+      section.items,
+      userIsAdmin,
+      false,
+      userIsSystemAdmin,
+    ),
   }));
 
   return (
@@ -43,7 +53,8 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
             </div>
 
             <ModeToggle />
-            <UserAccountNav />
+            <NotificationsNav />
+            <UserAccountNav isSystemAdmin={userIsSystemAdmin} />
           </MaxWidthWrapper>
         </header>
 

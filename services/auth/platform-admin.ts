@@ -1,10 +1,8 @@
+import { findUserById } from "@/repositories/auth/user";
 import {
   countAdminMemberships,
   countProjectsByOwner,
 } from "@/repositories/projects";
-import { sql } from "kysely";
-
-import { db } from "@/lib/db";
 
 /**
  * Check if user has platform admin privileges
@@ -45,20 +43,25 @@ export async function isPlatformOwner(userId: string): Promise<boolean> {
 
 /**
  * Check if user is a System Administrator
- * Defined as being a member of any project marked as 'is_core'
+ * Defined by having their email listed in process.env.ADMIN_EMAILS
  */
 export async function isSystemAdmin(userId: string): Promise<boolean> {
   try {
-    const result = await sql<{ id: string }>`
-      SELECT p.id
-      FROM projects p
-      INNER JOIN project_members pm ON p.id = pm.project_id
-      WHERE pm.user_id = ${userId}
-        AND p.is_core = true
-      LIMIT 1
-    `.execute(db);
+    const adminEmails = (process.env.ADMIN_EMAILS || "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter((email) => email !== "");
 
-    return !!result.rows[0];
+    if (adminEmails.length === 0) {
+      return false;
+    }
+
+    const user = await findUserById(userId);
+    if (!user || !user.email) {
+      return false;
+    }
+
+    return adminEmails.includes(user.email.toLowerCase());
   } catch (error) {
     console.error("Error checking system admin status:", error);
     return false;

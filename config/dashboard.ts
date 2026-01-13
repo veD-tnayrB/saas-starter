@@ -14,12 +14,6 @@ export const sidebarLinks: ISidebarNavItem[] = [
         icon: "user",
         title: "Members",
       },
-      {
-        href: "/project/[projectId]/admin/modules",
-        icon: "package",
-        title: "Modules",
-        authorizeOnly: "CORE", // Only users in core projects can access modules
-      },
     ],
   },
   {

@@ -24,9 +24,15 @@ export default async function ProjectMembersPage({
   const { projectId } = await params;
 
   // Verify project exists and user has access
-  const project = await projectService.getProjectById(projectId, user.id);
+  let project;
+  try {
+    project = await projectService.getProjectById(projectId, user.id);
+  } catch (error) {
+    redirect("/project");
+  }
+
   if (!project) {
-    redirect("/projects");
+    redirect("/project");
   }
 
   // Check permissions

@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, Home, LayoutGrid, LogOut, Settings } from "lucide-react";
+import {
+  BookOpen,
+  Home,
+  LayoutGrid,
+  LogOut,
+  Settings,
+  ShieldCheck,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Drawer } from "vaul";
 
@@ -17,7 +24,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
-export function UserAccountNav() {
+interface UserAccountNavProps {
+  isSystemAdmin?: boolean;
+}
+
+export function UserAccountNav({ isSystemAdmin }: UserAccountNavProps) {
   const { status, data: session } = useSession();
   const user = session?.user as IAuthUser;
 
@@ -99,6 +110,19 @@ export function UserAccountNav() {
                   <p className="text-sm">Projects</p>
                 </Link>
               </li>
+
+              {isSystemAdmin && (
+                <li className="rounded-lg text-foreground hover:bg-muted">
+                  <Link
+                    href="/admin/modules"
+                    onClick={closeDrawer}
+                    className="flex w-full items-center gap-3 px-2.5 py-2"
+                  >
+                    <ShieldCheck className="size-4" />
+                    <p className="text-sm">Admin Panel</p>
+                  </Link>
+                </li>
+              )}
 
               <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
@@ -184,6 +208,18 @@ export function UserAccountNav() {
             <p className="text-sm">Projects</p>
           </Link>
         </DropdownMenuItem>
+
+        {isSystemAdmin && (
+          <DropdownMenuItem asChild>
+            <Link
+              href="/admin/modules"
+              className="flex items-center space-x-2.5"
+            >
+              <ShieldCheck className="size-4" />
+              <p className="text-sm">Admin Panel</p>
+            </Link>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuItem asChild>
           <Link href="/docs" className="flex items-center space-x-2.5">

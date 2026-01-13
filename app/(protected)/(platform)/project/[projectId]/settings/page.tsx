@@ -24,10 +24,16 @@ export default async function ProjectSettingsPage({
   }
 
   const { projectId } = await params;
-  const project = await projectService.getProjectById(projectId, user.id);
+
+  let project;
+  try {
+    project = await projectService.getProjectById(projectId, user.id);
+  } catch (error) {
+    redirect("/project");
+  }
 
   if (!project) {
-    redirect("/projects");
+    redirect("/project");
   }
 
   return (

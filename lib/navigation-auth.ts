@@ -12,7 +12,7 @@ export function canAccessNavigationItem(
   item: INavItem,
   userIsAdmin: boolean,
   userIsCurrentProjectOwner: boolean,
-  userIsInCoreProject: boolean = false,
+  userIsSystemAdmin: boolean = false,
 ): boolean {
   if (!item.authorizeOnly) return true;
 
@@ -25,7 +25,7 @@ export function canAccessNavigationItem(
   }
 
   if (item.authorizeOnly === "CORE") {
-    return userIsInCoreProject;
+    return userIsSystemAdmin;
   }
 
   return false;
@@ -38,14 +38,14 @@ export function filterNavigationItems(
   items: INavItem[],
   userIsAdmin: boolean,
   userIsCurrentProjectOwner: boolean,
-  userIsInCoreProject: boolean = false,
+  userIsSystemAdmin: boolean = false,
 ): INavItem[] {
   return items.filter((item) =>
     canAccessNavigationItem(
       item,
       userIsAdmin,
       userIsCurrentProjectOwner,
-      userIsInCoreProject,
+      userIsSystemAdmin,
     ),
   );
 }

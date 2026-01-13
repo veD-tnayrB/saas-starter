@@ -116,12 +116,17 @@ export class InvitationService {
       const inviter = await findUserById(invitedById);
 
       // Send invitation email
-      await this.sendInvitationEmail({
-        invitation,
-        projectName: project.name,
-        inviterName: inviter?.name || "Someone",
-        inviterEmail: inviter?.email || "",
-      });
+      try {
+        await this.sendInvitationEmail({
+          invitation,
+          projectName: project.name,
+          inviterName: inviter?.name || "Someone",
+          inviterEmail: inviter?.email || "",
+        });
+      } catch (emailError) {
+        // Log the error but don't fail the invitation creation
+        console.error("Failed to send invitation email:", emailError);
+      }
 
       return invitation;
     } catch (error) {

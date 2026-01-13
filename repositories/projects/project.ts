@@ -29,7 +29,6 @@ export interface IProject {
   updatedAt: Date;
   subscriptionPlanId?: string;
   subscriptionPlan?: ISubscriptionPlan;
-  isCore?: boolean;
 }
 
 /**
@@ -64,7 +63,6 @@ export async function findProjectById(
       createdAt: Date;
       updatedAt: Date;
       subscriptionPlanId: string | null;
-      isCore: boolean | null;
       planId: string | null;
       planName: string | null;
       planDisplayName: string | null;
@@ -82,7 +80,6 @@ export async function findProjectById(
         p.created_at AS "createdAt",
         p.updated_at AS "updatedAt",
         p.subscription_plan_id AS "subscriptionPlanId",
-        p.is_core AS "isCore",
         sp.id AS "planId",
         sp.name AS "planName",
         sp.display_name AS "planDisplayName",
@@ -114,7 +111,6 @@ export async function findProjectById(
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       subscriptionPlanId: row.subscriptionPlanId ?? undefined,
-      isCore: row.isCore ?? undefined,
       subscriptionPlan: row.planId
         ? {
             id: row.planId,
@@ -149,7 +145,6 @@ export async function findProjectsByOwner(
       createdAt: Date;
       updatedAt: Date;
       subscriptionPlanId: string | null;
-      isCore: boolean | null;
       planId: string | null;
       planName: string | null;
       planDisplayName: string | null;
@@ -167,7 +162,6 @@ export async function findProjectsByOwner(
         p.created_at AS "createdAt",
         p.updated_at AS "updatedAt",
         p.subscription_plan_id AS "subscriptionPlanId",
-        p.is_core AS "isCore",
         sp.id AS "planId",
         sp.name AS "planName",
         sp.display_name AS "planDisplayName",
@@ -190,7 +184,6 @@ export async function findProjectsByOwner(
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       subscriptionPlanId: row.subscriptionPlanId ?? undefined,
-      isCore: row.isCore ?? undefined,
       subscriptionPlan: row.planId
         ? {
             id: row.planId,
@@ -243,7 +236,6 @@ export async function findProjectsByUserId(
       createdAt: Date;
       updatedAt: Date;
       subscriptionPlanId: string | null;
-      isCore: boolean | null;
       planId: string | null;
       planName: string | null;
       planDisplayName: string | null;
@@ -261,7 +253,6 @@ export async function findProjectsByUserId(
         p.created_at AS "createdAt",
         p.updated_at AS "updatedAt",
         p.subscription_plan_id AS "subscriptionPlanId",
-        p.is_core AS "isCore",
         sp.id AS "planId",
         sp.name AS "planName",
         sp.display_name AS "planDisplayName",
@@ -285,7 +276,6 @@ export async function findProjectsByUserId(
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       subscriptionPlanId: row.subscriptionPlanId ?? undefined,
-      isCore: row.isCore ?? undefined,
       subscriptionPlan: row.planId
         ? {
             id: row.planId,
@@ -345,7 +335,6 @@ export async function createProject(
       createdAt: Date;
       updatedAt: Date;
       subscriptionPlanId: string | null;
-      isCore: boolean | null;
     }>`
       INSERT INTO projects (id, name, owner_id, created_at, updated_at)
       VALUES (${id}, ${data.name}, ${data.ownerId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -355,8 +344,7 @@ export async function createProject(
         owner_id AS "ownerId",
         created_at AS "createdAt",
         updated_at AS "updatedAt",
-        subscription_plan_id AS "subscriptionPlanId",
-        is_core AS "isCore"
+        subscription_plan_id AS "subscriptionPlanId"
     `.execute(db);
 
     const project = result.rows[0];
@@ -394,7 +382,6 @@ export async function createProject(
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
       subscriptionPlanId: project.subscriptionPlanId ?? undefined,
-      isCore: project.isCore ?? undefined,
       subscriptionPlan,
     };
   } catch (error) {
@@ -423,7 +410,6 @@ export async function createProjectWithOwner(
         createdAt: Date;
         updatedAt: Date;
         subscriptionPlanId: string | null;
-        isCore: boolean | null;
       }>`
         INSERT INTO projects (id, name, owner_id, created_at, updated_at)
         VALUES (${projectId}, ${data.name}, ${data.ownerId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -433,8 +419,7 @@ export async function createProjectWithOwner(
           owner_id AS "ownerId",
           created_at AS "createdAt",
           updated_at AS "updatedAt",
-          subscription_plan_id AS "subscriptionPlanId",
-          is_core AS "isCore"
+          subscription_plan_id AS "subscriptionPlanId"
       `.execute(trx);
 
       const project = projectResult.rows[0];
@@ -493,7 +478,6 @@ export async function createProjectWithOwner(
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
         subscriptionPlanId: project.subscriptionPlanId ?? undefined,
-        isCore: project.isCore ?? undefined,
         subscriptionPlan,
       };
     });
@@ -535,7 +519,6 @@ export async function updateProject(
       createdAt: Date;
       updatedAt: Date;
       subscriptionPlanId: string | null;
-      isCore: boolean | null;
     }>`
       UPDATE projects
       SET ${setClause}
@@ -546,8 +529,7 @@ export async function updateProject(
         owner_id AS "ownerId",
         created_at AS "createdAt",
         updated_at AS "updatedAt",
-        subscription_plan_id AS "subscriptionPlanId",
-        is_core AS "isCore"
+        subscription_plan_id AS "subscriptionPlanId"
     `.execute(db);
 
     const project = result.rows[0];
@@ -585,7 +567,6 @@ export async function updateProject(
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
       subscriptionPlanId: project.subscriptionPlanId ?? undefined,
-      isCore: project.isCore ?? undefined,
       subscriptionPlan,
     };
   } catch (error) {

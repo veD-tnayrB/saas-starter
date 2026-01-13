@@ -2,7 +2,7 @@
 
 import { getCurrentUser } from "@/repositories/auth/session";
 import { findAllModules } from "@/repositories/modules";
-import { INavItem, ISidebarNavItem } from "@/types";
+import { ISidebarNavItem } from "@/types";
 
 import { canAccessCoreFeatures } from "@/lib/permissions/core-access";
 
@@ -70,23 +70,6 @@ export async function getNavigationLinksWithModules(
   // Get active modules if we have a projectId
   const activeModules = await getActiveModulesForNavigation(currentProjectId);
 
-  // Create core modules section if there are modules
-  const coreModulesSection: ISidebarNavItem | null =
-    activeModules.length > 0
-      ? {
-          title: "CORE",
-          authorizeOnly: "CORE",
-          items: [
-            {
-              href: "/admin",
-              icon: "shield",
-              title: "Admin Mode",
-              authorizeOnly: "CORE",
-            } as INavItem,
-          ],
-        }
-      : null;
-
   // Combine static links with dynamic core modules section
-  return coreModulesSection ? [...links, coreModulesSection] : links;
+  return links;
 }

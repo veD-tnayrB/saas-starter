@@ -27,7 +27,6 @@ export function NavigationSections({
     matchedId && !knownRoutes.includes(matchedId) ? matchedId : null;
 
   const [isCurrentProjectOwner, setIsCurrentProjectOwner] = useState(false);
-  const [isInCoreProject, setIsInCoreProject] = useState(false);
   const [fallbackProjectId, setFallbackProjectId] = useState<string | null>(
     null,
   );
@@ -75,13 +74,12 @@ export function NavigationSections({
     loadEnhancedLinks();
   }, [links, path]);
 
-  // Check if user is OWNER of current project and if project is core (only once, shared across all sections)
+  // Check if user is OWNER of current project (only once, shared across all sections)
   useEffect(() => {
     async function checkProjectAccess() {
       const projectIdToCheck = currentProjectId || fallbackProjectId;
       if (!projectIdToCheck) {
         setIsCurrentProjectOwner(false);
-        setIsInCoreProject(false);
         return;
       }
 
@@ -90,12 +88,10 @@ export function NavigationSections({
         if (response.ok) {
           const data = await response.json();
           setIsCurrentProjectOwner(data.project?.userRole === "OWNER");
-          setIsInCoreProject(data.project?.isCore === true);
         }
       } catch (error) {
         console.error("Error checking project access:", error);
         setIsCurrentProjectOwner(false);
-        setIsInCoreProject(false);
       }
     }
 
@@ -118,7 +114,6 @@ export function NavigationSections({
           projectId={effectiveProjectId}
           hasExplicitProject={hasExplicitProject}
           isCurrentProjectOwner={isCurrentProjectOwner}
-          isInCoreProject={isInCoreProject}
         />
       </div>
     );
