@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Settings } from "lucide-react";
+import { BookOpen, Home, LayoutGrid, LogOut, Settings } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Drawer } from "vaul";
 
@@ -80,6 +80,39 @@ export function UserAccountNav() {
             <ul role="list" className="mb-14 mt-1 w-full text-muted-foreground">
               <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
+                  href="/"
+                  onClick={closeDrawer}
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
+                >
+                  <Home className="size-4" />
+                  <p className="text-sm">Home</p>
+                </Link>
+              </li>
+
+              <li className="rounded-lg text-foreground hover:bg-muted">
+                <Link
+                  href="/projects"
+                  onClick={closeDrawer}
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
+                >
+                  <LayoutGrid className="size-4" />
+                  <p className="text-sm">Projects</p>
+                </Link>
+              </li>
+
+              <li className="rounded-lg text-foreground hover:bg-muted">
+                <Link
+                  href="/docs"
+                  onClick={closeDrawer}
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
+                >
+                  <BookOpen className="size-4" />
+                  <p className="text-sm">Documentation</p>
+                </Link>
+              </li>
+
+              <li className="rounded-lg text-foreground hover:bg-muted">
+                <Link
                   href="/settings"
                   onClick={closeDrawer}
                   className="flex w-full items-center gap-3 px-2.5 py-2"
@@ -137,6 +170,27 @@ export function UserAccountNav() {
           </div>
         </div>
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/" className="flex items-center space-x-2.5">
+            <Home className="size-4" />
+            <p className="text-sm">Home</p>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/projects" className="flex items-center space-x-2.5">
+            <LayoutGrid className="size-4" />
+            <p className="text-sm">Projects</p>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/docs" className="flex items-center space-x-2.5">
+            <BookOpen className="size-4" />
+            <p className="text-sm">Documentation</p>
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
           <Link href="/settings" className="flex items-center space-x-2.5">

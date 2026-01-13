@@ -6,6 +6,7 @@ import { getProjectSubscriptionPlan } from "@/services/subscriptions";
 import { constructMetadata } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { ProjectBilling } from "@/components/dashboard/project-billing";
 import { BillingInfo } from "@/components/pricing/billing-info";
 import { Icons } from "@/components/shared/icons";
 
@@ -62,6 +63,13 @@ export default async function BillingPage({ params }: BillingPageProps) {
             .
           </AlertDescription>
         </Alert>
+        <div className="grid gap-4">
+          <h2 className="text-xl font-bold">Available Plans</h2>
+          <ProjectBilling
+            projectId={projectId}
+            currentPlanId={userSubscriptionPlan.id}
+          />
+        </div>
         <BillingInfo
           userSubscriptionPlan={userSubscriptionPlan}
           projectId={projectId}

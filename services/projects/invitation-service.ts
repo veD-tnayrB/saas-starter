@@ -21,6 +21,7 @@ import { Resend } from "resend";
 import { env } from "@/env.mjs";
 import { siteConfig } from "@/config/site";
 
+import { permissionService } from "../permissions/permission-service";
 import { memberService } from "./member-service";
 import { projectService } from "./project-service";
 
@@ -47,8 +48,23 @@ export class InvitationService {
         throw new Error("At least one role is required");
       }
 
+      // Check permission via unified PermissionService (Roles + Plans)
+      const hasPermission = await permissionService.canUserPerformAction(
+        invitedById,
+        projectId,
+        "members.invite",
+      );
+      if (!hasPermission) {
+        throw new Error(
+          "Forbidden: You or your project plan do not have permission to invite members",
+        );
+      }
+
       // Validate project exists and inviter has access
-      const project = await projectService.getProjectById(projectId, invitedById);
+      const project = await projectService.getProjectById(
+        projectId,
+        invitedById,
+      );
       if (!project) {
         throw new Error("Project not found");
       }

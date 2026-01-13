@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -91,7 +92,7 @@ export function InviteDialog({ projectId, onSuccess }: IInviteDialogProps) {
   if (!isMounted) {
     return (
       <Button
-        className="bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift text-background shadow-silver"
+        className="bg-gradient-silver transition-silver hover-lift text-background shadow-silver hover:shadow-silver-lg"
         onClick={() => setIsOpen(true)}
       >
         <Icons.add className="mr-2 h-4 w-4" />
@@ -103,7 +104,7 @@ export function InviteDialog({ projectId, onSuccess }: IInviteDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift text-background shadow-silver">
+        <Button className="bg-gradient-silver transition-silver hover-lift text-background shadow-silver hover:shadow-silver-lg">
           <Icons.add className="mr-2 h-4 w-4" />
           Invite Member
         </Button>
@@ -118,10 +119,9 @@ export function InviteDialog({ projectId, onSuccess }: IInviteDialogProps) {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              Email Address
-            </label>
+            <Label htmlFor="invite-email">Email Address</Label>
             <Input
+              id="invite-email"
               type="email"
               placeholder="colleague@example.com"
               value={email}
@@ -129,9 +129,9 @@ export function InviteDialog({ projectId, onSuccess }: IInviteDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Role</label>
+            <Label htmlFor="invite-role">Role</Label>
             <Select value={role} onValueChange={(value) => setRole(value)}>
-              <SelectTrigger>
+              <SelectTrigger id="invite-role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -143,7 +143,7 @@ export function InviteDialog({ projectId, onSuccess }: IInviteDialogProps) {
           <Button
             onClick={handleInvite}
             disabled={isLoading || !email}
-            className="bg-gradient-silver hover:shadow-silver-lg transition-silver hover-lift w-full text-background shadow-silver"
+            className="bg-gradient-silver transition-silver hover-lift w-full text-background shadow-silver hover:shadow-silver-lg"
           >
             {buttonContent}
           </Button>

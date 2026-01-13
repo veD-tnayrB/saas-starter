@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 
 interface IProject {
   id: string;
@@ -26,7 +25,6 @@ function getProjectColor(projectId: string): string {
 }
 
 export function useProjects() {
-  const { status } = useSession();
   const [projects, setProjects] = useState<IProject[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,9 +58,8 @@ export function useProjects() {
   }, []);
 
   useEffect(() => {
-    if (status === "loading") return;
     loadProjects();
-  }, [status, loadProjects]);
+  }, [loadProjects]);
 
   useEffect(() => {
     function handleRefresh() {

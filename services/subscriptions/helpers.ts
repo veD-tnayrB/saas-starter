@@ -54,9 +54,11 @@ export function formatSubscriptionPlan(
   isPaid: boolean,
   interval: "month" | "year" | null,
   isCanceled: boolean,
+  planId?: string,
 ): IUserSubscriptionPlan {
   return {
     ...plan,
+    id: planId || plan.id,
     stripeCustomerId: user.stripeCustomerId,
     stripeSubscriptionId: user.stripeSubscriptionId,
     stripePriceId: user.stripePriceId,

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 import { useProjects } from "@/hooks/use-projects";
 import {
@@ -25,7 +24,6 @@ interface IProject {
 }
 
 export function ProjectSwitcher({ large = false }: { large?: boolean }) {
-  const { status } = useSession();
   const pathname = usePathname();
   const [openPopover, setOpenPopover] = useState(false);
   const { projects, loading, refreshProjects } = useProjects();
@@ -50,7 +48,7 @@ export function ProjectSwitcher({ large = false }: { large?: boolean }) {
 
   const selectedProject = currentProject || projects[0];
 
-  if (status === "loading" || loading) {
+  if (loading) {
     return <ProjectSwitcherPlaceholder />;
   }
 

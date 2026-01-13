@@ -79,7 +79,7 @@ export async function getNavigationLinksWithModules(
           items: [
             {
               href: "/admin",
-              icon: "settings",
+              icon: "shield",
               title: "Admin Mode",
               authorizeOnly: "CORE",
             } as INavItem,

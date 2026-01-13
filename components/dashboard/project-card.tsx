@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -24,23 +23,34 @@ export function ProjectCard({ project }: IProjectCardProps) {
   const formattedDate = new Date(project.createdAt).toLocaleDateString();
 
   return (
-    <Link href={`/project/${project.id}/dashboard`} prefetch={false}>
-      <Card className="transition-silver hover-lift hover:border-primary/50 hover:shadow-silver/10">
+    <Link
+      href={`/project/${project.id}/dashboard`}
+      prefetch={false}
+      className="group block"
+    >
+      <Card className="transition-silver hover-lift h-full border-border/40 hover:border-primary/40 hover:shadow-silver/10">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Icons.package className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">{project.name}</CardTitle>
+            <Icons.package
+              className="h-5 w-5 text-primary"
+              style={{ stroke: "var(--primary)" }}
+            />
+            <CardTitle className="text-lg text-foreground">
+              {project.name}
+            </CardTitle>
           </div>
-          <CardDescription>Created {formattedDate}</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Created {formattedDate}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-foreground"
-          >
-            Open Project
-            <Icons.arrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="flex w-full items-center justify-between rounded-md border border-border bg-secondary/80 px-4 py-2 text-sm font-semibold text-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground">
+            <span>Open Project</span>
+            <Icons.arrowRight
+              className="h-4 w-4 transition-transform group-hover:translate-x-1"
+              style={{ stroke: "currentColor" }}
+            />
+          </div>
         </CardContent>
       </Card>
     </Link>

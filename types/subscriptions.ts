@@ -67,6 +67,7 @@ export interface ISubscriptionError {
 
 // Plan types (extending existing types)
 export interface ISubscriptionPlan {
+  id?: string;
   title: string;
   description: string;
   benefits: string[];

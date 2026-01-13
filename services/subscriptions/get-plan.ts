@@ -1,4 +1,5 @@
 import { retrieveSubscription } from "@/clients/stripe";
+import { findPlanByStripePriceId } from "@/repositories/permissions";
 import { findUserSubscription } from "@/repositories/subscriptions";
 import { projectService } from "@/services/projects/project-service";
 
@@ -79,6 +80,7 @@ export async function getProjectSubscriptionPlan(
       isPaid,
       interval,
       isCanceled,
+      projectPlan.id,
     );
   }
 
@@ -130,7 +132,17 @@ export async function getProjectSubscriptionPlan(
   }
 
   // Format and return the subscription plan
-  return formatSubscriptionPlan(owner, plan, isPaid, interval, isCanceled);
+  const dbPlan = owner.stripePriceId
+    ? await findPlanByStripePriceId(owner.stripePriceId)
+    : null;
+  return formatSubscriptionPlan(
+    owner,
+    plan,
+    isPaid,
+    interval,
+    isCanceled,
+    dbPlan?.id,
+  );
 }
 
 /**

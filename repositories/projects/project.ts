@@ -45,6 +45,7 @@ export interface IProjectCreateData {
  */
 export interface IProjectUpdateData {
   name?: string;
+  subscriptionPlanId?: string | null;
 }
 
 /**
@@ -519,6 +520,9 @@ export async function updateProject(
     const setParts = [sql.raw("updated_at = CURRENT_TIMESTAMP")];
     if (data.name !== undefined) {
       setParts.push(sql`name = ${data.name}`);
+    }
+    if (data.subscriptionPlanId !== undefined) {
+      setParts.push(sql`subscription_plan_id = ${data.subscriptionPlanId}`);
     }
 
     // Combine all SET parts safely

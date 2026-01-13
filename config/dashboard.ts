@@ -9,12 +9,10 @@ export const sidebarLinks: ISidebarNavItem[] = [
         icon: "dashboard",
         title: "Dashboard",
       },
-
       {
-        href: "/project/[projectId]/billing",
-        icon: "billing",
-        title: "Billing",
-        authorizeOnly: "OWNER", // Only project owners can access billing
+        href: "/project/[projectId]/members",
+        icon: "user",
+        title: "Members",
       },
       {
         href: "/project/[projectId]/admin/modules",
@@ -25,17 +23,20 @@ export const sidebarLinks: ISidebarNavItem[] = [
     ],
   },
   {
-    title: "OPTIONS",
+    title: "SETTINGS",
     items: [
       {
-        href: "/projects",
-        icon: "package",
-        title: "Projects",
+        href: "/project/[projectId]/settings",
+        icon: "settings",
+        title: "Project",
+        authorizeOnly: "ADMIN",
       },
-
-      { href: "/settings", icon: "settings", title: "Settings" },
-      { href: "/", icon: "home", title: "Homepage" },
-      { href: "/docs", icon: "bookOpen", title: "Documentation" },
+      {
+        href: "/project/[projectId]/billing",
+        icon: "billing",
+        title: "Billing",
+        authorizeOnly: "OWNER",
+      },
     ],
   },
 ];
