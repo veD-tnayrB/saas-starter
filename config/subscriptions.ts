@@ -3,6 +3,9 @@ import { env } from "@/env.mjs";
 
 export const pricingData: ISubscriptionPlan[] = [
   {
+    id: "c6a9b0e1-0a0b-4c0d-0e1f-2a3b4c5d6e7f",
+    name: "starter",
+    displayName: "Starter",
     title: "Starter",
     description: "For Beginners",
     benefits: [
@@ -26,6 +29,9 @@ export const pricingData: ISubscriptionPlan[] = [
     },
   },
   {
+    id: "d7f8a9b0-1c2d-3e4f-5a6b-7c8d9e0f1a2b",
+    name: "pro",
+    displayName: "Pro",
     title: "Pro",
     description: "Unlock Advanced Features",
     benefits: [
@@ -49,6 +55,9 @@ export const pricingData: ISubscriptionPlan[] = [
     },
   },
   {
+    id: "e8f9a0b1-2c3d-4e5f-6a7b-8c9d0e1f2a3c",
+    name: "business",
+    displayName: "Business",
     title: "Business",
     description: "For Power Users",
     benefits: [

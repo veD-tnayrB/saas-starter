@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProjectSwitcher } from "@/components/dashboard/project/switcher";
-import { NavigationSections } from "@/components/layout/navigation";
+import { Navigation } from "@/components/layout/navigation";
 
 interface IDashboardSidebarProps {
   links: ISidebarNavItem[];
@@ -147,7 +147,7 @@ export function DashboardSidebar({ links, header }: IDashboardSidebarProps) {
 
               <nav className="flex flex-1 flex-col gap-8 px-4 pt-4">
                 {loadingPermissions ? null : (
-                  <NavigationSections
+                  <Navigation
                     links={filteredLinks}
                     isSidebarExpanded={isSidebarExpanded}
                     path={path}

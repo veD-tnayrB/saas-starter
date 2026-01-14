@@ -1,8 +1,5 @@
-import {
-  ISubscriptionPlan,
-  IUserSubscriptionPlan,
-  IUserSubscriptionRecord,
-} from "@/types/subscriptions";
+import { ISubscriptionPlan, IUserSubscriptionPlan } from "@/types";
+import { IUserSubscriptionRecord } from "@/types/subscriptions";
 import { pricingData } from "@/config/subscriptions";
 
 /**

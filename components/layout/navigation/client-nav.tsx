@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import {
   isClientPlatformAdmin,
   isClientSystemAdmin,
@@ -20,6 +20,7 @@ interface IClientNavProps {
 
 export function ClientNav({ links, isSidebarExpanded }: IClientNavProps) {
   const params = useParams();
+  const path = usePathname(); // Get pathname
   const projectId = params.projectId as string | undefined;
 
   const [isOwner, setIsOwner] = useState(false);
@@ -63,6 +64,10 @@ export function ClientNav({ links, isSidebarExpanded }: IClientNavProps) {
   }));
 
   return (
-    <Navigation links={filteredLinks} isSidebarExpanded={isSidebarExpanded} />
+    <Navigation
+      links={filteredLinks}
+      isSidebarExpanded={isSidebarExpanded}
+      path={path} // Pass path to Navigation
+    />
   );
 }

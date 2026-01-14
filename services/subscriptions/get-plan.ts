@@ -3,7 +3,7 @@ import { findPlanByStripePriceId } from "@/repositories/permissions";
 import { findUserSubscription } from "@/repositories/subscriptions";
 import { projectService } from "@/services/projects/project-service";
 
-import { IUserSubscriptionPlan } from "@/types/subscriptions";
+import { IUserSubscriptionPlan } from "@/types";
 
 import {
   determinePlanInterval,

@@ -12,7 +12,7 @@ interface INavigationSectionsProps {
   path: string;
 }
 
-export function NavigationSections({
+export function Navigation({
   links,
   isSidebarExpanded,
   path,

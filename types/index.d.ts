@@ -42,7 +42,10 @@ export interface IDocsConfig {
 
 // subcriptions
 export interface ISubscriptionPlan {
+  id: string;
+  name: string;
   title: string;
+  displayName: string;
   description: string;
   benefits: string[];
   limitations: string[];
@@ -55,7 +58,6 @@ export interface ISubscriptionPlan {
     yearly: string | null;
   };
 }
-
 export interface IUserSubscriptionPlan extends ISubscriptionPlan {
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;

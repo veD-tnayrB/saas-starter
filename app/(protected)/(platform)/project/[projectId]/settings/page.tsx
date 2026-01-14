@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import { getActivePlansAction } from "@/actions/projects/get-active-plans";
 import { getCurrentUser } from "@/repositories/auth/session";
 import { isUserProjectOwner } from "@/services/projects/is-user-project-owner";
 import { projectService } from "@/services/projects/project-service";
+import { getProjectSubscriptionPlan } from "@/services/subscriptions";
+import { transformRepositoryPlanToPublicPlan } from "@/config/plans"; // Import the transformation function
 
 import {
   Card,
@@ -41,6 +44,13 @@ export default async function ProjectSettingsPage({
     redirect("/project");
   }
 
+  const [allPlansResponse, userSubscriptionPlan] = await Promise.all([
+    getActivePlansAction(),
+    getProjectSubscriptionPlan(projectId, user.id),
+  ]);
+
+  const transformedPlans = allPlansResponse.plans.map(transformRepositoryPlanToPublicPlan);
+
   return (
     <>
       <DashboardHeader
@@ -76,7 +86,8 @@ export default async function ProjectSettingsPage({
           <CardContent>
             <ProjectBilling
               projectId={projectId}
-              currentPlanId={project.subscriptionPlanId || undefined}
+              plans={transformedPlans} // Pass the transformed plans
+              userSubscriptionPlan={userSubscriptionPlan}
             />
           </CardContent>
         </Card>

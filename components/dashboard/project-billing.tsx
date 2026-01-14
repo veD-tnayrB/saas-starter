@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { getActivePlansAction } from "@/actions/projects/get-active-plans";
 import { updateProjectPlanAction } from "@/actions/projects/update-project-plan";
-import { ISubscriptionPlan } from "@/repositories/permissions/plans";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { ISubscriptionPlan, IUserSubscriptionPlan } from "@/types";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PLAN_FEATURES } from "@/config/plans";
 import {
   Card,
   CardContent,
@@ -21,62 +21,19 @@ import {
 
 interface ProjectBillingProps {
   projectId: string;
-  currentPlanId?: string;
+  plans: ISubscriptionPlan[];
+  userSubscriptionPlan: IUserSubscriptionPlan;
 }
-
-// Plan features configuration
-const PLAN_FEATURES: Record<
-  string,
-  { name: string; features: string[]; limits: string[] }
-> = {
-  free: {
-    name: "Free",
-    features: ["1 team member", "Basic analytics", "Community support"],
-    limits: ["No additional members", "Limited features"],
-  },
-  pro: {
-    name: "Pro",
-    features: [
-      "Up to 10 team members",
-      "Advanced analytics",
-      "Priority email support",
-      "Custom roles",
-      "Audit logs",
-    ],
-    limits: ["10 member limit"],
-  },
-  business: {
-    name: "Business",
-    features: [
-      "Unlimited team members",
-      "Advanced analytics",
-      "24/7 priority support",
-      "Custom roles",
-      "Audit logs",
-      "SSO (coming soon)",
-      "Advanced security",
-    ],
-    limits: [],
-  },
-};
 
 export function ProjectBilling({
   projectId,
-  currentPlanId,
+  plans,
+  userSubscriptionPlan,
 }: ProjectBillingProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadPlans() {
-      const response = await getActivePlansAction();
-      setPlans(response.plans);
-      setLoading(false);
-    }
-    loadPlans();
-  }, []);
+  const currentPlanId = userSubscriptionPlan.id;
 
   const onUpdatePlan = (planId: string) => {
     if (planId === currentPlanId) return;
@@ -91,14 +48,6 @@ export function ProjectBilling({
       }
     });
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   const currentPlan = plans.find((p) => p.id === currentPlanId);
 

@@ -64,30 +64,3 @@ export interface ISubscriptionError {
   message: string;
   details?: Record<string, unknown>;
 }
-
-// Plan types (extending existing types)
-export interface ISubscriptionPlan {
-  id?: string;
-  title: string;
-  description: string;
-  benefits: string[];
-  limitations: string[];
-  prices: {
-    monthly: number;
-    yearly: number;
-  };
-  stripeIds: {
-    monthly: string | null;
-    yearly: string | null;
-  };
-}
-
-export interface IUserSubscriptionPlan extends ISubscriptionPlan {
-  stripeCustomerId: string | null;
-  stripeSubscriptionId: string | null;
-  stripePriceId: string | null;
-  stripeCurrentPeriodEnd: number | null;
-  isPaid: boolean;
-  interval: "month" | "year" | null;
-  isCanceled?: boolean;
-}
