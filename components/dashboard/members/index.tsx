@@ -30,6 +30,7 @@ interface IProjectMembersProps {
   members: IProjectMember[];
   userRole: string;
   canManageMembers: boolean;
+  canInviteMembers: boolean;
 }
 
 export function ProjectMembers({
@@ -37,10 +38,8 @@ export function ProjectMembers({
   members,
   userRole,
   canManageMembers,
+  canInviteMembers,
 }: IProjectMembersProps) {
-  const canInvite =
-    canManageMembers && (userRole === "OWNER" || userRole === "ADMIN");
-
   function handleInviteSuccess() {
     // Refresh the page to show updated members
     window.location.reload();
@@ -71,7 +70,7 @@ export function ProjectMembers({
               Manage team members and their roles in this project.
             </CardDescription>
           </div>
-          {canInvite && (
+          {canInviteMembers && (
             <InviteDialog
               projectId={projectId}
               onSuccess={handleInviteSuccess}

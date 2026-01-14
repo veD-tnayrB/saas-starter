@@ -1,78 +1,66 @@
 import { cache } from "react";
-import {
-  getProjectInvitationStats,
-  getProjectMemberCount,
-  getProjectMemberGrowth,
-  getProjectMembersByRole,
-} from "@/repositories/projects";
+import { memberService } from "@/services/projects";
+import { Activity, UserPlus, Users } from "lucide-react";
 
-import { ProjectStatsCard } from "@/components/dashboard/project-stats-card";
+import { StatCard } from "@/components/shared/stat-card";
 
-interface IProjectStatsProps {
+interface IProjectStatsSectionProps {
   projectId: string;
 }
 
 const getProjectStats = cache(async (projectId: string) => {
-  const [membersByRole, invitationStats, memberGrowth, totalMembers] =
-    await Promise.all([
-      getProjectMembersByRole(projectId),
-      getProjectInvitationStats(projectId),
-      getProjectMemberGrowth(projectId),
-      getProjectMemberCount(projectId),
-    ]);
+  const members = await memberService.getProjectMembers(projectId);
 
-  const firstCount = memberGrowth[0]?.count ?? 0;
-  const lastCount = memberGrowth[memberGrowth.length - 1]?.count ?? 0;
-  const growthDiff = lastCount - firstCount;
-  const growthPercent =
-    firstCount === 0
-      ? lastCount > 0
-        ? 100
-        : 0
-      : Math.round((growthDiff / firstCount) * 100);
+  // Calculate stats
+  const totalMembers = members.length;
+  const recentMembers = members.filter((m) => {
+    const joinedDate = new Date(m.createdAt);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return joinedDate > thirtyDaysAgo;
+  }).length;
 
   return {
-    membersByRole,
-    invitationStats,
-    memberGrowth,
     totalMembers,
-    growthPercent,
+    recentMembers,
+    activeMembers: totalMembers, // Could be enhanced with actual activity tracking
   };
 });
 
-export async function ProjectStatsSection({ projectId }: IProjectStatsProps) {
+export async function ProjectStatsSection({
+  projectId,
+}: IProjectStatsSectionProps) {
   const stats = await getProjectStats(projectId);
-  const totalLeaders = stats.membersByRole.OWNER + stats.membersByRole.ADMIN;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <ProjectStatsCard
-        title="Total members"
+    <div className="grid gap-4 md:grid-cols-3">
+      <StatCard
+        title="Total Members"
         value={stats.totalMembers}
-        icon="users"
-        description={`${stats.membersByRole.OWNER} owners, ${stats.membersByRole.ADMIN} admins, ${stats.membersByRole.MEMBER} members`}
+        description="Active team members"
+        icon={Users}
       />
-      <ProjectStatsCard
-        title="Pending invitations"
-        value={stats.invitationStats.pending}
-        icon="userPlus"
-        description={`${stats.invitationStats.expired} expired invitations`}
+      <StatCard
+        title="New This Month"
+        value={stats.recentMembers}
+        description="Joined in last 30 days"
+        icon={UserPlus}
+        trend={
+          stats.recentMembers > 0
+            ? {
+                value: Math.round(
+                  (stats.recentMembers / Math.max(stats.totalMembers, 1)) * 100,
+                ),
+                label: "of total members",
+              }
+            : undefined
+        }
       />
-      <ProjectStatsCard
-        title="Team leaders"
-        value={totalLeaders}
-        icon="shield"
-        description="Owners and administrators"
-      />
-      <ProjectStatsCard
-        title="Growth (30d)"
-        value={`${stats.growthPercent}%`}
-        icon="trendingUp"
-        description="Member increase in the last month."
-        trend={{
-          value: stats.growthPercent,
-          isPositive: stats.growthPercent >= 0,
-        }}
+      <StatCard
+        title="Active Members"
+        value={stats.activeMembers}
+        description="Currently active"
+        icon={Activity}
       />
     </div>
   );

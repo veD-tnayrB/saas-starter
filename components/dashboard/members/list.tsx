@@ -1,6 +1,7 @@
-import { MemberItem } from "./item";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
-interface IProjectMember {
+interface IMember {
   id: string;
   userId: string;
   roles: Array<{
@@ -15,7 +16,7 @@ interface IProjectMember {
 }
 
 interface IMembersListProps {
-  members: IProjectMember[];
+  members: IMember[];
   roleDisplay: Record<string, string>;
   roleColors: Record<string, string>;
 }
@@ -25,14 +26,54 @@ export function MembersList({
   roleDisplay,
   roleColors,
 }: IMembersListProps) {
-  const memberItems = members.map((member) => (
-    <MemberItem
-      key={member.id}
-      member={member}
-      roleDisplay={roleDisplay}
-      roleColors={roleColors}
-    />
-  ));
+  const getInitials = (name: string | null) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
-  return <div className="space-y-3">{memberItems}</div>;
+  return (
+    <div className="space-y-3">
+      {members.map((member) => {
+        const primaryRole = member.roles[0]?.name || "MEMBER";
+
+        return (
+          <div
+            key={member.id}
+            className="flex items-center justify-between rounded-lg border bg-card p-3 transition-colors hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <Avatar className="size-10">
+                <AvatarImage
+                  src={member.user?.image || undefined}
+                  alt={member.user?.name || "User"}
+                />
+                <AvatarFallback>
+                  {getInitials(member.user?.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium leading-none">
+                  {member.user?.name || "Unknown User"}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {member.user?.email}
+                </p>
+              </div>
+            </div>
+            <Badge
+              variant="secondary"
+              className={roleColors[primaryRole] || ""}
+            >
+              {roleDisplay[primaryRole] || primaryRole}
+            </Badge>
+          </div>
+        );
+      })}
+    </div>
+  );
 }

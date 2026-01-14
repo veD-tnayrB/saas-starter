@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
 import { findAllUserProjects } from "@/repositories/projects";
+import { permissionService } from "@/services/permissions/permission-service";
 import { memberService, projectService } from "@/services/projects";
 
 import { canManageProject } from "@/lib/project-roles";
@@ -74,6 +75,13 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
   // Determine what statistics to show based on role
   const canManageMembers = canManageProject(userRole);
 
+  // Check if user can invite members (respects plan restrictions)
+  const canInviteMembers = await permissionService.canUserPerformAction(
+    user.id,
+    projectId,
+    "members.invite",
+  );
+
   return (
     <FramerWrapper className="flex flex-col gap-8 pb-10">
       <InvitationAcceptedToast />
@@ -109,6 +117,7 @@ export default async function DashboardPage({ params }: IDashboardPageProps) {
             <ProjectMembersSection
               projectId={projectId}
               canManageMembers={canManageMembers}
+              canInviteMembers={canInviteMembers}
               userRole={userRole}
             />
           </Suspense>

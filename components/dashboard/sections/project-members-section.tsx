@@ -7,6 +7,7 @@ interface IProjectMembersSectionProps {
   projectId: string;
   userRole: string;
   canManageMembers: boolean;
+  canInviteMembers: boolean;
 }
 
 const getMembers = cache(async (projectId: string) => {
@@ -17,6 +18,7 @@ export async function ProjectMembersSection({
   projectId,
   userRole,
   canManageMembers,
+  canInviteMembers,
 }: IProjectMembersSectionProps) {
   const members = await getMembers(projectId);
   return (
@@ -25,6 +27,7 @@ export async function ProjectMembersSection({
       members={members}
       userRole={userRole}
       canManageMembers={canManageMembers}
+      canInviteMembers={canInviteMembers}
     />
   );
 }

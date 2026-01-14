@@ -67,6 +67,7 @@ const ChartStyle = ({
 
   return (
     <style
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{
         __html: Object.entries(config)
           .map(([key, itemConfig]) => {
