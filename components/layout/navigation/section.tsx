@@ -23,14 +23,6 @@ export function NavigationSection({
   hasExplicitProject,
   isCurrentProjectOwner,
 }: INavigationSectionProps) {
-  const sectionTitle = isSidebarExpanded ? (
-    <p className="text-xs font-medium uppercase tracking-wider text-foreground/60">
-      {section.title}
-    </p>
-  ) : (
-    <div className="h-4" />
-  );
-
   const items = section.items
     .filter((item) => {
       if (!item.href) return false;
@@ -65,6 +57,19 @@ export function NavigationSection({
         />
       );
     });
+
+  // Hide entire section if no items are visible
+  if (items.length === 0) {
+    return null;
+  }
+
+  const sectionTitle = isSidebarExpanded ? (
+    <p className="text-xs font-medium uppercase tracking-wider text-foreground/60">
+      {section.title}
+    </p>
+  ) : (
+    <div className="h-4" />
+  );
 
   return (
     <section className="flex flex-col gap-0.5">

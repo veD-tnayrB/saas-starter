@@ -23,7 +23,7 @@ export const sidebarLinks: ISidebarNavItem[] = [
         href: "/project/[projectId]/settings",
         icon: "settings",
         title: "Project",
-        authorizeOnly: "ADMIN",
+        authorizeOnly: "OWNER",
       },
       {
         href: "/project/[projectId]/billing",

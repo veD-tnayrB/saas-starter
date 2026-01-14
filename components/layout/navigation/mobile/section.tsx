@@ -46,6 +46,11 @@ export function MobileNavigationSection({
       );
     });
 
+  // Hide entire section if no items are visible
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section className="flex flex-col gap-0.5">
       <p className="text-xs font-medium uppercase tracking-wider text-foreground/60">

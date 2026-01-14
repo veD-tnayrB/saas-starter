@@ -53,7 +53,7 @@ export function MembersList({
                   alt={member.user?.name || "User"}
                 />
                 <AvatarFallback>
-                  {getInitials(member.user?.name)}
+                  {getInitials(member.user?.name ?? null)}
                 </AvatarFallback>
               </Avatar>
               <div>

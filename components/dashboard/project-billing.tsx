@@ -136,7 +136,7 @@ export function ProjectBilling({
             <Card
               key={plan.id}
               className={cn(
-                "relative flex flex-col",
+                "relative flex flex-col overflow-visible",
                 isCurrentPlan && "border-primary shadow-md",
                 plan.name === "pro" && "border-primary/50",
               )}
@@ -150,7 +150,7 @@ export function ProjectBilling({
                 </div>
               )}
 
-              <CardHeader>
+              <CardHeader className="pt-6">
                 <div className="space-y-1">
                   <CardTitle className="flex items-center justify-between">
                     {plan.displayName}

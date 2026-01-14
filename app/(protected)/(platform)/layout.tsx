@@ -1,6 +1,8 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
 import { isPlatformAdmin, isSystemAdmin } from "@/services/auth/platform-admin";
+import { isUserProjectOwner } from "@/services/projects/is-user-project-owner";
 
 import { sidebarLinks } from "@/config/dashboard";
 import { filterNavigationItems } from "@/lib/navigation-auth";
@@ -19,22 +21,26 @@ interface ProtectedLayoutProps {
 
 export default async function Dashboard({ children }: ProtectedLayoutProps) {
   const user = await getCurrentUser();
-
   if (!user) redirect("/login");
 
-  const [userIsAdmin, userIsSystemAdmin] = await Promise.all([
+  const requestHeaders = await headers();
+  const referer = requestHeaders.get("referer") ?? "";
+  const projectIdMatch = referer.match(/\/project\/([a-zA-Z0-9-]+)/);
+  const projectId = projectIdMatch ? projectIdMatch[1] : null;
+
+  const [userIsAdmin, userIsSystemAdmin, userIsOwner] = await Promise.all([
     isPlatformAdmin(user.id),
     isSystemAdmin(user.id),
+    projectId ? isUserProjectOwner(user.id, projectId) : Promise.resolve(false),
   ]);
 
-  // Filter links for ADMIN and CORE (System Admin)
-  // OWNER filtering requires pathname which is only available in client components
+  // Filter links based on roles
   const filteredLinks = sidebarLinks.map((section) => ({
     ...section,
     items: filterNavigationItems(
       section.items,
       userIsAdmin,
-      false,
+      userIsOwner,
       userIsSystemAdmin,
     ),
   }));

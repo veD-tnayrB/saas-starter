@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { getPermissions, updatePermissionAction } from "@/actions/permissions";
+import { getRolePermissions, updateRolePermissionAction } from "@/actions/permissions";
 import { toast } from "sonner";
 
 import { PermissionsEmpty } from "./empty";
@@ -63,7 +63,7 @@ export function PermissionsManagementClient({
 
     setIsLoading(true);
     try {
-      const { permissions: perms } = await getPermissions(selectedPlan);
+      const { permissions: perms } = await getRolePermissions(selectedPlan);
       setPermissions(perms);
     } catch (error) {
       console.error("Error loading permissions:", error);
@@ -84,7 +84,7 @@ export function PermissionsManagementClient({
 
     startTransition(async () => {
       try {
-        await updatePermissionAction({
+        await updateRolePermissionAction({
           planId: selectedPlan,
           roleId,
           actionId,

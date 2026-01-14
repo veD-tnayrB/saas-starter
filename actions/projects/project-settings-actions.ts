@@ -37,15 +37,20 @@ export async function updateProjectNameAction(projectId: string, name: string) {
     }
 
     // Update project name
-    await updateProject(projectId, { name: name.trim() });
+    await updateProject(projectId, { name: name.trim() }, user.id);
 
     // Log the action
-    await auditLogService.logProjectUpdate(
-      projectId,
-      user.id,
-      { name: project.name },
-      { name: name.trim() },
-    );
+    await auditLogService.logAction({
+      project_id: projectId,
+      user_id: user.id,
+      action: "project.update",
+      entity_type: "project",
+      entity_id: projectId,
+      metadata: {
+        before: { name: project.name },
+        after: { name: name.trim() },
+      },
+    });
 
     // Revalidate relevant paths
     revalidatePath(`/project/${projectId}/settings`);
@@ -102,17 +107,17 @@ export async function deleteProjectAction(
     }
 
     // Log the deletion before actually deleting
-    await auditLogService.logAction(
-      projectId,
-      user.id,
-      "project.delete",
-      "project",
-      projectId,
-      { projectName: project.name },
-    );
+    await auditLogService.logAction({
+      project_id: projectId,
+      user_id: user.id,
+      action: "project.delete",
+      entity_type: "project",
+      entity_id: projectId,
+      metadata: { projectName: project.name },
+    });
 
     // Delete the project (cascade will handle related data)
-    await deleteProject(projectId);
+    await deleteProject(projectId, user.id);
 
     // Redirect will be handled by the client
     return { success: true };
