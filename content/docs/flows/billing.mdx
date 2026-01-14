@@ -1,5 +1,5 @@
 ---
-title: Billing Flow
+title: Billing and Settings Flow
 description: End-to-end explanation of the billing and subscription flow
 ---
 
@@ -25,7 +25,7 @@ The billing flow coordinates Stripe subscriptions, customer self-service, and pr
 - `actions/generate-user-stripe.ts` & `actions/open-customer-portal.ts` – Server actions that wrap BillingService for UI-triggered flows.
 - `clients/stripe.ts` – Configures the Stripe SDK with API keys.
 - `repositories/auth` – Reads user records when building Stripe requests.
-- `app/(protected)/dashboard/[projectId]/billing/page.tsx` – Consumes subscription data to display billing status in the dashboard.
+- `app/(protected)/dashboard/[projectId]/settings/page.tsx` – Consumes subscription data to display billing status in the dashboard.
 
 ## Step-by-Step Flow
 
@@ -46,11 +46,11 @@ The billing flow coordinates Stripe subscriptions, customer self-service, and pr
 
 ### Opening the Billing Portal
 
-1. The UI triggers `openCustomerPortal` action (usually from the dashboard billing card).
+1. The UI triggers `openCustomerPortal` action (usually from the project settings page).
 2. The action validates the session, then calls `billingService.openCustomerPortal`.
 3. The service fetches the user’s current subscription plan (must include `stripeCustomerId`) and uses `createBillingPortalSession` to generate a portal URL.
 4. Stripe Billing Portal lets the customer manage payment methods, invoices, and subscription upgrades/downgrades.
-5. On return (configured to `/dashboard/billing`), the dashboard reloads data to show any changes made in the portal.
+5. On return (configured to `/project/[projectId]/settings`), the dashboard reloads data to show any changes made in the portal.
 
 ### Permission and Admin Access
 
@@ -62,7 +62,7 @@ The billing flow coordinates Stripe subscriptions, customer self-service, and pr
 
 ```mermaid
 flowchart TD
-  A[User clicks Upgrade/Billing] --> B[Server Action (generateUserStripe or openCustomerPortal)]
+  A[User clicks Upgrade/Manage] --> B[Server Action (generateUserStripe or openCustomerPortal)]
   B --> C[BillingService]
   C --> D[Stripe SDK]
   D --> E[Stripe Hosted Page (Checkout/Billing Portal)]

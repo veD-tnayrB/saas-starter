@@ -186,7 +186,7 @@ export class BillingService {
         priceId,
         userId,
         userEmail: user.email!,
-        successUrl: absoluteUrl("/dashboard/billing?success=true"),
+        successUrl: absoluteUrl("/dashboard?success=true"),
         cancelUrl: absoluteUrl("/pricing"),
       };
 
@@ -231,7 +231,7 @@ export class BillingService {
 
       // Determine return URL
       const returnUrl = projectId
-        ? absoluteUrl(`/project/${projectId}/billing`)
+        ? absoluteUrl(`/project/${projectId}/settings`)
         : absoluteUrl("/project");
 
       return await this.createBillingPortalSession(

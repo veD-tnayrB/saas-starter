@@ -25,12 +25,6 @@ export const sidebarLinks: ISidebarNavItem[] = [
         title: "Project",
         authorizeOnly: "OWNER",
       },
-      {
-        href: "/project/[projectId]/billing",
-        icon: "billing",
-        title: "Billing",
-        authorizeOnly: "OWNER",
-      },
     ],
   },
 ];

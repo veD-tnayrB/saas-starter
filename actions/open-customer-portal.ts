@@ -27,7 +27,7 @@ export async function openCustomerPortal(
     }
 
     const returnUrl = projectId
-      ? absoluteUrl(`/project/${projectId}/billing`)
+      ? absoluteUrl(`/project/${projectId}/settings`)
       : absoluteUrl("/project");
 
     // Use billing service to handle the operation

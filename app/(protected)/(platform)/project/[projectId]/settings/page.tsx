@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/repositories/auth/session";
-import { memberService } from "@/services/projects/member-service";
+import { isUserProjectOwner } from "@/services/projects/is-user-project-owner";
 import { projectService } from "@/services/projects/project-service";
 
 import {
@@ -29,20 +29,17 @@ export default async function ProjectSettingsPage({
 
   const { projectId } = await params;
 
-  let project;
-  try {
-    project = await projectService.getProjectById(projectId, user.id);
-  } catch (error) {
-    redirect("/project");
+  // Authorize access: only project owners can access this page
+  const isOwner = await isUserProjectOwner(user.id, projectId);
+  if (!isOwner) {
+    redirect(`/project/${projectId}/dashboard`);
   }
 
+  // Get project data (safe to fetch, user is authorized)
+  const project = await projectService.getProjectById(projectId, user.id);
   if (!project) {
     redirect("/project");
   }
-
-  // Get user's role to determine permissions
-  const userRole = await memberService.getUserRole(projectId, user.id);
-  const isOwner = userRole === "OWNER";
 
   return (
     <>
@@ -85,31 +82,29 @@ export default async function ProjectSettingsPage({
         </Card>
 
         {/* Danger Zone - Only visible to OWNER */}
-        {isOwner && (
-          <Card className="border-destructive">
-            <CardHeader>
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
-              <CardDescription>
-                Irreversible and destructive actions for this project.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="mb-2 font-medium">Delete this project</h4>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    Once you delete a project, there is no going back. Please be
-                    certain.
-                  </p>
-                  <DeleteProjectDialog
-                    projectId={projectId}
-                    projectName={project.name}
-                  />
-                </div>
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardDescription>
+              Irreversible and destructive actions for this project.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="mb-2 font-medium">Delete this project</h4>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Once you delete a project, there is no going back. Please be
+                  certain.
+                </p>
+                <DeleteProjectDialog
+                  projectId={projectId}
+                  projectName={project.name}
+                />
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );
