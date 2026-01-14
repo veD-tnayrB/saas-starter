@@ -1,11 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateProjectPlanAction } from "@/actions/projects/update-project-plan";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { ISubscriptionPlan, IUserSubscriptionPlan } from "@/types";
+import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 interface ProjectBillingProps {
   projectId: string;
@@ -32,24 +42,43 @@ export function ProjectBilling({
 }: ProjectBillingProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [planToUpdateId, setPlanToUpdateId] = useState<string | null>(null);
 
   const currentPlanId = userSubscriptionPlan.id;
+
+  const currentPlanExpirationDate = userSubscriptionPlan.isPaid
+    ? userSubscriptionPlan.stripeCurrentPeriodEnd
+      ? format(userSubscriptionPlan.stripeCurrentPeriodEnd, "PPP 'at' HH:mm")
+      : "an unknown date"
+    : null;
 
   const onUpdatePlan = (planId: string) => {
     if (planId === currentPlanId) return;
 
+    setPlanToUpdateId(planId);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmUpdatePlan = () => {
+    if (!planToUpdateId) return;
+
+    setShowConfirmDialog(false); // Close dialog immediately
+
     startTransition(async () => {
-      const result = await updateProjectPlanAction(projectId, planId);
+      const result = await updateProjectPlanAction(projectId, planToUpdateId);
       if (result.status === "success") {
         toast.success("Project plan updated successfully");
         router.refresh();
       } else {
         toast.error(result.message || "Failed to update project plan");
       }
+      setPlanToUpdateId(null);
     });
   };
 
   const currentPlan = plans.find((p) => p.id === currentPlanId);
+  const selectedPlanForUpdate = plans.find((p) => p.id === planToUpdateId);
 
   return (
     <div className="space-y-6">
@@ -165,6 +194,65 @@ export function ProjectBilling({
           can upgrade or downgrade at any time.
         </p>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Plan Change</DialogTitle>
+            <DialogDescription>
+              {userSubscriptionPlan.isPaid ? (
+                <>
+                  You are about to change your current plan{" "}
+                  <strong>{currentPlan?.displayName}</strong> to{" "}
+                  <strong>{selectedPlanForUpdate?.displayName}</strong>.
+                  <br />
+                  <br />
+                  To make the most of your current plan and avoid losing funds,
+                  we recommend waiting until your current plan's cut-off date,
+                  which is on{" "}
+                  <strong>{currentPlanExpirationDate}</strong>.
+                  <br />
+                  <br />
+                  Please note that by changing your plan before this date, you
+                  will be charged the full amount of the new plan (
+                  <strong>{selectedPlanForUpdate?.displayName}</strong>) in
+                  addition to what you have already paid for your current plan.
+                  Previous charges are non-refundable.
+                  <br />
+                  <br />
+                  Are you sure you want to proceed with the plan change?
+                </>
+              ) : (
+                <>
+                  You are about to upgrade your current plan{" "}
+                  <strong>{currentPlan?.displayName}</strong> to{" "}
+                  <strong>{selectedPlanForUpdate?.displayName}</strong>.
+                  <br />
+                  <br />
+                  Are you sure you want to proceed with the plan upgrade?
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="ghost">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleConfirmUpdatePlan}
+              disabled={isPending}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Confirm Change
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
