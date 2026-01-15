@@ -20,9 +20,13 @@ import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 interface NavBarProps {
   scroll?: boolean;
   large?: boolean;
+  dashboardHref?: string;
 }
 
-export function NavBar({ scroll = false }: NavBarProps) {
+export function NavBar({
+  scroll = false,
+  dashboardHref = "/project",
+}: NavBarProps) {
   const scrolled = useScroll(50);
   const { data: session, status } = useSession();
   const { setShowSignInModal } = useContext(ModalContext);
@@ -103,7 +107,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
           {status === "loading" ? (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           ) : session ? (
-            <Link href="/project" className="hidden md:block">
+            <Link href={dashboardHref} className="hidden md:block">
               <Button
                 className="gap-2 px-5"
                 variant="default"

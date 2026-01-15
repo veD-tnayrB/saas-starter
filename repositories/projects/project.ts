@@ -320,6 +320,152 @@ export async function findAllUserProjects(userId: string): Promise<IProject[]> {
 }
 
 /**
+ * Enriched Project data transfer object including user role, owner details, and member count
+ */
+export interface IProjectEnriched extends IProject {
+  userRole: string | null;
+  owner: { id: string; name: string | null; email: string | null };
+  memberCount: number;
+}
+
+/**
+ * Find all projects for a user (owned + member) with enriched details in a single query
+ */
+export async function findAllUserProjectsWithDetails(
+  userId: string,
+): Promise<IProjectEnriched[]> {
+  try {
+    const result = await sql<{
+      id: string;
+      name: string;
+      ownerId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      subscriptionPlanId: string | null;
+      // Plan details
+      planId: string | null;
+      planName: string | null;
+      planDisplayName: string | null;
+      planDescription: string | null;
+      planStripePriceIdMonthly: string | null;
+      planStripePriceIdYearly: string | null;
+      planIsActive: boolean | null;
+      planCreatedAt: Date | null;
+      planUpdatedAt: Date | null;
+      // Owner details
+      ownerName: string | null;
+      ownerEmail: string | null;
+      // User's role in this project
+      userRoleName: string | null;
+      // Member count
+      memberCount: string; // COUNT returns bigint as string
+    }>`
+      SELECT DISTINCT ON (p.id)
+        p.id,
+        p.name,
+        p.owner_id AS "ownerId",
+        p.created_at AS "createdAt",
+        p.updated_at AS "updatedAt",
+        p.subscription_plan_id AS "subscriptionPlanId",
+        -- Subscription Plan
+        sp.id AS "planId",
+        sp.name AS "planName",
+        sp.display_name AS "planDisplayName",
+        sp.description AS "planDescription",
+        sp.stripe_price_id_monthly AS "planStripePriceIdMonthly",
+        sp.stripe_price_id_yearly AS "planStripePriceIdYearly",
+        sp.is_active AS "planIsActive",
+        sp.created_at AS "planCreatedAt",
+        sp.updated_at AS "planUpdatedAt",
+        -- Project Owner Info
+        owner_user.name AS "ownerName",
+        owner_user.email AS "ownerEmail",
+        -- User's Role in this project
+        app_roles.name AS "userRoleName",
+        -- Member Count
+        (SELECT COUNT(*)::text FROM project_members WHERE project_id = p.id) AS "memberCount"
+      FROM projects p
+      LEFT JOIN subscription_plans sp ON sp.id = p.subscription_plan_id
+      LEFT JOIN users owner_user ON owner_user.id = p.owner_id
+      LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ${userId}
+      LEFT JOIN app_roles ON app_roles.id = pm.role_id
+      WHERE p.owner_id = ${userId} OR pm.user_id = ${userId}
+      ORDER BY p.id, p.created_at DESC
+    `.execute(db);
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      ownerId: row.ownerId,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      subscriptionPlanId: row.subscriptionPlanId ?? undefined,
+      subscriptionPlan: row.planId
+        ? {
+            id: row.planId,
+            name: row.planName!,
+            displayName: row.planDisplayName!,
+            description: row.planDescription,
+            stripePriceIdMonthly: row.planStripePriceIdMonthly,
+            stripePriceIdYearly: row.planStripePriceIdYearly,
+            isActive: row.planIsActive ?? false,
+            createdAt: row.planCreatedAt!,
+            updatedAt: row.planUpdatedAt!,
+          }
+        : undefined,
+      userRole: row.userRoleName,
+      owner: {
+        id: row.ownerId,
+        name: row.ownerName,
+        email: row.ownerEmail,
+      },
+      memberCount: parseInt(row.memberCount, 10),
+    }));
+  } catch (error) {
+    console.error("Error finding all user projects with details:", error);
+    throw new Error("Failed to find user projects with details");
+  }
+}
+
+/**
+ * Find the ID of the first project for a user (owned or member)
+ * Optimized to fetch only the ID of one project.
+ */
+export async function findFirstUserProjectId(
+  userId: string,
+): Promise<string | null> {
+  try {
+    // First, check for owned projects
+    let result = await sql<{ id: string }>`
+      SELECT id
+      FROM projects
+      WHERE owner_id = ${userId}
+      ORDER BY created_at ASC
+      LIMIT 1
+    `.execute(db);
+
+    if (result.rows[0]) {
+      return result.rows[0].id;
+    }
+
+    // If no owned projects, check for member projects
+    result = await sql<{ id: string }>`
+      SELECT p.id
+      FROM projects p
+      INNER JOIN project_members pm ON pm.project_id = p.id
+      WHERE pm.user_id = ${userId}
+      ORDER BY p.created_at ASC
+      LIMIT 1
+    `.execute(db);
+
+    return result.rows[0]?.id ?? null;
+  } catch (error) {
+    console.error("Error finding first user project ID:", error);
+    throw new Error("Failed to find first user project ID");
+  }
+}
+
+/**
  * Create a new project
  */
 export async function createProject(

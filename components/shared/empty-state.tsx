@@ -11,6 +11,7 @@ interface EmptyStateProps {
     label: string;
     onClick: () => void;
   };
+  actionComponent?: React.ReactNode; // New prop for custom action component
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export function EmptyState({
   title,
   description,
   action,
+  actionComponent, // Destructure new prop
   className,
 }: EmptyStateProps) {
   return (
@@ -37,10 +39,14 @@ export function EmptyState({
       <p className="mb-6 max-w-sm text-sm text-muted-foreground">
         {description}
       </p>
-      {action && (
-        <Button onClick={action.onClick} size="sm">
-          {action.label}
-        </Button>
+      {actionComponent ? ( // Render actionComponent if provided
+        <div className="mt-4">{actionComponent}</div>
+      ) : (
+        action && ( // Otherwise, render existing action button if provided
+          <Button onClick={action.onClick} size="sm">
+            {action.label}
+          </Button>
+        )
       )}
     </div>
   );

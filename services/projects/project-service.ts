@@ -8,9 +8,11 @@ import {
   createProjectWithOwner,
   deleteProject as deleteProjectRepository,
   findAllUserProjects,
+  findAllUserProjectsWithDetails, // New function
   findProjectById,
   updateProject,
   type IProject,
+  type IProjectEnriched, // New interface
   type IProjectCreateData,
   type IProjectUpdateData,
 } from "@/repositories/projects/project";
@@ -183,43 +185,12 @@ export class ProjectService {
   }
 
   /**
-   * Get user's projects (owned + member)
+   * Get user's projects (owned + member) with enriched details
    */
-  async getUserProjects(userId: string): Promise<
-    Array<
-      IProject & {
-        userRole: string | null;
-        owner: { id: string; name: string | null; email: string | null };
-        memberCount: number;
-      }
-    >
-  > {
+  async getUserProjects(userId: string): Promise<IProjectEnriched[]> {
     try {
-      const projects = await findAllUserProjects(userId);
-
-      // Enrich with user role, owner info, and member count
-      const enrichedProjects = await Promise.all(
-        projects.map(async (project) => {
-          const userRole = await memberService.getUserRole(project.id, userId);
-          const members = await memberService.getProjectMembers(project.id);
-
-          // Get owner info
-          const owner = await findUserById(project.ownerId);
-
-          return {
-            ...project,
-            userRole: userRole || PROJECT_ROLES.MEMBER,
-            owner: {
-              id: owner?.id || project.ownerId,
-              name: owner?.name || null,
-              email: owner?.email || null,
-            },
-            memberCount: members.length,
-          };
-        }),
-      );
-
-      return enrichedProjects;
+      const projects = await findAllUserProjectsWithDetails(userId);
+      return projects;
     } catch (error) {
       console.error("Error getting user projects:", error);
       throw new Error("Failed to get user projects");

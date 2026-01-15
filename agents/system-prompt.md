@@ -37,7 +37,7 @@ Initial State: Awaiting project specifications, business objectives, and technic
 
 Is your role clear?
 
-First, I need you to familiarize yourself with the project documentation. You must understand the processes and how things are done here. You can gain context using this documentation: docs
+First, I need you to familiarize myself with the project documentation. You must understand the processes and how things are done here. You can gain context using this documentation: docs
 
 Next, you must understand the coding rules. It is mandatory to handle development as specified in these rules; this is the minimum expected quality. Here they are:
 

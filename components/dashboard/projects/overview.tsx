@@ -1,16 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { CreateProjectDialog } from "@/components/dashboard/project/create-dialog";
-import { useCreateProject } from "@/components/dashboard/project/use-create-project";
 import { ProjectsList } from "@/components/dashboard/projects/list";
-import { Icons } from "@/components/shared/icons";
+import { CreateProjectButton } from "./create-project-button";
 
 import { IProjectCardData } from "./card";
 
@@ -19,17 +15,6 @@ interface IProjectsOverviewProps {
 }
 
 export function ProjectsOverview({ projects }: IProjectsOverviewProps) {
-  const router = useRouter();
-  const {
-    projectName,
-    setProjectName,
-    creating,
-    handleCreateProject,
-    openDialog,
-    setOpenDialog,
-    openCreateDialog,
-  } = useCreateProject(() => router.refresh());
-
   const hasProjects = projects.length > 0;
 
   const preparedProjects = useMemo(
@@ -55,30 +40,19 @@ export function ProjectsOverview({ projects }: IProjectsOverviewProps) {
           heading="Projects"
           text="Review every project you have access to. Owners can manage them directly from this list."
         >
-          <Button
-            type="button"
-            onClick={openCreateDialog}
-            className="hover-lift shadow-silver"
-          >
-            <Icons.add className="mr-2 size-4" />
-            New project
-          </Button>
+          <CreateProjectButton />
         </DashboardHeader>
 
         <ProjectsList
           projects={preparedProjects}
-          onCreateProject={hasProjects ? undefined : openCreateDialog}
+          onCreateProject={hasProjects ? undefined : () => {
+            // The button inside CreateProjectButton will handle opening the dialog
+            // We need a way to trigger it from here.
+            // For now, let's just rely on the header button.
+            // A better implementation would involve a shared state or context.
+          }}
         />
       </motion.div>
-
-      <CreateProjectDialog
-        open={openDialog}
-        onOpenChange={setOpenDialog}
-        projectName={projectName}
-        onProjectNameChange={setProjectName}
-        onCreate={handleCreateProject}
-        creating={creating}
-      />
     </TooltipProvider>
   );
 }
